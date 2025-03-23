@@ -1,8 +1,5 @@
 import 'package:dandang_gula/app/routes/app_routes.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import '../../data/services/auth_service.dart';
 
 class NavigationController extends GetxController {
   final Rx<String> currentRoute = Routes.DASHBOARD.obs;
@@ -10,27 +7,31 @@ class NavigationController extends GetxController {
   final isNavigating = false.obs;
 
   void changePage(String routeName) async {
-    if (currentRoute.value != routeName) {
-      // Set navigating state to true (for loading indicator)
-      isNavigating.value = true;
+    try {
+      if (currentRoute.value != routeName) {
+        // Set navigating state to true (for loading indicator)
+        isNavigating.value = true;
 
-      // Update current route
-      currentRoute.value = routeName;
+        // Update current route
+        currentRoute.value = routeName;
 
-      // Add to history for back navigation
-      routeHistory.add(routeName);
-      // Limit history size
-      if (routeHistory.length > 20) {
-        routeHistory.removeAt(0);
+        // Add to history for back navigation
+        routeHistory.add(routeName);
+        // Limit history size
+        if (routeHistory.length > 20) {
+          routeHistory.removeAt(0);
+        }
+
+        // Navigate with GetX
+        Get.toNamed(
+          routeName,
+          preventDuplicates: true,
+        );
       }
-
-      // Navigate with GetX
-      await Get.toNamed(
-        routeName,
-        preventDuplicates: true,
-      );
-
-      // Set navigating state to false after navigation is complete
+    } catch (e) {
+      Get.log('Error during navigation: $e');
+    } finally {
+      // Ensure navigating state is reset
       isNavigating.value = false;
     }
   }

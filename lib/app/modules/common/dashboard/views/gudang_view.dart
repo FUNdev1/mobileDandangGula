@@ -58,7 +58,7 @@ class GudangDashboardView extends StatelessWidget {
                 variant: ButtonVariant.secondary,
                 prefixSvgPath: AppIcons.shoppingBag,
                 onPressed: () {
-                  Get.toNamed(Routes.STOCK_IN);
+                  Get.toNamed(Routes.STOCK_MANAGEMENT_RECORD_PURCHASE);
                 },
               )
             ],
@@ -190,7 +190,7 @@ class GudangDashboardView extends StatelessWidget {
                 stockAlerts: controller.stockAlerts,
                 onViewAll: () {
                   // Navigate to stock alert page
-                  Get.toNamed(Routes.INVENTORY);
+                  // Get.toNamed(Routes.INVENTORY);
                 },
               )),
           const SizedBox(height: 24),
@@ -228,7 +228,7 @@ class GudangDashboardView extends StatelessWidget {
                 variant: ButtonVariant.primary,
                 onPressed: () {
                   // Navigate to stock in page
-                  Get.toNamed(Routes.STOCK_IN);
+                  Get.toNamed(Routes.STOCK_MANAGEMENT_ADD);
                 },
                 fullWidth: false,
                 width: 150,

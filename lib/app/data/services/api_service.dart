@@ -218,32 +218,7 @@ class ApiService extends GetxService {
             'percentChange': 3.42,
           },
         ];
-      } else if (endpoint.contains('/branches/') && endpoint.contains('/revenue')) {
-        // Branch revenue data
-        final data = [];
-        // Extract branch ID from the URL
-        final branchId = int.tryParse(endpoint.split('/')[2]) ?? 1;
-
-        for (int i = 1; i <= 8; i++) {
-          data.add({
-            'date': DateTime(2023, 1, i + 10).toIso8601String(),
-            'revenue': 1500000.0 + (i * 100000.0 * (branchId * 0.2)),
-            'expense': 1000000.0 + (i * 50000.0 * (i % 3 == 0 ? 1.2 : 0.8) * (branchId * 0.15)),
-          });
-        }
-        return data;
-      } else if (endpoint.contains('/chart')) {
-        // Chart data for a branch - return as list
-        final chartData = [];
-        for (int i = 1; i <= 8; i++) {
-          chartData.add({
-            'label': 'Jan $i',
-            'value': 5000000.0 + (i * 300000.0 * (i % 4 == 0 ? -1 : 1)), // Use doubles
-            'date': DateTime(2023, 1, i).toIso8601String(),
-          });
-        }
-        return chartData;
-      } else if (endpoint.contains('/revenue-expense')) {
+      } else if (endpoint.contains('/branches/') && endpoint.endsWith('/revenue-expense')) {
         final data = [];
         for (int i = 1; i <= 8; i++) {
           data.add({
@@ -252,8 +227,31 @@ class ApiService extends GetxService {
             'expense': 1000000.0 + (i * 50000.0 * (i % 3 == 0 ? 1.2 : 0.8)),
           });
         }
+
         return data;
       }
+    } else if (endpoint.contains('/branches/') && endpoint.contains('/revenue')) {
+      // Branch revenue data
+      // Extract branch ID from the URL
+      final branchId = int.tryParse(endpoint.split('/')[2]) ?? 1;
+
+      return {
+        'revenue': 1500000.0 * (branchId * 0.2),
+        'cogs': 900000.0 * (branchId * 0.15),
+        'netProfit': 600000.0 * (branchId * 0.25),
+        'growth': 3.5 * (branchId % 3 == 0 ? -1 : 1),
+      };
+    } else if (endpoint.contains('/chart')) {
+      // Chart data for a branch - return as list
+      final chartData = [];
+      for (int i = 1; i <= 8; i++) {
+        chartData.add({
+          'label': 'Jan $i',
+          'value': 5000000.0 + (i * 300000.0 * (i % 4 == 0 ? -1 : 1)), // Use doubles
+          'date': DateTime(2023, 1, i).toIso8601String(),
+        });
+      }
+      return chartData;
     } else if (endpoint.contains('/dashboard')) {
       if (endpoint == '/dashboard/summary') {
         return {

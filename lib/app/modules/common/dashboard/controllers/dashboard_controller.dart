@@ -12,7 +12,7 @@ import '../../../../data/models/stock_usage_model.dart';
 import '../../../../data/models/user_model.dart';
 import '../../../../data/repositories/branch_repository.dart';
 import '../../../../data/repositories/dashboard_repository.dart';
-import '../../../../data/repositories/inventory_repository.dart';
+import '../../../../data/repositories/stock_management_repository.dart';
 import '../../../../data/repositories/order_repository.dart';
 import '../../../../data/repositories/user_repository.dart';
 import '../../../../data/services/auth_service.dart';
@@ -23,7 +23,7 @@ class DashboardController extends GetxController {
   final BranchRepository branchRepository = Get.find<BranchRepository>();
   final DashboardRepository dashboardRepository = Get.find<DashboardRepository>();
   final OrderRepository orderRepository = Get.find<OrderRepository>();
-  final InventoryRepository inventoryRepository = Get.find<InventoryRepository>();
+  final StockManagementRepository inventoryRepository = Get.find<StockManagementRepository>();
   final AuthService authService = Get.find<AuthService>();
   final periodFilterController = Get.find<PeriodFilterController>();
 

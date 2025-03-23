@@ -128,15 +128,15 @@ class AppLayout extends StatelessWidget {
                       );
                     }),
 
-                    Obx(
-                      () => _navigationController.isNavigating.value
-                          ? Container(
-                              width: double.infinity,
-                              height: 3,
-                              child: const LinearProgressIndicator(),
-                            )
-                          : const SizedBox(),
-                    ),
+                    Obx(() {
+                      if (_navigationController.isNavigating.value) {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else {
+                        return const SizedBox();
+                      }
+                    }),
                   ],
                 ),
               ),
@@ -230,8 +230,8 @@ class AppLayout extends StatelessWidget {
           _buildNavItem(
             'Stok Bahan',
             AppIcons.wheat,
-            currentRoute == Routes.INVENTORY,
-            Routes.INVENTORY,
+            currentRoute == Routes.STOCK_MANAGEMENT,
+            Routes.STOCK_MANAGEMENT,
           ),
           _buildNavItem(
             'Manajemen Menu',
@@ -282,8 +282,8 @@ class AppLayout extends StatelessWidget {
           _buildNavItem(
             'Stok Bahan',
             AppIcons.wheat,
-            currentRoute == "",
-            "",
+            currentRoute == Routes.STOCK_MANAGEMENT,
+            Routes.STOCK_MANAGEMENT,
           ),
           _buildNavItem(
             'Laporan',
@@ -328,8 +328,8 @@ class AppLayout extends StatelessWidget {
           _buildNavItem(
             'Stok Bahan',
             AppIcons.wheat,
-            currentRoute == Routes.INVENTORY,
-            Routes.INVENTORY,
+            currentRoute == Routes.STOCK_MANAGEMENT,
+            Routes.STOCK_MANAGEMENT,
           ),
           _buildNavItem(
             'Pesanan',
@@ -361,6 +361,7 @@ class AppLayout extends StatelessWidget {
       padding: const EdgeInsets.only(right: 8.0),
       child: InkWell(
         onTap: () {
+          if (routeName == "") return;
           _navigationController.changePage(routeName);
         },
         borderRadius: BorderRadius.circular(8),
