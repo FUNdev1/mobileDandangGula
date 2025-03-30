@@ -53,7 +53,11 @@ class DashboardView extends GetView<DashboardController> {
       }
 
       // Wrap with AppLayout
+      final args = Get.arguments as Map<String, dynamic>? ?? {};
+      final refreshKey = args['refreshKey'] ?? 0;
+
       return AppLayout(
+        key: ValueKey('dashboard_$refreshKey'),
         content: dashboardContent,
         onRefresh: () async {
           await controller.initializeData();

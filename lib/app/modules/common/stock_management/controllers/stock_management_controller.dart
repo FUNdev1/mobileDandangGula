@@ -4,6 +4,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../data/models/stock_alert_model.dart';
 import '../../../../data/repositories/stock_management_repository.dart';
 import '../../../../global_widgets/alert/app_snackbar.dart';
+import '../../../../global_widgets/buttons/action_popup.dart';
 import '../data/models/inventory_item_model.dart';
 
 class StockManagementController extends GetxController {
@@ -15,6 +16,9 @@ class StockManagementController extends GetxController {
   final selectedPeriod = 'real-time'.obs;
   final searchQuery = ''.obs;
   final selectedCategoryFilter = 'Semua Group'.obs;
+  final currentPage = 1.obs;
+  final totalPages = 1.obs;
+  final categories = <String>['Semua Group'].obs;
 
   // Inventory data
   final inventoryItems = <InventoryItem>[].obs;
@@ -30,12 +34,15 @@ class StockManagementController extends GetxController {
     fetchData();
   }
 
-  Future<void> fetchData() async {
+  Future<void> fetchData({int page = 1}) async {
     isLoading.value = true;
     try {
       // Fetch inventory items
-      final items = await stockManagementRepository.getAllInventoryItems();
-      inventoryItems.value = items;
+      final response = await stockManagementRepository.getAllInventoryItems(page: page);
+      inventoryItems.value = response;
+
+      // totalPages.value = response.totalPages;
+      currentPage.value = page;
 
       // Fetch low stock items
       final alerts = await stockManagementRepository.getStockAlerts();
@@ -105,54 +112,10 @@ class StockManagementController extends GetxController {
     selectedTab.value = tabIndex;
   }
 
-  // Sorting
-  void sortItems(String column) {
-    if (sortColumn.value == column) {
-      sortAscending.value = !sortAscending.value;
-    } else {
-      sortColumn.value = column;
-      sortAscending.value = true;
-    }
-
-    inventoryItems.sort((a, b) {
-      var aValue, bValue;
-
-      switch (column) {
-        case 'name':
-          aValue = a.name;
-          bValue = b.name;
-          break;
-        case 'unit':
-          aValue = a.unit;
-          bValue = b.unit;
-          break;
-        case 'price':
-          aValue = a.currentPrice;
-          bValue = b.currentPrice;
-          break;
-        case 'purchases':
-          aValue = a.purchases;
-          bValue = b.purchases;
-          break;
-        case 'sales':
-          aValue = a.sales;
-          bValue = b.sales;
-          break;
-        case 'stock':
-          aValue = a.currentStock;
-          bValue = b.currentStock;
-          break;
-        default:
-          aValue = a.name;
-          bValue = b.name;
-      }
-
-      if (sortAscending.value) {
-        return aValue.compareTo(bValue);
-      } else {
-        return bValue.compareTo(aValue);
-      }
-    });
+  void onPageChanged(int page) {
+    currentPage.value = page;
+    // Implementasi logic untuk load data halaman tertentu
+    fetchData(page: page);
   }
 
   // Action methods
@@ -160,52 +123,12 @@ class StockManagementController extends GetxController {
     Get.toNamed('/inventory/add');
   }
 
-  void showItemActionMenu(InventoryItem item) {
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.edit, color: AppColors.primary),
-              title: const Text('Edit Informasi Bahan'),
-              onTap: () {
-                Get.back();
-                _editItem(item);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.add_shopping_cart, color: AppColors.primary),
-              title: const Text('Catat Pembelian Stok'),
-              onTap: () {
-                Get.back();
-                _recordPurchase(item);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.remove_shopping_cart, color: AppColors.warning),
-              title: const Text('Catat Pemakaian Stok'),
-              onTap: () {
-                Get.back();
-                _recordUsage(item);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: AppColors.error),
-              title: const Text('Hapus Bahan'),
-              onTap: () {
-                Get.back();
-                _showDeleteConfirmation(item);
-              },
-            ),
-          ],
-        ),
-      ),
+  ActionPopupMenu showItemActionMenu(InventoryItem item) {
+    return ActionPopupMenu(
+      actions: {
+        // 'detail': () => _showItemDetails(item),
+        'delete': () => showDeleteConfirmation(item),
+      },
     );
   }
 
@@ -221,26 +144,100 @@ class StockManagementController extends GetxController {
     Get.toNamed('/inventory/usage', arguments: item);
   }
 
-  void _showDeleteConfirmation(InventoryItem item) {
+  void showDeleteConfirmation(InventoryItem item) {
     Get.dialog(
-      AlertDialog(
-        title: Text('Hapus ${item.name}?'),
-        content: const Text('Bahan yang sudah dihapus tidak dapat dikembalikan. Lanjutkan?'),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Batal'),
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Container(
+          width: 400,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header dengan icon X untuk close
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(), // Empty space for alignment
+                  IconButton(
+                    onPressed: () => Get.back(),
+                    icon: const Icon(Icons.close),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // Title
+              Text(
+                'Yakin ingin menghapus bahan?',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Content
+              Text(
+                'Semua yang menggunakan bahan tersebut akan terhapus termasuk di resep bahan setengah jadi.',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Action buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Cancel Button
+                  SizedBox(
+                    height: 40,
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.black87,
+                        side: const BorderSide(color: Color(0xFFE0E0E0)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: const Text('Batal'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Confirm Button
+                  SizedBox(
+                    height: 40,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+                        _deleteItem(item);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFF1B9851),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: const Text('Lanjutkan'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Get.back();
-              _deleteItem(item);
-            },
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Hapus'),
-          ),
-        ],
+        ),
       ),
+      barrierDismissible: false,
     );
   }
 

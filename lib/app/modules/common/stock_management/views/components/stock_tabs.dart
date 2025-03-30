@@ -1,84 +1,92 @@
 import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../global_widgets/layout/tab_container.dart';
 
-class StockTabs extends StatelessWidget {
+class TabItem {
+  final String title;
+  final Widget content;
+
+  TabItem({
+    required this.title,
+    required this.content,
+  });
+}
+
+class StockTabs extends StatefulWidget {
   final List<TabItem> tabs;
-  final Function(int) onTabChanged;
+  final Function(int)? onTabChanged;
+  final int initialIndex;
 
   const StockTabs({
     super.key,
     required this.tabs,
-    required this.onTabChanged,
+    this.onTabChanged,
+    this.initialIndex = 0,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          // Tab navigation
-          Container(
-            height: 52,
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: AppColors.border),
-              ),
-            ),
-            child: Row(
-              children: List.generate(
-                tabs.length,
-                (index) => _buildTabItem(
-                  tabs[index].title,
-                  index == 0, // First tab is active by default
-                  () => onTabChanged(index),
-                ),
-              ),
-            ),
-          ),
+  State<StockTabs> createState() => _StockTabsState();
+}
 
-          // Tab content
-          Expanded(
-            child: TabContainer(
-              tabs: tabs,
-              onTabChanged: onTabChanged,
-            ),
-          ),
-        ],
-      ),
+class _StockTabsState extends State<StockTabs> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(
+      length: widget.tabs.length,
+      vsync: this,
+      initialIndex: widget.initialIndex,
     );
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        if (widget.onTabChanged != null) {
+          widget.onTabChanged!(_tabController.index);
+        }
+      }
+    });
   }
 
-  Widget _buildTabItem(String title, bool isActive, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        height: 52,
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: isActive ? const Color(0xFF88DE7B) : Colors.transparent,
-              width: 3,
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Tab headers
+        Container(
+          height: 48,
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: Color(0xFFEAEEF2),
+                width: 1,
+              ),
             ),
           ),
-        ),
-        child: Center(
-          child: Text(
-            title,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: isActive ? const Color(0xFF1B9851) : AppColors.textPrimary,
-              fontWeight: FontWeight.w500,
-            ),
+          child: TabBar(
+            controller: _tabController,
+            tabs: widget.tabs.map((tab) => Tab(text: tab.title)).toList(),
+            labelColor: AppColors.primary,
+            unselectedLabelColor: AppColors.textSecondary,
+            indicatorColor: AppColors.primary,
+            indicatorWeight: 3,
           ),
         ),
-      ),
+
+        // Tab content - make sure this is expanded to fill available space
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: widget.tabs.map((tab) => tab.content).toList(),
+          ),
+        ),
+      ],
     );
   }
 }

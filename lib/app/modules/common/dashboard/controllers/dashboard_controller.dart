@@ -218,6 +218,10 @@ class DashboardController extends GetxController {
 
       // Load branch-specific chart data
       salesData.value = await branchRepository.getBranchRevenueChartData(branchId);
+
+      categorySales.value = await orderRepository.getCategorySales();
+      productSales.value = await orderRepository.getTopProductSales();
+      paymentMethods.value = await orderRepository.getPaymentMethodData();
     } catch (e) {
       if (kDebugMode) {
         print('Error loading branch manager data: $e');

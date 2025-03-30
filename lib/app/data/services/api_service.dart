@@ -229,6 +229,18 @@ class ApiService extends GetxService {
         }
 
         return data;
+      } else if (endpoint.contains('/branches/') && endpoint.contains('/chart')) {
+        // This will correctly match endpoints like "/branches/1/chart"
+        log('Generating mock data for branch chart: $endpoint');
+        final data = [];
+        for (int i = 1; i <= 8; i++) {
+          data.add({
+            'label': '$i',
+            'value': 1500000.0 + (i * 100000.0 * (i % 3 == 0 ? 0.8 : 1.2)),
+            'date': DateTime(2023, 1, i + 10).toIso8601String(),
+          });
+        }
+        return data;
       }
     } else if (endpoint.contains('/branches/') && endpoint.contains('/revenue')) {
       // Branch revenue data
@@ -241,17 +253,6 @@ class ApiService extends GetxService {
         'netProfit': 600000.0 * (branchId * 0.25),
         'growth': 3.5 * (branchId % 3 == 0 ? -1 : 1),
       };
-    } else if (endpoint.contains('/chart')) {
-      // Chart data for a branch - return as list
-      final chartData = [];
-      for (int i = 1; i <= 8; i++) {
-        chartData.add({
-          'label': 'Jan $i',
-          'value': 5000000.0 + (i * 300000.0 * (i % 4 == 0 ? -1 : 1)), // Use doubles
-          'date': DateTime(2023, 1, i).toIso8601String(),
-        });
-      }
-      return chartData;
     } else if (endpoint.contains('/dashboard')) {
       if (endpoint == '/dashboard/summary') {
         return {
@@ -293,6 +294,274 @@ class ApiService extends GetxService {
         return {
           'growth': -9.75,
         };
+      }
+    }
+    // Stock Management Mock Data
+    else if (endpoint.startsWith('/inventory')) {
+      // Inventory items endpoint
+      if (endpoint == '/inventory/items') {
+        return [
+          {
+            'id': '1',
+            'name': 'Daging Ayam',
+            'unit': 'Kg',
+            'category': 'Protein',
+            'type': 'raw',
+            'current_price': 100000,
+            'purchases': 0,
+            'sales': 1100,
+            'current_stock': 1100,
+            'minimum_stock': 2000,
+            'stock_percentage': 0.55,
+          },
+          {
+            'id': '2',
+            'name': 'Sambal Terasi',
+            'unit': 'Kg',
+            'category': 'Bumbu',
+            'type': 'semi-finished',
+            'current_price': 100000,
+            'purchases': 2000,
+            'sales': 1000,
+            'current_stock': 1500,
+            'minimum_stock': 2000,
+            'stock_percentage': 0.75,
+          },
+          {
+            'id': '3',
+            'name': 'Telur Ayam',
+            'unit': 'Kg',
+            'category': 'Protein',
+            'type': 'raw',
+            'current_price': 100000,
+            'purchases': 0,
+            'sales': 1100,
+            'current_stock': 1100,
+            'minimum_stock': 2000,
+            'stock_percentage': 0.55,
+          },
+          {
+            'id': '4',
+            'name': 'Susu Sapi',
+            'unit': 'Botol',
+            'category': 'Minuman',
+            'type': 'raw',
+            'current_price': 100000,
+            'purchases': 0,
+            'sales': 1100,
+            'current_stock': 1100,
+            'minimum_stock': 1000,
+            'stock_percentage': 1.0,
+          },
+          {
+            'id': '5',
+            'name': 'Garam',
+            'unit': 'Gram',
+            'category': 'Bumbu',
+            'type': 'raw',
+            'current_price': 100000,
+            'purchases': 0,
+            'sales': 1800,
+            'current_stock': 200,
+            'minimum_stock': 1000,
+            'stock_percentage': 0.2,
+          },
+          {
+            'id': '6',
+            'name': 'Gula',
+            'unit': 'Gram',
+            'category': 'Bumbu',
+            'type': 'raw',
+            'current_price': 100000,
+            'purchases': 0,
+            'sales': 500,
+            'current_stock': 1500,
+            'minimum_stock': 5000,
+            'stock_percentage': 0.3,
+          },
+          {
+            'id': '7',
+            'name': 'Air Mineral',
+            'unit': 'Ml',
+            'category': 'Minuman',
+            'type': 'raw',
+            'current_price': 100000,
+            'purchases': 0,
+            'sales': 500,
+            'current_stock': 1500,
+            'minimum_stock': 1000,
+            'stock_percentage': 1.0,
+          },
+          {
+            'id': '8',
+            'name': 'Mayonaise',
+            'unit': 'Kg',
+            'category': 'Bumbu',
+            'type': 'semi-finished',
+            'current_price': 100000,
+            'purchases': 2000,
+            'sales': 500,
+            'current_stock': 1500,
+            'minimum_stock': 1000,
+            'stock_percentage': 1.0,
+          },
+          {
+            'id': '9',
+            'name': 'Sambal Terasi',
+            'unit': 'Kg',
+            'category': 'Bumbu',
+            'type': 'semi-finished',
+            'current_price': 100000,
+            'purchases': 0,
+            'sales': 1100,
+            'current_stock': 1100,
+            'minimum_stock': 2000,
+            'stock_percentage': 0.55,
+          },
+          {
+            'id': '10',
+            'name': 'Bumbu Treng',
+            'unit': 'Kg',
+            'category': 'Bumbu',
+            'type': 'semi-finished',
+            'current_price': 100000,
+            'purchases': 0,
+            'sales': 0,
+            'current_stock': 1100,
+            'minimum_stock': 1000,
+            'stock_percentage': 1.0,
+          },
+          {
+            'id': '11',
+            'name': 'Meat Hamburg',
+            'unit': 'Botol',
+            'category': 'Protein',
+            'type': 'semi-finished',
+            'current_price': 100000,
+            'purchases': 0,
+            'sales': 0,
+            'current_stock': 1100,
+            'minimum_stock': 1000,
+            'stock_percentage': 1.0,
+          },
+        ];
+      }
+      // Stock alerts endpoint - disesuaikan dengan model StockAlert yang sudah ada
+      else if (endpoint == '/inventory/alerts') {
+        return [
+          {
+            'id': '1',
+            'name': 'Lada Bubuk',
+            'category': 'Bumbu',
+            'stock': 'Bahan',
+            'amount': '100 gr',
+            'alert_level': 0.23,
+            'image_url': null,
+            'unit_id': '1',
+            'unit_name': 'kg',
+          },
+          {
+            'id': '2',
+            'name': 'Santan kelapa',
+            'category': 'Bumbu',
+            'stock': 'Bahan',
+            'amount': '200 ml',
+            'alert_level': 0.29,
+            'image_url': null,
+            'unit_id': '2',
+            'unit_name': 'ml',
+          },
+          {
+            'id': '3',
+            'name': 'Telur Asin',
+            'category': 'Protein',
+            'stock': 'Bahan',
+            'amount': '5 Butir',
+            'alert_level': 0.29,
+            'image_url': null,
+            'unit_id': '3',
+            'unit_name': 'butir',
+          },
+          {
+            'id': '4',
+            'name': 'Syrup Chocolate',
+            'category': 'Minuman',
+            'stock': 'Bahan',
+            'amount': '500 ml',
+            'alert_level': 0.48,
+            'image_url': null,
+            'unit_id': '4',
+            'unit_name': 'ml',
+          },
+          {
+            'id': '5',
+            'name': 'Telur Asin',
+            'category': 'Protein',
+            'stock': 'Bahan',
+            'amount': '5 Butir',
+            'alert_level': 0.29,
+            'image_url': null,
+            'unit_id': '5',
+            'unit_name': 'butir',
+          },
+          {
+            'id': '6',
+            'name': 'Syrup Chocolate',
+            'category': 'Minuman',
+            'stock': 'Bahan',
+            'amount': '500 ml',
+            'alert_level': 0.48,
+            'image_url': null,
+            'unit_id': '6',
+            'unit_name': 'ml',
+          },
+        ];
+      }
+      // Stock flow data endpoint
+      else if (endpoint == '/inventory/flow') {
+        return [
+          {'date': '1 Jul', 'sales': 100, 'purchases': 150, 'wastage': 20},
+          {'date': '2 Jul', 'sales': 120, 'purchases': 120, 'wastage': 15},
+          {'date': '3 Jul', 'sales': 90, 'purchases': 180, 'wastage': 25},
+          {'date': '4 Jul', 'sales': 110, 'purchases': 100, 'wastage': 10},
+          {'date': '5 Jul', 'sales': 130, 'purchases': 90, 'wastage': 18},
+          {'date': '6 Jul', 'sales': 95, 'purchases': 140, 'wastage': 22},
+          {'date': '7 Jul', 'sales': 115, 'purchases': 130, 'wastage': 12},
+        ];
+      }
+      // Stock usage by group endpoint - disesuaikan dengan model StockUsage yang sudah ada
+      else if (endpoint == '/inventory/usage-by-group') {
+        return [
+          {'id': '1', 'category': 'Protein', 'percentage': 35.0, 'color': '#E94235', 'usage_count': 120, 'usage_amount': 325.5, 'unit_id': '1', 'unit_name': 'kg'},
+          {'id': '2', 'category': 'Bumbu', 'percentage': 25.0, 'color': '#4285F4', 'usage_count': 85, 'usage_amount': 156.2, 'unit_id': '2', 'unit_name': 'kg'},
+          {'id': '3', 'category': 'Sayuran', 'percentage': 20.0, 'color': '#34A853', 'usage_count': 65, 'usage_amount': 95.8, 'unit_id': '3', 'unit_name': 'kg'},
+          {'id': '4', 'category': 'Minuman', 'percentage': 15.0, 'color': '#FBBC05', 'usage_count': 42, 'usage_amount': 185.3, 'unit_id': '4', 'unit_name': 'liter'},
+          {'id': '5', 'category': 'Lainnya', 'percentage': 5.0, 'color': '#9AA0A6', 'usage_count': 18, 'usage_amount': 42.5, 'unit_id': '5', 'unit_name': 'kg'},
+        ];
+      }
+      // Get specific inventory item
+      else if (endpoint.startsWith('/inventory/items/') && endpoint.split('/').length == 4) {
+        String id = endpoint.split('/').last;
+        // Return a single item based on ID
+        return {
+          'id': id,
+          'name': 'Item $id',
+          'unit': 'Kg',
+          'category': 'Bumbu',
+          'type': id.contains('1') ? 'raw' : 'semi-finished',
+          'current_price': 100000,
+          'purchases': 1000,
+          'sales': 800,
+          'current_stock': 1200,
+          'minimum_stock': 1000,
+          'stock_percentage': 1.2,
+        };
+      }
+      // For create, update, and delete operations
+      else if (endpoint == '/inventory/purchases') {
+        return {'success': true, 'message': 'Stock purchase recorded successfully'};
+      } else if (endpoint == '/inventory/usage') {
+        return {'success': true, 'message': 'Stock usage recorded successfully'};
       }
     }
 

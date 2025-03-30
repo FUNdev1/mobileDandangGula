@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../data/models/stock_alert_model.dart';
 import '../../../../../global_widgets/text/app_text.dart';
+
 class LowStockItems extends StatelessWidget {
   final List<StockAlert> items;
 
@@ -21,10 +22,13 @@ class LowStockItems extends StatelessWidget {
           child: AppText('Stok akan habis'),
         ),
 
+        SizedBox(height: 10),
         // Scrollable cards
         SizedBox(
+          width: double.infinity,
           height: 128,
           child: ListView.builder(
+            shrinkWrap: true,
             scrollDirection: Axis.horizontal,
             itemCount: items.length,
             itemBuilder: (context, index) {
@@ -49,11 +53,15 @@ class LowStockItems extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            item.name,
-            style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+          Flexible(
+            child: Text(
+              item.name,
+              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
           // Stock amount row
           Row(
@@ -70,7 +78,7 @@ class LowStockItems extends StatelessWidget {
                     ),
                   ),
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         item.amount.split(' ')[0],
@@ -98,25 +106,29 @@ class LowStockItems extends StatelessWidget {
           const SizedBox(height: 11),
 
           // Progress bar
-          Container(
-            height: 14,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8F8F8),
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: Stack(
-              children: [
-                Container(
-                  width: 208 * item.alertLevel,
-                  height: 14,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDF0000),
-                    borderRadius: BorderRadius.circular(25),
+          LayoutBuilder(builder: (context, constraints) {
+            final maxWidth = constraints.maxWidth;
+            return Container(
+              height: 14,
+              width: maxWidth,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F8F8),
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Stack(
+                children: [
+                  Container(
+                    width: 208 * item.alertLevel,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDF0000),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );

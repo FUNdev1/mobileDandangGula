@@ -93,8 +93,20 @@ class BranchRepositoryImpl extends BranchRepository {
 
   @override
   Future<List<ChartData>> getBranchRevenueChartData(String id, {Map<String, dynamic>? filterParams}) async {
-    final response = await _apiService.get('/branches/$id/chart');
-    return (response as List).map((item) => ChartData.fromJson(item)).toList();
+    try {
+      final response = await _apiService.get('/branches/$id/chart', queryParams: filterParams);
+
+      if (response is List) {
+        return response.map((item) => ChartData.fromJson(item)).toList();
+      } else if (response is Map && response.containsKey('data') && response['data'] is List) {
+        return (response['data'] as List).map((item) => ChartData.fromJson(item)).toList();
+      } else {
+        // Return empty list as fallback
+        return [];
+      }
+    } catch (e) {
+      return [];
+    }
   }
 
   @override

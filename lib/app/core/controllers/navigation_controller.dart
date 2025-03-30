@@ -5,33 +5,31 @@ class NavigationController extends GetxController {
   final Rx<String> currentRoute = Routes.DASHBOARD.obs;
   final List<String> routeHistory = [Routes.DASHBOARD].obs;
   final isNavigating = false.obs;
-
   void changePage(String routeName) async {
     try {
       if (currentRoute.value != routeName) {
-        // Set navigating state to true (for loading indicator)
+        // Set navigating state
         isNavigating.value = true;
 
         // Update current route
         currentRoute.value = routeName;
 
-        // Add to history for back navigation
+        // Update history
         routeHistory.add(routeName);
-        // Limit history size
         if (routeHistory.length > 20) {
           routeHistory.removeAt(0);
         }
 
-        // Navigate with GetX
-        Get.toNamed(
-          routeName,
-          preventDuplicates: true,
-        );
+        // Refresh key untuk memaksa rebuild
+        final refreshKey = DateTime.now().millisecondsSinceEpoch;
+
+        // Navigasi dengan Get.toNamed
+        Get.toNamed(routeName, arguments: {'refreshKey': refreshKey});
       }
     } catch (e) {
       Get.log('Error during navigation: $e');
     } finally {
-      // Ensure navigating state is reset
+      await Future.delayed(Duration(milliseconds: 200));
       isNavigating.value = false;
     }
   }

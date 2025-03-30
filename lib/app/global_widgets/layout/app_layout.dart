@@ -113,6 +113,8 @@ class AppLayout extends StatelessWidget {
 
                     // Content
                     Obx(() {
+                      final route = _navigationController.currentRoute.value;
+                      final timestamp = DateTime.now().millisecondsSinceEpoch;
                       return AnimatedSwitcher(
                         duration: const Duration(milliseconds: 200),
                         transitionBuilder: (Widget child, Animation<double> animation) {
@@ -122,7 +124,8 @@ class AppLayout extends StatelessWidget {
                           );
                         },
                         child: KeyedSubtree(
-                          key: ValueKey(_navigationController.currentRoute.value),
+                          // Tambahkan timestamp untuk memastikan key selalu berbeda
+                          key: ValueKey('$route-$timestamp'),
                           child: content,
                         ),
                       );
@@ -130,7 +133,7 @@ class AppLayout extends StatelessWidget {
 
                     Obx(() {
                       if (_navigationController.isNavigating.value) {
-                        return Center(
+                        return const Center(
                           child: CircularProgressIndicator(),
                         );
                       } else {
@@ -361,7 +364,7 @@ class AppLayout extends StatelessWidget {
       padding: const EdgeInsets.only(right: 8.0),
       child: InkWell(
         onTap: () {
-          if (routeName == "") return;
+          // if (routeName == "") return;
           _navigationController.changePage(routeName);
         },
         borderRadius: BorderRadius.circular(8),
@@ -613,36 +616,6 @@ class AppLayout extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class ContentFadeTransition extends StatelessWidget {
-  final Widget child;
-  final Duration duration;
-  final String? keyId;
-
-  const ContentFadeTransition({
-    super.key,
-    required this.child,
-    this.duration = const Duration(milliseconds: 150),
-    this.keyId,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: duration,
-      transitionBuilder: (Widget child, Animation<double> animation) {
-        return FadeTransition(
-          opacity: animation,
-          child: child,
-        );
-      },
-      child: KeyedSubtree(
-        key: ValueKey(key ?? UniqueKey()),
-        child: child,
       ),
     );
   }
