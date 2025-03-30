@@ -14,9 +14,9 @@ class StockFlowData {
   factory StockFlowData.fromJson(Map<String, dynamic> json) {
     return StockFlowData(
       date: json['date'] as String,
-      sales: json['sales'] as double,
-      purchases: json['purchases'] as double,
-      wastage: json['wastage'] as double,
+      sales: json['sales'] != null ? double.parse(json['sales'].toString()) : 0.0,
+      purchases: json['purchases'] != null ? double.parse(json['purchases'].toString()) : 0.0,
+      wastage: json['wastage'] != null ? double.parse(json['wastage'].toString()) : 0.0,
     );
   }
 

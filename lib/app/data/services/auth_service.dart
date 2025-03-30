@@ -1,14 +1,15 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../config/constant/app_constants.dart';
 import '../../routes/app_routes.dart';
 import '../models/user_model.dart';
+import '../services/api_service.dart';
 
 class AuthService extends GetxService {
   // Storage keys
-  static const String USER_STORAGE_KEY = 'user_data';
-  static const String IS_LOGGED_IN_KEY = 'is_logged_in';
 
   // Observable user state
   final _currentUser = Rxn<User>();
@@ -16,14 +17,16 @@ class AuthService extends GetxService {
 
   // Shared Preferences instance
   late SharedPreferences _prefs;
+  late ApiService _apiService;
 
-  // Getters for user information
+  // Getters
   User? get currentUser => _currentUser.value;
   bool get isLoggedIn => _isLoggedIn.value;
   String get userRole => _currentUser.value?.role ?? '';
 
   // Initialize service
   Future<AuthService> init() async {
+    _apiService = Get.find<ApiService>();
     await _initPrefs();
     return this;
   }
@@ -41,66 +44,86 @@ class AuthService extends GetxService {
   // Load user data from SharedPreferences
   Future<void> _loadUserFromStorage() async {
     try {
-      // Check if user is logged in
-      final bool isUserLoggedIn = _prefs.getBool(IS_LOGGED_IN_KEY) ?? false;
+      final bool isUserLoggedIn = _prefs.getBool(AppConstants.IS_LOGGED_IN_KEY) ?? false;
 
       if (isUserLoggedIn) {
-        final String? userStr = _prefs.getString(USER_STORAGE_KEY);
-        if (userStr != null && userStr.isNotEmpty) {
-          final Map<String, dynamic> userData = jsonDecode(userStr) as Map<String, dynamic>;
-          _currentUser.value = User.fromJson(userData);
-          _isLoggedIn.value = true;
+        final String? token = _prefs.getString(AppConstants.TOKEN_STORAGE_KEY);
+        if (token != null && token.isNotEmpty) {
+          _apiService.setAuthToken(token);
 
-          debugPrint('User loaded from SharedPreferences: ${_currentUser.value?.name}');
-          debugPrint('User is logged in: ${_isLoggedIn.value}');
+          final String? userStr = _prefs.getString(AppConstants.USER_STORAGE_KEY);
+          if (userStr != null && userStr.isNotEmpty) {
+            final Map<String, dynamic> userData = jsonDecode(userStr);
+            _currentUser.value = User.fromJson(userData);
+            _isLoggedIn.value = true;
+          } else {
+            // Token ada tapi tidak ada data user, coba fetch profile
+            try {
+              await fetchUserProfile();
+            } catch (e) {
+              log('Error fetching user profile: $e');
+              await _clearUserData();
+            }
+          }
         } else {
-          // User marked as logged in but no data found
-          await _prefs.setBool(IS_LOGGED_IN_KEY, false);
+          await _prefs.setBool(AppConstants.IS_LOGGED_IN_KEY, false);
         }
       }
     } catch (e) {
-      debugPrint('Error loading user data from SharedPreferences: $e');
-      // If there's an error, clear potentially corrupted data
+      log('Error loading user data: $e');
       await _clearUserData();
     }
   }
 
-  // Check if user is authenticated and redirect accordingly
-  Future<void> checkAuth() async {
-    if (_isLoggedIn.value && _currentUser.value != null) {
-      // User is logged in, navigate to dashboard
-      Get.offAllNamed(Routes.DASHBOARD);
-    } else {
-      // User is not logged in, navigate to login
-      Get.offAllNamed(Routes.LOGIN);
-    }
-  }
-
-  // Login function that handles different user roles properly
-  Future<bool> login(String username, String password, {int? locationId}) async {
+  // Login dengan API
+  Future<bool> login(String username, String password, {String? kodeBranch}) async {
     try {
-      // Simulate API call with delay
-      await Future.delayed(const Duration(seconds: 1));
+      final response = await _apiService.post('/auth/login', body: {
+        'kode_branch': kodeBranch ?? 'KDGMH', // Default jika tidak disediakan
+        'username': username,
+        'password': password,
+      });
 
-      // Check if credentials match any predefined users
-      User? authenticatedUser = _authenticateUser(username, password, locationId);
+      // Handle response based on the structure from your log
+      if (response is Map && response.containsKey('success') && response['success'] == true && response.containsKey('data') && response['data'] is Map && response['data'].containsKey('access_token')) {
+        final token = response['data']['access_token'];
+        _apiService.setAuthToken(token);
 
-      if (authenticatedUser != null) {
-        // Save user data and login state
-        await _saveUserToStorage(authenticatedUser);
-        await _prefs.setBool(IS_LOGGED_IN_KEY, true);
+        // Simpan token di SharedPreferences
+        await _prefs.setString(AppConstants.TOKEN_STORAGE_KEY, token);
+        await _prefs.setBool(AppConstants.IS_LOGGED_IN_KEY, true);
 
-        // Update current user and login state
-        _currentUser.value = authenticatedUser;
-        _isLoggedIn.value = true;
+        // Ambil profil user
+        await fetchUserProfile();
 
         return true;
       }
 
       return false;
     } catch (e) {
-      debugPrint('Login error: $e');
+      log('Login error: $e');
       return false;
+    }
+  }
+
+  // Fetch user profile
+  Future<void> fetchUserProfile() async {
+    try {
+      final response = await _apiService.get('/account/profile');
+
+      if (response != null) {
+        final User user = User.fromJson(response);
+        _currentUser.value = user;
+        _isLoggedIn.value = true;
+
+        // Simpan data user
+        await _saveUserToStorage(user);
+      } else {
+        throw Exception('Failed to fetch user profile: Empty response');
+      }
+    } catch (e) {
+      log('Error fetching user profile: $e');
+      throw Exception('Failed to fetch user profile: $e');
     }
   }
 
@@ -108,115 +131,33 @@ class AuthService extends GetxService {
   Future<void> _saveUserToStorage(User user) async {
     try {
       final String userJson = jsonEncode(user.toJson());
-      await _prefs.setString(USER_STORAGE_KEY, userJson);
-      debugPrint('User saved to SharedPreferences');
+      await _prefs.setString(AppConstants.USER_STORAGE_KEY, userJson);
     } catch (e) {
-      debugPrint('Error saving user to SharedPreferences: $e');
+      log('Error saving user to SharedPreferences: $e');
       throw Exception('Failed to save user data: $e');
     }
   }
 
   // Clear user data from storage
   Future<void> _clearUserData() async {
-    await _prefs.remove(USER_STORAGE_KEY);
-    await _prefs.setBool(IS_LOGGED_IN_KEY, false);
+    await _prefs.remove(AppConstants.USER_STORAGE_KEY);
+    await _prefs.remove(AppConstants.TOKEN_STORAGE_KEY);
+    await _prefs.setBool(AppConstants.IS_LOGGED_IN_KEY, false);
     _isLoggedIn.value = false;
     _currentUser.value = null;
   }
 
-  // Authenticate user based on credentials
-  User? _authenticateUser(String username, String password, int? locationId) {
-    // In a real app, you would check credentials against your backend API
-    // For this example, we'll use hardcoded users for different roles
-
-    // Check locationId if it's for pusat role
-    if (locationId != null) {
-      // Check if this is pusat user with location ID
-      if (username == 'pusat' && password == 'password') {
-        return User(
-          id: 1001,
-          name: 'Martha Elbert',
-          username: 'martha@example.com',
-          role: 'pusat',
-          branchId: locationId,
-          branchName: 'Pusat - Admin Kantor Pusat',
-          photoUrl: 'https://example.com/martha.jpg',
-        );
-      }
-      return null; // Location ID provided but credentials don't match
-    }
-
-    // For other roles without location ID
-    switch (username) {
-      case 'admin':
-        if (password == 'password') {
-          return User(
-            id: 1002,
-            name: 'Joe Heiden',
-            username: 'joe@example.com',
-            role: 'admin',
-            branchId: 0, // Admin can access all branches
-            branchName: 'Admin Super User',
-            photoUrl: 'https://example.com/joe.jpg',
-          );
-        }
-        break;
-
-      case 'kasir':
-        if (password == 'password') {
-          return User(
-            id: 1003,
-            name: 'Jun Aizawa',
-            username: 'jun@example.com',
-            role: 'kasir',
-            branchId: 1,
-            branchName: 'Kedai Dandang Gula MT. Haryono',
-            photoUrl: 'https://example.com/jun.jpg',
-          );
-        }
-        break;
-
-      case 'gudang':
-        if (password == 'password') {
-          return User(
-            id: 1004,
-            name: 'Martha Elbert',
-            username: 'martha.gudang@example.com',
-            role: 'gudang',
-            branchId: 2,
-            branchName: 'Kedai Dandang Gula MT. Haryono',
-            photoUrl: 'https://example.com/martha.jpg',
-          );
-        }
-        break;
-
-      case 'branchmanager':
-        if (password == 'password') {
-          return User(
-            id: 1005,
-            name: 'Joe Manager',
-            username: 'joe.manager@example.com',
-            role: 'branchmanager',
-            branchId: 2,
-            branchName: 'Kedai Dandang Gula MT. Haryono',
-            photoUrl: 'https://example.com/joe_manager.jpg',
-          );
-        }
-        break;
-    }
-    return null;
-  }
-
-  // Log out the current user
+  // Logout user
   Future<void> logout() async {
     try {
-      await _clearUserData();
-      // Navigate to login screen
-      Get.offAllNamed('/login');
-      debugPrint('User logged out successfully');
+      // Call logout API endpoint
+      await _apiService.post('/auth/logout');
     } catch (e) {
-      debugPrint('Error during logout: $e');
-      throw Exception('Failed to log out: $e');
+      log('Error during logout API call: $e');
+    } finally {
+      // Tetap clear data lokal meskipun API call gagal
+      await _clearUserData();
+      Get.offAllNamed(Routes.LOGIN);
     }
   }
 }

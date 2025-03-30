@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:get/get.dart';
 import '../models/branch_model.dart';
 import '../models/chart_data_model.dart';
@@ -19,99 +21,170 @@ abstract class BranchRepository {
 class BranchRepositoryImpl extends BranchRepository {
   final ApiService _apiService = Get.find<ApiService>();
 
-  // Observable list of branches
   @override
   final RxList<Branch> branches = <Branch>[].obs;
 
-  // Fetch all branches
   @override
   Future<void> fetchAllBranches() async {
-    final response = await _apiService.get('/branches');
-    final List<Branch> branchList = (response as List).map((item) => Branch.fromJson(item)).toList();
-    branches.assignAll(branchList);
+    try {
+      final response = await _apiService.get('/branch/lists');
+
+      final List<Branch> branchList = [];
+
+      if (response is List) {
+        for (var item in response) {
+          branchList.add(Branch.fromJson(item));
+        }
+      } else if (response is Map && response.containsKey('data') && response['data'] is List) {
+        for (var item in response['data']) {
+          branchList.add(Branch.fromJson(item));
+        }
+      }
+
+      branches.assignAll(branchList);
+    } catch (e) {
+      log('Error fetching branches: $e');
+    }
   }
 
-  // Get a branch by ID
   @override
   Branch? getBranchById(String id) {
     try {
       return branches.firstWhere((branch) => branch.id == id);
     } catch (e) {
-      // No branch found with the given ID
       return null;
     }
   }
 
-  // Add a new branch
   @override
   Future<void> addBranch(Branch branch) async {
-    final response = await _apiService.post(
-      '/branches',
-      body: branch.toJson(),
-    );
+    try {
+      final data = {
+        'kode': branch.id,
+        'name': branch.name,
+        'address': branch.address ?? '',
+        'status': 'Active',
+      };
 
-    // Add the new branch with the ID from the server
-    final newBranch = Branch.fromJson(response);
-    branches.add(newBranch);
-    branches.refresh();
+      if (branch.photoUrl != null && branch.photoUrl!.isNotEmpty) {
+        data['photo'] = branch.photoUrl!;
+      }
+
+      await _apiService.post('/branch/create', body: data);
+
+      await fetchAllBranches(); // Refresh branch list
+    } catch (e) {
+      log('Error adding branch: $e');
+      throw Exception('Failed to add branch: $e');
+    }
   }
 
-  // Update a branch
   @override
   Future<void> updateBranch(Branch branch) async {
-    await _apiService.put(
-      '/branches/${branch.id}',
-      body: branch.toJson(),
-    );
+    try {
+      final data = {
+        'kode': branch.id,
+        'name': branch.name,
+        'address': branch.address ?? '',
+        'status': 'Active',
+      };
 
-    final index = branches.indexWhere((b) => b.id == branch.id);
-    if (index != -1) {
-      branches[index] = branch;
+      if (branch.photoUrl != null && branch.photoUrl!.isNotEmpty) {
+        data['photo'] = branch.photoUrl!;
+      }
+
+      await _apiService.post('/branch/update/${branch.id}', body: data);
+
+      final index = branches.indexWhere((b) => b.id == branch.id);
+      if (index != -1) {
+        branches[index] = branch;
+      }
+      branches.refresh();
+    } catch (e) {
+      log('Error updating branch: $e');
+      throw Exception('Failed to update branch: $e');
     }
-    branches.refresh();
   }
 
-  // Delete a branch
   @override
   Future<void> deleteBranch(String id) async {
-    await _apiService.delete('/branches/$id');
-    branches.removeWhere((branch) => branch.id == id);
-    branches.refresh();
+    try {
+      await _apiService.delete('/branch/delete/$id');
+      branches.removeWhere((branch) => branch.id == id);
+      branches.refresh();
+    } catch (e) {
+      log('Error deleting branch: $e');
+      throw Exception('Failed to delete branch: $e');
+    }
   }
 
   @override
   Future<Map<String, double>> getBranchRevenue(String id, {Map<String, dynamic>? filterParams}) async {
-    final response = await _apiService.get('/branches/$id/revenue');
+    // Tidak ada endpoint spesifik di Postman collection, jadi menggunakan mock data untuk sementara
+    try {
+      final response = await _apiService.get('/branch/revenue/$id', queryParams: filterParams);
 
-    return {
-      'revenue': response['revenue'] ?? 0.0,
-      'cogs': response['cogs'] ?? 0.0,
-      'netProfit': response['netProfit'] ?? 0.0,
-      'growth': response['growth'] ?? 0.0,
-    };
+      if (response is Map) {
+        return {
+          'revenue': response['revenue'] != null ? double.parse(response['revenue'].toString()) : 0.0,
+          'cogs': response['cogs'] != null ? double.parse(response['cogs'].toString()) : 0.0,
+          'netProfit': response['netProfit'] != null ? double.parse(response['netProfit'].toString()) : 0.0,
+          'growth': response['growth'] != null ? double.parse(response['growth'].toString()) : 0.0,
+        };
+      }
+
+      return {
+        'revenue': 0.0,
+        'cogs': 0.0,
+        'netProfit': 0.0,
+        'growth': 0.0,
+      };
+    } catch (e) {
+      log('Error getting branch revenue: $e');
+      return {
+        'revenue': 0.0,
+        'cogs': 0.0,
+        'netProfit': 0.0,
+        'growth': 0.0,
+      };
+    }
   }
 
   @override
   Future<List<ChartData>> getBranchRevenueChartData(String id, {Map<String, dynamic>? filterParams}) async {
+    // Tidak ada endpoint spesifik di Postman collection, jadi menggunakan mock data untuk sementara
     try {
-      final response = await _apiService.get('/branches/$id/chart', queryParams: filterParams);
+      final response = await _apiService.get('/branch/chart/$id', queryParams: filterParams);
 
       if (response is List) {
         return response.map((item) => ChartData.fromJson(item)).toList();
       } else if (response is Map && response.containsKey('data') && response['data'] is List) {
         return (response['data'] as List).map((item) => ChartData.fromJson(item)).toList();
-      } else {
-        // Return empty list as fallback
-        return [];
       }
+
+      return [];
     } catch (e) {
+      log('Error getting chart data: $e');
       return [];
     }
   }
 
   @override
   Future<List<RevenueExpenseData>> getBranchRevenueExpenseData(String id, {Map<String, dynamic>? filterParams}) async {
-    final response = await _apiService.get('/branches/$id/revenue-expense');
-    return (response as List).map((item) => RevenueExpenseData.fromJson(item)).toList();
+    // Tidak ada endpoint spesifik di Postman collection, jadi menggunakan mock data untuk sementara
+    try {
+      final response = await _apiService.get('/branch/revenue-expense/$id', queryParams: filterParams);
+
+      if (response is List) {
+        return response.map((item) => RevenueExpenseData.fromJson(item)).toList();
+      } else if (response is Map && response.containsKey('data') && response['data'] is List) {
+        return (response['data'] as List).map((item) => RevenueExpenseData.fromJson(item)).toList();
+      }
+
+      return [];
+    } catch (e) {
+      log('Error getting revenue expense data: $e');
+      return [];
+    }
   }
 }

@@ -19,13 +19,13 @@ class ProductSales {
 
   factory ProductSales.fromJson(Map<String, dynamic> json) {
     return ProductSales(
-      id: json['id'] as String,
+      id: json['id'].toString(),
       name: json['name'] as String,
-      orderCount: json['order_count'] as int,
-      totalSales: json['total_sales'] as double,
+      orderCount: json['order_count'] != null ? int.parse(json['order_count'].toString()) : 0,
+      totalSales: json['total_sales'] != null ? double.parse(json['total_sales'].toString()) : 0.0,
       imageUrl: json['image_url'] as String?,
-      categoryId: json['category_id'] as String,
-      categoryName: json['category_name'] as String,
+      categoryId: json['category_id']?.toString() ?? '',
+      categoryName: json['category_name'] as String? ?? '',
     );
   }
 

@@ -380,7 +380,7 @@ class _PengaturanAkunTabPagesState extends State<PengaturanAkunTabPages> {
             onPressed: () {
               Get.back();
               if (user.id != null) {
-                controller.deleteUser(user.id!);
+                controller.deleteUser(int.parse(user.id ?? "0"));
               }
             },
             child: const AppText(

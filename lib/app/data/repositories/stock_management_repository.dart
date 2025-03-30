@@ -26,14 +26,21 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   @override
   Future<List<InventoryItem>> getAllInventoryItems({int page = 1}) async {
     try {
-      final response = await _apiService.get('/inventory/items');
+      final response = await _apiService.post('/stock/lists', body: {
+        'page': page,
+        'pageSize': 10,
+        'type': 'raw', // Default type
+        'search': '',
+        'group': ''
+      });
 
-      if (response is List) {
+      if (response is Map && response.containsKey('data') && response['data'] is List) {
+        return (response['data'] as List).map((item) => InventoryItem.fromJson(item)).toList();
+      } else if (response is List) {
         return response.map((item) => InventoryItem.fromJson(item)).toList();
-      } else {
-        log('Error: Unexpected response format from inventory items API');
-        return [];
       }
+
+      return [];
     } catch (e) {
       log('Error fetching inventory items: $e');
       return [];
@@ -43,14 +50,15 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   @override
   Future<List<StockAlert>> getStockAlerts() async {
     try {
-      final response = await _apiService.get('/inventory/alerts');
+      final response = await _apiService.get('/stock/limit');
 
       if (response is List) {
         return response.map((alert) => StockAlert.fromJson(alert)).toList();
-      } else {
-        log('Error: Unexpected response format from stock alerts API');
-        return [];
+      } else if (response is Map && response.containsKey('data') && response['data'] is List) {
+        return (response['data'] as List).map((alert) => StockAlert.fromJson(alert)).toList();
       }
+
+      return [];
     } catch (e) {
       log('Error fetching stock alerts: $e');
       return [];
@@ -60,14 +68,17 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   @override
   Future<List<StockFlowData>> getStockFlowData() async {
     try {
+      // Tidak ada endpoint spesifik di Postman collection
+      // Menggunakan mock data untuk sementara (diperoleh dari ApiService._getMockData)
       final response = await _apiService.get('/inventory/flow');
 
       if (response is List) {
         return response.map((data) => StockFlowData.fromJson(data)).toList();
-      } else {
-        log('Error: Unexpected response format from stock flow API');
-        return [];
+      } else if (response is Map && response.containsKey('data') && response['data'] is List) {
+        return (response['data'] as List).map((data) => StockFlowData.fromJson(data)).toList();
       }
+
+      return [];
     } catch (e) {
       log('Error fetching stock flow data: $e');
       return [];
@@ -77,14 +88,17 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   @override
   Future<List<StockUsage>> getStockUsageByGroup() async {
     try {
+      // Tidak ada endpoint spesifik di Postman collection
+      // Menggunakan mock data untuk sementara (diperoleh dari ApiService._getMockData)
       final response = await _apiService.get('/inventory/usage-by-group');
 
       if (response is List) {
         return response.map((usage) => StockUsage.fromJson(usage)).toList();
-      } else {
-        log('Error: Unexpected response format from stock usage API');
-        return [];
+      } else if (response is Map && response.containsKey('data') && response['data'] is List) {
+        return (response['data'] as List).map((usage) => StockUsage.fromJson(usage)).toList();
       }
+
+      return [];
     } catch (e) {
       log('Error fetching stock usage data: $e');
       return [];
@@ -94,7 +108,7 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   @override
   Future<InventoryItem> getInventoryItemById(String id) async {
     try {
-      final response = await _apiService.get('/inventory/items/$id');
+      final response = await _apiService.get('/stock/detail/$id');
       return InventoryItem.fromJson(response);
     } catch (e) {
       log('Error fetching inventory item: $e');
@@ -105,58 +119,97 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   @override
   Future<void> addInventoryItem(InventoryItem item) async {
     try {
-      await _apiService.post('/inventory/items', body: item.toJson());
+      if (item.type == 'raw') {
+        await _apiService.post('/stock/create', body: {'name': item.name, 'uom': item.unitName, 'uom_buy': item.purchaseUnit, 'conversion': item.conversionRate, 'group_id': item.categoryId, 'stock_limit': item.minimumStock, 'type': 'raw'});
+      } else {
+        // Semi-finished item dengan resep
+        await _apiService.post('/stock/create', body: {
+          'name': item.name,
+          'uom': item.unitName,
+          'group_id': item.categoryId,
+          'result_per_recipe': item.resultPerRecipe,
+          'stock_limit': item.minimumStock,
+          'type': 'semifinished',
+          'price': item.currentPrice,
+          'recipe': item.ingredients?.map((ingredient) => {'raw_id': ingredient.id, 'amount': ingredient.amount, 'uom': ingredient.unit, 'price': ingredient.price}).toList()
+        });
+      }
     } catch (e) {
       log('Error adding inventory item: $e');
-      throw Exception('Failed to add item');
+      throw Exception('Failed to add item: $e');
     }
   }
 
   @override
   Future<void> updateInventoryItem(InventoryItem item) async {
     try {
-      await _apiService.put('/inventory/items/${item.id}', body: item.toJson());
+      if (item.type == 'raw') {
+        await _apiService.post('/stock/update/${item.id}', body: {'name': item.name, 'uom': item.unitName, 'uom_buy': item.purchaseUnit, 'conversion': item.conversionRate, 'group_id': item.categoryId, 'stock_limit': item.minimumStock, 'type': 'raw'});
+      } else {
+        await _apiService.post('/stock/update/${item.id}', body: {
+          'name': item.name,
+          'uom': item.unitName,
+          'group_id': item.categoryId,
+          'result_per_recipe': item.resultPerRecipe,
+          'stock_limit': item.minimumStock,
+          'type': 'semifinished',
+          'price': item.currentPrice,
+          'recipe': item.ingredients?.map((ingredient) => {'raw_id': ingredient.id, 'amount': ingredient.amount, 'uom': ingredient.unit, 'price': ingredient.price}).toList()
+        });
+      }
     } catch (e) {
       log('Error updating inventory item: $e');
-      throw Exception('Failed to update item');
+      throw Exception('Failed to update item: $e');
     }
   }
 
   @override
   Future<void> deleteInventoryItem(String id) async {
     try {
-      await _apiService.delete('/inventory/items/$id');
+      await _apiService.delete('/stock/delete/$id');
     } catch (e) {
       log('Error deleting inventory item: $e');
-      throw Exception('Failed to delete item');
+      throw Exception('Failed to delete item: $e');
     }
   }
 
   @override
   Future<void> recordStockPurchase(String itemId, int quantity, double price) async {
     try {
-      await _apiService.post('/inventory/purchases', body: {
-        'item_id': itemId,
-        'quantity': quantity,
-        'price': price,
+      await _apiService.post('/stock/dailyjournal', body: {
+        'saldo': price + 20000, // contoh saldo awal
+        'total': price,
+        'balance': 20000, // saldo akhir
+        'detail': [
+          {
+            'stock_id': itemId,
+            'amount': quantity,
+            'uom': 'kg', // sesuaikan dengan unit yang sesuai
+            'price': price / quantity,
+            'subtotal': price
+          }
+        ]
       });
     } catch (e) {
       log('Error recording stock purchase: $e');
-      throw Exception('Failed to record purchase');
+      throw Exception('Failed to record purchase: $e');
     }
   }
 
   @override
   Future<void> recordStockUsage(String itemId, int quantity, String reason) async {
     try {
-      await _apiService.post('/inventory/usage', body: {
-        'item_id': itemId,
-        'quantity': quantity,
-        'reason': reason,
+      // Tidak ada endpoint spesifik di Postman collection
+      // Menggunakan endpoint produksi untuk sementara
+      await _apiService.post('/stock/production', body: {
+        'stock_id': itemId,
+        'total': quantity.toString(),
+        'result': (quantity * 1000).toString(), // Asumsi hasil dalam gram
+        'price': '0' // Harga kosong untuk penggunaan
       });
     } catch (e) {
       log('Error recording stock usage: $e');
-      throw Exception('Failed to record usage');
+      throw Exception('Failed to record usage: $e');
     }
   }
 }

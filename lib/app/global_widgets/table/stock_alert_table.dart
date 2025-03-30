@@ -111,11 +111,11 @@ class StockAlertTable extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  alert.stock,
+                  alert.stock ?? "",
                   style: AppTextStyles.bodySmall,
                 ),
                 AppText(
-                  alert.amount,
+                  alert.amount ?? "",
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

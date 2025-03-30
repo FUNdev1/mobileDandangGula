@@ -39,7 +39,6 @@ class LoginController extends GetxController {
     isMasterAdmin.value = value ?? false;
   }
 
-
   bool _validateForm() {
     bool isValid = true;
 
@@ -82,7 +81,7 @@ class LoginController extends GetxController {
       final success = await _authService.login(
         usernameController.text,
         passwordController.text,
-        locationId: isMasterAdmin.value ? int.tryParse(idLokasiController.text) : null,
+        kodeBranch: idLokasiController.text.isNotEmpty ? idLokasiController.text : null,
       );
 
       if (success) {

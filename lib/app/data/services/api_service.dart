@@ -1,36 +1,118 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 
 class ApiService extends GetxService {
+  late dio.Dio _dio;
   final String baseUrl;
   String? token;
 
-  // Add a development mode flag
-  final bool devMode = false; // Set to true during development, false when API is ready
-
-  // Headers yang akan disertakan di setiap request
-  late Map<String, String> _headers;
+  // Mode development untuk debugging
+  final bool devMode = false;
 
   ApiService({required this.baseUrl}) {
-    _headers = {
-      'Content-Type': 'application/json',
-    };
+    _dio = dio.Dio(dio.BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {'Content-Type': 'application/json'},
+        validateStatus: (status) {
+          return status! < 500;
+        }));
+
+    _dio.interceptors.add(
+      dio.LogInterceptor(
+        requestBody: true,
+        responseBody: true,
+        // logPrint: (object) => log(object.toString()),
+      ),
+    );
   }
 
   // Metode untuk set token setelah login
   void setAuthToken(String newToken) {
     token = newToken;
-    _headers = {
+    _dio.options.headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
     };
   }
 
+  // POST request
+  Future<dynamic> post(String endpoint, {dynamic body}) async {
+    if (devMode) {
+      log('DEV MODE: Melewatkan POST request ke $endpoint');
+      await Future.delayed(const Duration(milliseconds: 200));
+      return _getMockData(endpoint, body);
+    }
+
+    try {
+      dynamic data = body;
+
+      // Jika ada file, convert ke FormData
+      if (body is Map<String, dynamic> && (body.containsKey('files') || body.containsKey('photo'))) {
+        final formData = dio.FormData(); // Gunakan dio.FormData
+
+        // Tambahkan fields biasa
+        body.forEach((key, value) {
+          if (key != 'files' && key != 'photo' && value != null) {
+            formData.fields.add(MapEntry(key, value.toString()));
+          }
+        });
+
+        // Handle files array jika ada
+        if (body.containsKey('files') && body['files'] is List) {
+          for (var fileData in body['files']) {
+            if (fileData is Map<String, dynamic>) {
+              formData.files.add(MapEntry(
+                fileData['field'],
+                await dio.MultipartFile.fromFile(
+                  // Gunakan dio.MultipartFile
+                  fileData['path'],
+                  filename: fileData['filename'],
+                ),
+              ));
+            }
+          }
+        }
+
+        // Handle single photo field jika ada
+        if (body.containsKey('photo') && body['photo'] != null) {
+          String photoPath = body['photo'];
+          if (photoPath.isNotEmpty) {
+            formData.files.add(MapEntry(
+              'photo',
+              await dio.MultipartFile.fromFile(
+                // Gunakan dio.MultipartFile
+                photoPath,
+                filename: photoPath.split('/').last,
+              ),
+            ));
+          }
+        }
+
+        data = formData;
+      }
+
+      final response = await _dio.post(
+        endpoint,
+        data: data,
+      );
+
+      return _processResponse(response);
+    } catch (e) {
+      log('POST Error: $e');
+      if (e is dio.DioException) {
+        // Gunakan dio.DioException
+        _handleDioError(e);
+      }
+      throw Exception('Failed to perform POST request: $e');
+    }
+  }
+
   // GET request
   Future<dynamic> get(String endpoint, {Map<String, dynamic>? queryParams}) async {
-    // In development mode, immediately return mock data without API call
     if (devMode) {
       log('DEV MODE: Melewatkan GET request ke $endpoint');
       await Future.delayed(const Duration(milliseconds: 200));
@@ -38,140 +120,123 @@ class ApiService extends GetxService {
     }
 
     try {
-      final uri = Uri.parse('$baseUrl$endpoint').replace(
+      final response = await _dio.get(
+        endpoint,
         queryParameters: queryParams,
       );
-
-      log('GET Request: $uri');
-      log('Headers: $_headers');
-
-      final response = await http
-          .get(
-            uri,
-            headers: _headers,
-          )
-          .timeout(const Duration(seconds: 30));
 
       return _processResponse(response);
     } catch (e) {
       log('GET Error: $e');
+      if (e is dio.DioException) {
+        _handleDioError(e);
+      }
       throw Exception('Failed to perform GET request: $e');
     }
   }
 
-  // POST request
-  Future<dynamic> post(String endpoint, {dynamic body}) async {
-    // In development mode, immediately return mock data without API call
+  // PUT request
+  Future<dynamic> put(String endpoint, {dynamic body}) async {
     if (devMode) {
-      log('DEV MODE: Skipping POST request to $endpoint');
+      log('DEV MODE: Melewatkan PUT request ke $endpoint');
       await Future.delayed(const Duration(milliseconds: 200));
       return _getMockData(endpoint, body);
     }
 
     try {
-      final uri = Uri.parse('$baseUrl$endpoint');
-      log('POST Request: $uri');
+      dynamic data = body;
 
-      if (body is FormData) {
-        // FormData kustom, gunakan implementasinya secara langsung
-        var headers = Map<String, String>.from(_headers);
-        headers['Content-Type'] = 'multipart/form-data; boundary=${body.boundary}';
+      // Jika ada file, convert ke FormData (sama seperti di post)
+      if (body is Map<String, dynamic> && (body.containsKey('files') || body.containsKey('photo'))) {
+        final formData = dio.FormData();
 
-        // Konversi FormData ke bytes
-        final bytes = await body.toBytes();
+        // Tambahkan fields biasa
+        body.forEach((key, value) {
+          if (key != 'files' && key != 'photo' && value != null) {
+            formData.fields.add(MapEntry(key, value.toString()));
+          }
+        });
 
-        // Kirim request menggunakan http.post dengan bytes
-        final response = await http
-            .post(
-              uri,
-              headers: headers,
-              body: bytes,
-            )
-            .timeout(const Duration(seconds: 30));
+        // Handle files array jika ada
+        if (body.containsKey('files') && body['files'] is List) {
+          for (var fileData in body['files']) {
+            if (fileData is Map<String, dynamic>) {
+              formData.files.add(MapEntry(
+                fileData['field'],
+                await dio.MultipartFile.fromFile(
+                  fileData['path'],
+                  filename: fileData['filename'],
+                ),
+              ));
+            }
+          }
+        }
 
-        return _processResponse(response);
-      } else {
-        // Regular JSON body
-        log('POST Body: $body');
-        final response = await http
-            .post(
-              uri,
-              headers: _headers,
-              body: body != null ? jsonEncode(body) : null,
-            )
-            .timeout(const Duration(seconds: 30));
+        // Handle single photo field jika ada
+        if (body.containsKey('photo') && body['photo'] != null) {
+          String photoPath = body['photo'];
+          if (photoPath.isNotEmpty) {
+            formData.files.add(MapEntry(
+              'photo',
+              await dio.MultipartFile.fromFile(
+                photoPath,
+                filename: photoPath.split('/').last,
+              ),
+            ));
+          }
+        }
 
-        return _processResponse(response);
+        data = formData;
       }
-    } catch (e) {
-      log('POST Error: $e');
-      throw Exception('Failed to perform POST request: $e');
-    }
-  }
 
-  // PUT request
-  Future<dynamic> put(String endpoint, {Map<String, dynamic>? body}) async {
-    // In development mode, immediately return mock data without API call
-    if (devMode) {
-      log('DEV MODE: Skipping PUT request to $endpoint');
-      await Future.delayed(const Duration(milliseconds: 200)); // Small delay to simulate network
-      return _getMockData(endpoint, body);
-    }
-
-    try {
-      final uri = Uri.parse('$baseUrl$endpoint');
-      log('PUT Request: $uri');
-
-      final response = await http
-          .put(
-            uri,
-            headers: _headers,
-            body: body != null ? jsonEncode(body) : null,
-          )
-          .timeout(const Duration(seconds: 30));
+      final response = await _dio.put(
+        endpoint,
+        data: data,
+      );
 
       return _processResponse(response);
     } catch (e) {
       log('PUT Error: $e');
+      if (e is dio.DioException) {
+        _handleDioError(e);
+      }
       throw Exception('Failed to perform PUT request: $e');
     }
   }
 
   // DELETE request
-  Future<dynamic> delete(String endpoint) async {
-    // In development mode, immediately return mock data without API call
+  Future<dynamic> delete(String endpoint, {dynamic body, Map<String, dynamic>? queryParams}) async {
     if (devMode) {
-      log('DEV MODE: Skipping DELETE request to $endpoint');
-      await Future.delayed(const Duration(milliseconds: 200)); // Small delay to simulate network
-      return {'success': true}; // Simple success response for delete
+      log('DEV MODE: Melewatkan DELETE request ke $endpoint');
+      await Future.delayed(const Duration(milliseconds: 200));
+      return _getMockData(endpoint, body ?? queryParams);
     }
 
     try {
-      final uri = Uri.parse('$baseUrl$endpoint');
-      log('DELETE Request: $uri');
-
-      final response = await http
-          .delete(
-            uri,
-            headers: _headers,
-          )
-          .timeout(const Duration(seconds: 30));
+      final response = await _dio.delete(
+        endpoint,
+        data: body,
+        queryParameters: queryParams,
+      );
 
       return _processResponse(response);
     } catch (e) {
       log('DELETE Error: $e');
+      if (e is dio.DioException) {
+        _handleDioError(e);
+      }
       throw Exception('Failed to perform DELETE request: $e');
     }
   }
 
   // Process response dan handle errors
-  dynamic _processResponse(http.Response response) {
+  dynamic _processResponse(dio.Response response) {
     log('Response Status Code: ${response.statusCode}');
-    log('Response Body: ${response.body}');
+    log('Response Body: ${response.data}');
 
-    final responseBody = jsonDecode(response.body);
+    final responseBody = response.data;
 
-    if (response.statusCode >= 200 && response.statusCode < 300) {
+    if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
       return responseBody;
     } else {
       // Pesan error spesifik dari API
@@ -180,6 +245,39 @@ class ApiService extends GetxService {
     }
   }
 
+  // Handle Dio specific errors
+  void _handleDioError(dio.DioException error) {
+    switch (error.type) {
+      case dio.DioExceptionType.connectionTimeout:
+      case dio.DioExceptionType.sendTimeout:
+      case dio.DioExceptionType.receiveTimeout:
+        throw Exception('Connection timeout. Please check your internet connection.');
+
+      case dio.DioExceptionType.badResponse:
+        final response = error.response;
+        if (response != null) {
+          if (response.statusCode == 401) {
+            // Unauthorized - token invalid/expired
+            // Bisa tambahkan logic untuk refresh token atau logout
+            throw Exception('Session expired. Please login again.');
+          } else if (response.data is Map && response.data.containsKey('message')) {
+            throw Exception(response.data['message']);
+          }
+        }
+        throw Exception('Server error occurred. Please try again later.');
+
+      case dio.DioExceptionType.cancel:
+        throw Exception('Request cancelled');
+
+      case dio.DioExceptionType.connectionError:
+        throw Exception('No internet connection');
+
+      default:
+        throw Exception('Something went wrong. Please try again.');
+    }
+  }
+
+  // Mock data untuk development
   // Fungsi mock data tetap dipertahankan untuk mode development
   dynamic _getMockData(String endpoint, [dynamic params]) {
     // Basic mock data patterns based on endpoint structure

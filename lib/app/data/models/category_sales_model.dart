@@ -15,11 +15,11 @@ class CategorySales {
 
   factory CategorySales.fromJson(Map<String, dynamic> json) {
     return CategorySales(
-      id: json['id'] as String,
+      id: json['id'].toString(),
       name: json['name'] as String,
-      amount: json['amount'] as double,
-      percentage: json['percentage'] as double,
-      color: json['color'] as String,
+      amount: json['amount'] != null ? double.parse(json['amount'].toString()) : 0.0,
+      percentage: json['percentage'] != null ? double.parse(json['percentage'].toString()) : 0.0,
+      color: json['color'] as String? ?? '#1B9851',
     );
   }
 

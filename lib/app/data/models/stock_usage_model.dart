@@ -21,12 +21,12 @@ class StockUsage {
 
   factory StockUsage.fromJson(Map<String, dynamic> json) {
     return StockUsage(
-      id: json['id'] as String,
+      id: json['id'].toString(),
       category: json['category'] as String,
-      percentage: json['percentage'] as double,
-      color: json['color'] as String,
-      usageCount: json['usage_count'] as int? ?? 0,
-      usageAmount: json['usage_amount'] as double? ?? 0.0,
+      percentage: json['percentage'] != null ? double.parse(json['percentage'].toString()) : 0.0,
+      color: json['color'] as String? ?? '#1B9851',
+      usageCount: json['usage_count'] != null ? int.parse(json['usage_count'].toString()) : 0,
+      usageAmount: json['usage_amount'] != null ? double.parse(json['usage_amount'].toString()) : 0.0,
       unitId: json['unit_id'] as String? ?? '',
       unitName: json['unit_name'] as String? ?? '',
     );

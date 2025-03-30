@@ -81,14 +81,14 @@ class LowStockItems extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        item.amount.split(' ')[0],
+                        (item.amount ?? "").split(' ')[0],
                         style: AppTextStyles.h3.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        item.amount.split(' ').length > 1 ? item.amount.split(' ')[1] : '',
+                        (item.amount ?? "").split(' ').length > 1 ? (item.amount ?? "").split(' ')[1] : '',
                         style: AppTextStyles.bodySmall.copyWith(
                           fontFamily: 'IBM Plex Mono',
                           fontStyle: FontStyle.italic,
