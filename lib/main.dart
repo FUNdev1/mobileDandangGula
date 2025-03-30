@@ -19,7 +19,7 @@ void main() async {
   ]);
 
   final authService = await Get.putAsync(() => AuthService().init());
-  Get.lazyPut<ApiService>(() => ApiService(baseUrl: AppConstants.baseUrl, apiKey: ''));
+  Get.lazyPut<ApiService>(() => ApiService(baseUrl: AppConstants.baseUrl));
   Get.put(NavigationController(), permanent: true);
   final initialRoute = authService.isLoggedIn ? Routes.DASHBOARD : Routes.LOGIN;
 

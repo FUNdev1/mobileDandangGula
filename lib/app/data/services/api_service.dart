@@ -5,18 +5,26 @@ import 'package:http/http.dart' as http;
 
 class ApiService extends GetxService {
   final String baseUrl;
-  final String apiKey;
+  String? token;
 
   // Add a development mode flag
-  final bool devMode = true; // Set to true during development, false when API is ready
+  final bool devMode = false; // Set to true during development, false when API is ready
 
   // Headers yang akan disertakan di setiap request
   late Map<String, String> _headers;
 
-  ApiService({required this.baseUrl, required this.apiKey}) {
+  ApiService({required this.baseUrl}) {
     _headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer $apiKey',
+    };
+  }
+
+  // Metode untuk set token setelah login
+  void setAuthToken(String newToken) {
+    token = newToken;
+    _headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
     };
   }
 
@@ -24,8 +32,8 @@ class ApiService extends GetxService {
   Future<dynamic> get(String endpoint, {Map<String, dynamic>? queryParams}) async {
     // In development mode, immediately return mock data without API call
     if (devMode) {
-      log('DEV MODE: Skipping GET request to $endpoint');
-      await Future.delayed(const Duration(milliseconds: 200)); // Small delay to simulate network
+      log('DEV MODE: Melewatkan GET request ke $endpoint');
+      await Future.delayed(const Duration(milliseconds: 200));
       return _getMockData(endpoint, queryParams);
     }
 
@@ -35,6 +43,7 @@ class ApiService extends GetxService {
       );
 
       log('GET Request: $uri');
+      log('Headers: $_headers');
 
       final response = await http
           .get(
@@ -51,28 +60,49 @@ class ApiService extends GetxService {
   }
 
   // POST request
-  Future<dynamic> post(String endpoint, {Map<String, dynamic>? body}) async {
+  Future<dynamic> post(String endpoint, {dynamic body}) async {
     // In development mode, immediately return mock data without API call
     if (devMode) {
       log('DEV MODE: Skipping POST request to $endpoint');
-      await Future.delayed(const Duration(milliseconds: 200)); // Small delay to simulate network
+      await Future.delayed(const Duration(milliseconds: 200));
       return _getMockData(endpoint, body);
     }
 
     try {
       final uri = Uri.parse('$baseUrl$endpoint');
       log('POST Request: $uri');
-      log('POST Body: $body');
 
-      final response = await http
-          .post(
-            uri,
-            headers: _headers,
-            body: body != null ? jsonEncode(body) : null,
-          )
-          .timeout(const Duration(seconds: 30));
+      if (body is FormData) {
+        // FormData kustom, gunakan implementasinya secara langsung
+        var headers = Map<String, String>.from(_headers);
+        headers['Content-Type'] = 'multipart/form-data; boundary=${body.boundary}';
 
-      return _processResponse(response);
+        // Konversi FormData ke bytes
+        final bytes = await body.toBytes();
+
+        // Kirim request menggunakan http.post dengan bytes
+        final response = await http
+            .post(
+              uri,
+              headers: headers,
+              body: bytes,
+            )
+            .timeout(const Duration(seconds: 30));
+
+        return _processResponse(response);
+      } else {
+        // Regular JSON body
+        log('POST Body: $body');
+        final response = await http
+            .post(
+              uri,
+              headers: _headers,
+              body: body != null ? jsonEncode(body) : null,
+            )
+            .timeout(const Duration(seconds: 30));
+
+        return _processResponse(response);
+      }
     } catch (e) {
       log('POST Error: $e');
       throw Exception('Failed to perform POST request: $e');
@@ -134,44 +164,23 @@ class ApiService extends GetxService {
     }
   }
 
-  // Process response and handle errors
+  // Process response dan handle errors
   dynamic _processResponse(http.Response response) {
     log('Response Status Code: ${response.statusCode}');
     log('Response Body: ${response.body}');
 
-    switch (response.statusCode) {
-      case 200:
-      case 201:
-        // Parse response body
-        try {
-          return jsonDecode(response.body);
-        } catch (e) {
-          return response.body;
-        }
+    final responseBody = jsonDecode(response.body);
 
-      case 400:
-        throw Exception('Bad request: ${response.body}');
-
-      case 401:
-        throw Exception('Unauthorized: ${response.body}');
-
-      case 403:
-        throw Exception('Forbidden: ${response.body}');
-
-      case 404:
-        throw Exception('Not found: ${response.body}');
-
-      case 500:
-      case 502:
-      case 503:
-        throw Exception('Server error: ${response.body}');
-
-      default:
-        throw Exception('Request failed with status: ${response.statusCode}');
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return responseBody;
+    } else {
+      // Pesan error spesifik dari API
+      final errorMessage = responseBody['message'] ?? 'Terjadi kesalahan pada server';
+      throw Exception(errorMessage);
     }
   }
 
-  // Helper method to generate appropriate mock data based on endpoint
+  // Fungsi mock data tetap dipertahankan untuk mode development
   dynamic _getMockData(String endpoint, [dynamic params]) {
     // Basic mock data patterns based on endpoint structure
     if (endpoint.contains('/branches')) {
@@ -567,10 +576,5 @@ class ApiService extends GetxService {
 
     // Default fallback mock data for any other endpoint
     return {'success': true, 'message': 'Mock data for endpoint: $endpoint', 'data': []};
-  }
-
-  // Set authentication token
-  void setAuthToken(String token) {
-    _headers['Authorization'] = 'Bearer $token';
   }
 }
