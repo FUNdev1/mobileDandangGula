@@ -11,14 +11,14 @@ class AppTheme {
       primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.background,
 
-      fontFamily: AppFont.roboto.fontFamily,
+      fontFamily: AppFont.ibmPlexSans.fontFamily,
 
       colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
         secondary: AppColors.secondary,
         surface: AppColors.cardBackground,
-        background: AppColors.background,
         error: AppColors.error,
+        
       ),
 
       // Text themes
@@ -47,13 +47,8 @@ class AppTheme {
       ),
 
       // Input decoration theme
-      // Input decoration theme
       inputDecorationTheme: InputDecorationTheme(
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 10, // Matches your 10px padding
-          vertical: 10, // Matches your design
-        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(6), // 6px border radius from your design
           borderSide: const BorderSide(color: Color(0xFFDFDFDF)), // #DFDFDF from your design

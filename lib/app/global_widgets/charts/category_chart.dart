@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../config/theme/app_colors.dart';
 import '../../data/models/category_sales_model.dart';
 
 class CategorySalesCard extends StatelessWidget {
@@ -10,13 +9,13 @@ class CategorySalesCard extends StatelessWidget {
   final double height;
 
   const CategorySalesCard({
-    Key? key,
+    super.key,
     required this.title,
     this.subtitle = 'Hari ini',
     required this.data,
     this.width = 311,
     this.height = 410,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

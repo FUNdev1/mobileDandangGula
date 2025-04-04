@@ -1,31 +1,53 @@
+import 'package:meta/meta.dart';
+
 class StockFlowData {
-  final String date;
-  final double sales;
-  final double purchases;
-  final double wastage;
+  final String? id;
+  final String? stockId;
+  final String? stockName;
+  final String? type;
+  final double? quantity;
+  final String? uom;
+  final double? price;
+  final String? date;
+  final String? notes;
 
   StockFlowData({
-    required this.date,
-    required this.sales,
-    required this.purchases,
-    required this.wastage,
+    this.id,
+    this.stockId,
+    this.stockName,
+    this.type,
+    this.quantity,
+    this.uom,
+    this.price,
+    this.date,
+    this.notes,
   });
 
   factory StockFlowData.fromJson(Map<String, dynamic> json) {
     return StockFlowData(
-      date: json['date'] as String,
-      sales: json['sales'] != null ? double.parse(json['sales'].toString()) : 0.0,
-      purchases: json['purchases'] != null ? double.parse(json['purchases'].toString()) : 0.0,
-      wastage: json['wastage'] != null ? double.parse(json['wastage'].toString()) : 0.0,
+      id: json['id'],
+      stockId: json['stock_id'],
+      stockName: json['stock_name'],
+      type: json['flow_type'], // purchase, usage, opname, production
+      quantity: json['quantity'] != null ? double.parse(json['quantity'].toString()) : null,
+      uom: json['uom'],
+      price: json['price'] != null ? double.parse(json['price'].toString()) : null,
+      date: json['date'],
+      notes: json['notes'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
+      'stock_id': stockId,
+      'stock_name': stockName,
+      'flow_type': type,
+      'quantity': quantity,
+      'uom': uom,
+      'price': price,
       'date': date,
-      'sales': sales,
-      'purchases': purchases,
-      'wastage': wastage,
+      'notes': notes,
     };
   }
 }

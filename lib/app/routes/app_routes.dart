@@ -19,8 +19,6 @@ abstract class Routes {
   static const STOCK_MANAGEMENT = '/stock_management';
   static const STOCK_MANAGEMENT_ADD = '/stock_management/add-stock';
   static const STOCK_MANAGEMENT_EDIT = '/stock_management/edit-stock';
-  static const STOCK_MANAGEMENT_RECORD_PURCHASE = '/stock_management/record-purchase';
-  static const STOCK_MANAGEMENT_RECORD_USAGE = '/stock_management/record-usage';
   
   // static const INVENTORY = '/inventory';
   // static const STOCK_IN = '/inventory/stock-in';

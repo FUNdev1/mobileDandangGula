@@ -94,7 +94,7 @@ class DashboardController extends GetxController {
   Future<void> loadUserData() async {
     try {
       userData.value = authService.currentUser;
-      userRole.value = userData.value?.role ?? '';
+      userRole.value = userData.value?.roleName ?? '';
       log('role : ${userRole.value}');
     } catch (e) {
       if (kDebugMode) {
@@ -116,19 +116,16 @@ class DashboardController extends GetxController {
       }
 
       // Fetch dashboard summary data
-      await dashboardRepository.fetchDashboardSummary();
-      log('Dashboard summary fetched');
+      // await dashboardRepository.fetchDashboardSummary();
 
       // Fetch sales performance masing-masing branch
       await fetchAllBranchesSalesData();
 
       // Fetch sales performance data
-      await dashboardRepository.fetchSalesPerformanceData(selectedBranchId.value);
-      log('Sales performance data fetched: ${dashboardRepository.incomeChartData.value.length} items');
+      // await dashboardRepository.fetchSalesPerformanceData(selectedBranchId.value);
 
       // Fetch revenue vs expense data for the selected branch
-      await dashboardRepository.fetchRevenueExpenseData(selectedBranchId.value);
-      log('Revenue expense data fetched');
+      // await dashboardRepository.fetchRevenueExpenseData(selectedBranchId.value);
     } catch (e) {
       log('Error in fetchInitialData: $e');
     }
@@ -138,7 +135,7 @@ class DashboardController extends GetxController {
   void selectBranch(String branchId) {
     selectedBranchId.value = branchId;
     // Update revenue vs expense data for the selected branch
-    dashboardRepository.fetchRevenueExpenseData(branchId);
+    // dashboardRepository.fetchRevenueExpenseData(branchId);
   }
 
   Future<void> loadDashboardData() async {
@@ -149,10 +146,10 @@ class DashboardController extends GetxController {
       // Get dashboard summary
 
       // Panggil repository dengan filter
-      await dashboardRepository.fetchDashboardSummary(filterParams: filterParams);
+      // await dashboardRepository.fetchDashboardSummary(filterParams: filterParams);
 
-      final summary = dashboardRepository.dashboardSummary.value;
-      todaySales.value = summary.totalIncome;
+      // final summary = dashboardRepository.dashboardSummary.value;
+      // todaySales.value = summary.totalIncome;
 
       // Load role-specific data
       switch (userRole.value) {
@@ -160,7 +157,7 @@ class DashboardController extends GetxController {
         case 'pusat':
           await loadAdminData(filterParams);
           break;
-        case 'branchmanager':
+        case 'supervisor':
           await loadBranchManagerData();
           break;
         case 'kasir':
@@ -183,14 +180,14 @@ class DashboardController extends GetxController {
       totalBranches.value = branchRepository.branches.length;
       activeBranches.value = branchRepository.branches.length;
 
-      monthSales.value = await dashboardRepository.getTotalRevenue(filterParams: filterParams);
+      // monthSales.value = await dashboardRepository.getTotalRevenue(filterParams: filterParams);
       yearSales.value = monthSales.value * 12;
 
       // Get total employees (estimated)
       totalEmployees.value = totalBranches.value * 10;
 
       // Load chart data
-      salesData.value = await dashboardRepository.getRevenueChartData(filterParams: filterParams);
+      // salesData.value = await dashboardRepository.getRevenueChartData(filterParams: filterParams);
 
       // TODO : penerapan filter date ?
       categorySales.value = await orderRepository.getCategorySales();
@@ -273,13 +270,13 @@ class DashboardController extends GetxController {
       for (final branch in branches) {
         try {
           // Try with a very short timeout
-          await dashboardRepository.fetchSalesPerformanceData(
-            branch.id,
-            filterParams: filterParams,
-          );
+          // await dashboardRepository.fetchSalesPerformanceData(
+          //   branch.id,
+          //   filterParams: filterParams,
+          // );
 
           // Cache the result
-          branchesSalesData[branch.id] = List<ChartData>.from(dashboardRepository.incomeChartData.value);
+          // branchesSalesData[branch.id] = List<ChartData>.from(dashboardRepository.incomeChartData.value);
         } catch (e) {
           print('Error fetching sales data for branch ${branch.id}: $e');
           // Create mock data for this branch

@@ -18,22 +18,12 @@ import '../modules/common/setting/views/setting_view.dart';
 // Pusat modules
 import '../modules/common/stock_management/views/add_stock_form/bindings/add_stock_form_binding.dart';
 import '../modules/common/stock_management/views/add_stock_form/views/add_stock_form_view.dart';
-import '../modules/common/stock_management/views/record_purchase_stock/bindings/record_purchase_stock_binding.dart';
-import '../modules/common/stock_management/views/record_purchase_stock/views/record_purchase_stock_view.dart';
-import '../modules/common/stock_management/views/record_usage_stock/bindings/record_usage_stock_binding.dart';
-import '../modules/common/stock_management/views/record_usage_stock/views/record_usage_stock_view.dart';
 import '../modules/pusat/branch_management/bindings/branch_management_binding.dart';
 import '../modules/pusat/branch_management/views/branch_management_view.dart';
 
 // // User management (common)
 // import '../modules/common/user_management/bindings/user_management_binding.dart';
 // import '../modules/common/user_management/views/user_management_view.dart';
-
-// // Inventory (common)
-// import '../modules/common/inventory/bindings/inventory_binding.dart';
-// import '../modules/common/inventory/views/inventory_view.dart';
-// import '../modules/common/inventory/views/stock_in_view.dart';
-// import '../modules/common/inventory/views/stock_out_view.dart';
 
 // // Orders (common)
 // import '../modules/common/orders/bindings/orders_binding.dart';
@@ -110,7 +100,7 @@ class AppPages {
       page: () => const StockManagementView(),
       binding: StockManagementBinding(),
       middlewares: [
-        AuthMiddleware(allowedRoles: ['gudang', 'branchmanager', 'admin']),
+        AuthMiddleware(allowedRoles: ['gudang', 'supervisor', 'admin']),
       ],
     ),
     GetPage(
@@ -118,7 +108,7 @@ class AppPages {
       page: () => const AddStockForm(),
       binding: AddStockBinding(),
       middlewares: [
-        AuthMiddleware(allowedRoles: ['gudang', 'branchmanager', 'admin']),
+        AuthMiddleware(allowedRoles: ['gudang', 'supervisor', 'admin']),
       ],
     ),
 
@@ -128,41 +118,6 @@ class AppPages {
       binding: AddStockBinding(),
     ),
 
-    GetPage(
-      name: Routes.STOCK_MANAGEMENT_RECORD_PURCHASE,
-      page: () => const RecordPurchaseStockView(),
-      binding: RecordPurchaseStockBinding(),
-    ),
-    GetPage(
-      name: Routes.STOCK_MANAGEMENT_RECORD_USAGE,
-      page: () => const RecordUsageView(),
-      binding: RecordUsageBinding(),
-    ),
-
-    // GetPage(
-    //   name: Routes.INVENTORY,
-    //   page: () => const InventoryView(),
-    //   binding: InventoryBinding(),
-    //   middlewares: [
-    //     AuthMiddleware(allowedRoles: ['gudang', 'branchmanager']),
-    //   ],
-    // ),
-    // GetPage(
-    //   name: Routes.STOCK_IN,
-    //   page: () => const StockInView(),
-    //   binding: InventoryBinding(),
-    //   middlewares: [
-    //     AuthMiddleware(allowedRoles: ['gudang', 'branchmanager']),
-    //   ],
-    // ),
-    // GetPage(
-    //   name: Routes.STOCK_OUT,
-    //   page: () => const StockOutView(),
-    //   binding: InventoryBinding(),
-    //   middlewares: [
-    //     AuthMiddleware(allowedRoles: ['gudang', 'branchmanager']),
-    //   ],
-    // ),
 
     // // Orders (common)
     // GetPage(

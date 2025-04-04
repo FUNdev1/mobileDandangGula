@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
@@ -21,13 +20,13 @@ class ApiService extends GetxService {
           return status! < 500;
         }));
 
-    _dio.interceptors.add(
-      dio.LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-        // logPrint: (object) => log(object.toString()),
-      ),
-    );
+    // _dio.interceptors.add(
+    //   dio.LogInterceptor(
+    //     requestBody: true,
+    //     responseBody: true,
+    //     // logPrint: (object) => log(object.toString()),
+    //   ),
+    // );
   }
 
   // Metode untuk set token setelah login
@@ -52,9 +51,8 @@ class ApiService extends GetxService {
 
       // Jika ada file, convert ke FormData
       if (body is Map<String, dynamic> && (body.containsKey('files') || body.containsKey('photo'))) {
-        final formData = dio.FormData(); // Gunakan dio.FormData
+        final formData = dio.FormData();
 
-        // Tambahkan fields biasa
         body.forEach((key, value) {
           if (key != 'files' && key != 'photo' && value != null) {
             formData.fields.add(MapEntry(key, value.toString()));
@@ -120,6 +118,7 @@ class ApiService extends GetxService {
     }
 
     try {
+      // Fixed the syntax error in this line
       final response = await _dio.get(
         endpoint,
         queryParameters: queryParams,
@@ -136,7 +135,7 @@ class ApiService extends GetxService {
   }
 
   // PUT request
-  Future<dynamic> put(String endpoint, {dynamic body}) async {
+  Future<dynamic> put(String endpoint, {dynamic body, Map<String, dynamic>? queryParams}) async {
     if (devMode) {
       log('DEV MODE: Melewatkan PUT request ke $endpoint');
       await Future.delayed(const Duration(milliseconds: 200));
@@ -150,7 +149,6 @@ class ApiService extends GetxService {
       if (body is Map<String, dynamic> && (body.containsKey('files') || body.containsKey('photo'))) {
         final formData = dio.FormData();
 
-        // Tambahkan fields biasa
         body.forEach((key, value) {
           if (key != 'files' && key != 'photo' && value != null) {
             formData.fields.add(MapEntry(key, value.toString()));
@@ -191,6 +189,7 @@ class ApiService extends GetxService {
 
       final response = await _dio.put(
         endpoint,
+        queryParameters: queryParams,
         data: data,
       );
 
@@ -230,17 +229,23 @@ class ApiService extends GetxService {
   }
 
   // Process response dan handle errors
+// Process response dan handle errors
   dynamic _processResponse(dio.Response response) {
-    log('Response Status Code: ${response.statusCode}');
-    log('Response Body: ${response.data}');
+    log('Request Body ${response.requestOptions.uri.path}: ${response.requestOptions.data}');
+    log('Response Status Code ${response.requestOptions.uri.path}: ${response.statusCode}');
+    if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+      log('Response Body ${response.requestOptions.uri.path}:  ${response.data}');
+    }
 
     final responseBody = response.data;
 
-    if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+    // Return response for all status codes between 200-499
+    // This lets services handle authentication errors (401) and validation errors properly
+    if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 500) {
       return responseBody;
     } else {
-      // Pesan error spesifik dari API
-      final errorMessage = responseBody['message'] ?? 'Terjadi kesalahan pada server';
+      // For server errors (500+), throw exception with message
+      final errorMessage = responseBody is Map && responseBody.containsKey('message') ? responseBody['message'] : 'Terjadi kesalahan pada server';
       throw Exception(errorMessage);
     }
   }

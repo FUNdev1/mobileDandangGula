@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class Branch {
   final String id;
   final String kode;
@@ -32,7 +30,7 @@ class Branch {
     return Branch(
       id: json['id'] as String,
       kode: json['kode'] as String? ?? '',
-      name: json['name'] as String,
+      name: json['branch_name'] as String,
       address: json['address'] as String?,
       photoUrl: json['photo'] as String?,
       status: json['status'] as String? ?? 'Active',

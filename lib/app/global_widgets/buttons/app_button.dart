@@ -16,12 +16,13 @@ class AppButton extends StatelessWidget {
   final bool fullWidth;
   final double? width;
   final Color? outlineBorderColor;
+  final Color? customBackgroundColor;
 
   const AppButton({
     super.key,
     required this.label,
     this.onPressed,
-    this.height = 54,
+    this.height = 40,
     this.variant = ButtonVariant.primary,
     this.prefixSvgPath,
     this.suffixSvgPath,
@@ -29,12 +30,13 @@ class AppButton extends StatelessWidget {
     this.fullWidth = true,
     this.width,
     this.outlineBorderColor,
+    this.customBackgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: width ?? (fullWidth ? double.infinity : null),
+      width: width ?? (fullWidth ? double.infinity : 60),
       height: height,
       child: _buildButton(),
     );
@@ -46,7 +48,7 @@ class AppButton extends StatelessWidget {
         return ElevatedButton(
           onPressed: isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF136C3A),
+            backgroundColor: customBackgroundColor ?? const Color(0xFF136C3A),
             foregroundColor: Colors.white,
             padding: _getPadding(),
             textStyle: _getTextStyle(),
@@ -61,7 +63,7 @@ class AppButton extends StatelessWidget {
         return ElevatedButton(
           onPressed: isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
+            backgroundColor: customBackgroundColor ?? AppColors.secondary,
             foregroundColor: Colors.white,
             padding: _getPadding(),
             textStyle: _getTextStyle(),
@@ -83,6 +85,7 @@ class AppButton extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6),
             ),
+            elevation: 0,
           ),
           child: _buildContent(),
         );
@@ -90,12 +93,14 @@ class AppButton extends StatelessWidget {
         return TextButton(
           onPressed: isLoading ? null : onPressed,
           style: TextButton.styleFrom(
+            backgroundColor: customBackgroundColor,
             foregroundColor: const Color(0xFF111111),
             padding: _getPadding(),
             textStyle: _getTextStyle(),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6),
             ),
+            elevation: 0,
           ),
           child: _buildContent(),
         );

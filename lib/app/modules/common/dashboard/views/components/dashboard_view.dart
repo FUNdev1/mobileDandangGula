@@ -37,7 +37,7 @@ class DashboardView extends GetView<DashboardController> {
         case 'pusat':
           dashboardContent = PusatDashboardView(controller: controller);
           break;
-        case 'branchmanager':
+        case 'supervisor':
           dashboardContent = BranchManagerDashboardView(controller: controller);
           break;
         case 'gudang':

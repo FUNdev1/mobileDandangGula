@@ -3,13 +3,26 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../data/models/stock_alert_model.dart';
 import '../../../../../global_widgets/text/app_text.dart';
 
-class LowStockItems extends StatelessWidget {
+class LowStockItems extends StatefulWidget {
   final List<StockAlert> items;
 
   const LowStockItems({
     super.key,
     required this.items,
   });
+
+  @override
+  State<LowStockItems> createState() => _LowStockItemsState();
+}
+
+class _LowStockItemsState extends State<LowStockItems> {
+  final ValueNotifier<double> selectedValue = ValueNotifier<double>(0.0);
+
+  @override
+  void dispose() {
+    selectedValue.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +35,7 @@ class LowStockItems extends StatelessWidget {
           child: AppText('Stok akan habis'),
         ),
 
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         // Scrollable cards
         SizedBox(
           width: double.infinity,
@@ -30,13 +43,29 @@ class LowStockItems extends StatelessWidget {
           child: ListView.builder(
             shrinkWrap: true,
             scrollDirection: Axis.horizontal,
-            itemCount: items.length,
+            itemCount: widget.items.length,
             itemBuilder: (context, index) {
-              final item = items[index];
-              return _buildStockAlertCard(item);
+              final item = widget.items[index];
+              return GestureDetector(
+                onTap: () {
+                  selectedValue.value = item.stock / item.stockLimit;
+                },
+                child: _buildStockAlertCard(item),
+              );
             },
           ),
         ),
+        // const SizedBox(height: 20),
+        // // Display selected value for demonstration
+        // ValueListenableBuilder<double>(
+        //   valueListenable: selectedValue,
+        //   builder: (context, value, child) {
+        //     return Text(
+        //       'Selected Value: ${(value * 100).toStringAsFixed(1)}%',
+        //       style: AppTextStyles.bodyMedium,
+        //     );
+        //   },
+        // ),
       ],
     );
   }
@@ -81,14 +110,14 @@ class LowStockItems extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        (item.amount ?? "").split(' ')[0],
+                        item.stock.toStringAsFixed(0).toString(),
                         style: AppTextStyles.h3.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        (item.amount ?? "").split(' ').length > 1 ? (item.amount ?? "").split(' ')[1] : '',
+                        item.unitName,
                         style: AppTextStyles.bodySmall.copyWith(
                           fontFamily: 'IBM Plex Mono',
                           fontStyle: FontStyle.italic,
@@ -106,31 +135,42 @@ class LowStockItems extends StatelessWidget {
           const SizedBox(height: 11),
 
           // Progress bar
-          LayoutBuilder(builder: (context, constraints) {
-            final maxWidth = constraints.maxWidth;
-            return Container(
-              height: 14,
-              width: maxWidth,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8F8F8),
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: Stack(
-                children: [
-                  Container(
-                    width: 208 * item.alertLevel,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDF0000),
-                      borderRadius: BorderRadius.circular(25),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final maxWidth = constraints.maxWidth;
+              // Calculate the red portion width based on the current stock level
+              final redWidth = (maxWidth * _normalizeAlertLevel(item.stock / item.stockLimit)).clamp(0.0, maxWidth);
+
+              return Container(
+                height: 14,
+                width: maxWidth,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F8F8), // Gray background
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: Stack(
+                  children: [
+                    Container(
+                      width: redWidth,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDF0000), // Red foreground
+                        borderRadius: BorderRadius.circular(25),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          }),
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
+  }
+
+  // Helper method to normalize the alert level to a value between 0.0 and 1.0
+  double _normalizeAlertLevel(double level) {
+    // Ensure the alert level is between 0.0 and 1.0
+    return level.clamp(0.0, 1.0);
   }
 }

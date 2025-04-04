@@ -58,7 +58,6 @@ class GudangDashboardView extends StatelessWidget {
                 variant: ButtonVariant.secondary,
                 prefixSvgPath: AppIcons.shoppingBag,
                 onPressed: () {
-                  Get.toNamed(Routes.STOCK_MANAGEMENT_RECORD_PURCHASE);
                 },
               )
             ],

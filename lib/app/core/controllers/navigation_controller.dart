@@ -5,6 +5,7 @@ class NavigationController extends GetxController {
   final Rx<String> currentRoute = Routes.DASHBOARD.obs;
   final List<String> routeHistory = [Routes.DASHBOARD].obs;
   final isNavigating = false.obs;
+  
   void changePage(String routeName) async {
     try {
       if (currentRoute.value != routeName) {

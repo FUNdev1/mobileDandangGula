@@ -56,143 +56,107 @@ class UserRepository {
     }
   }
 
-  // Get a single user by ID
-  Future<User?> getUserById(int id) async {
+  // Get profile of current user
+  Future<Map<String, dynamic>> getUserProfile() async {
     try {
-      final response = await _apiService.get('/account/detail/$id');
-      if (response != null) {
-        return User.fromJson(response.cast<String, dynamic>());
+      final response = await _apiService.get('/account/profile');
+
+      if (response is Map) {
+        return Map<String, dynamic>.from(response);
       }
-      return null;
+      return {'success': false, 'message': 'Invalid response format'};
     } catch (e) {
-      log('Error fetching user by ID: $e');
-      return null;
+      log('Error fetching user profile: $e');
+      return {'success': false, 'message': 'Error: $e'};
     }
   }
 
-  // Add a new user
-  Future<User> addUser(User user) async {
+  // Add a new user with photo
+  Future<Map<String, dynamic>> addUser(Map<String, dynamic> userData, {String? photoPath}) async {
     try {
-      // Prepare data for API
-      final data = {
-        'name': user.name,
-        'username': user.username,
-        'password': user.password, // Pastikan password disediakan
-        'pin': user.pin, // Pastikan PIN disediakan
-        'role': user.role,
-        'status': 'Active',
-      };
-
-      // Add photo if available
-      if (user.photoUrl != null && user.photoUrl!.isNotEmpty) {
-        data['photo'] = user.photoUrl;
+      // Verifikasi data wajib
+      if (userData['name'] == null || userData['username'] == null || userData['password'] == null || userData['pin'] == null || userData['role'] == null) {
+        return {'success': false, 'message': 'Missing required fields'};
       }
 
-      final response = await _apiService.post('/account/create', body: data);
+      Map<String, dynamic> dataToSend = Map<String, dynamic>.from(userData);
 
-      // Kembalikan user baru dengan ID dari response
-      if (response != null && response is Map<String, dynamic>) {
-        return User.fromJson(response);
+      if (photoPath != null && photoPath.isNotEmpty) {
+        dataToSend['photo'] = photoPath;
+        log('Adding photo path to request: $photoPath');
       }
 
-      // Fallback jika response tidak sesuai
-      throw Exception('Invalid response format');
+      final response = await _apiService.post(
+        '/account/create',
+        body: dataToSend,
+      );
+
+      if (response is Map) {
+        return Map<String, dynamic>.from(response);
+      }
+
+      return {'success': false, 'message': 'Invalid response format'};
     } catch (e) {
       log('Error adding user: $e');
-      throw Exception('Failed to add user: $e');
+      return {'success': false, 'message': 'Error: $e'};
     }
   }
 
-  // Update existing user
-  Future<User> updateUser(User user) async {
+  // Update existing user with photo
+  Future<Map<String, dynamic>> updateUser(String id, Map<String, dynamic> userData, {String? photoPath}) async {
     try {
-      if (user.id == null) {
-        throw Exception('User ID cannot be null');
+      if (id.isEmpty) {
+        return {'success': false, 'message': 'User ID cannot be empty'};
       }
 
-      // Prepare data for API
-      final data = {
-        'name': user.name,
-        'username': user.username,
-        'role': user.role,
-        'status': 'Active',
-      };
+      // Siapkan data yang akan dikirim
+      Map<String, dynamic> dataToSend = Map<String, dynamic>.from(userData);
 
-      // Add photo if available
-      if (user.photoUrl != null && user.photoUrl!.isNotEmpty) {
-        data['photo'] = user.photoUrl;
+      if (photoPath != null && photoPath.isNotEmpty) {
+        dataToSend['photo'] = photoPath;
+        log('Adding photo path to update request: $photoPath');
       }
 
-      final response = await _apiService.post('/account/update/${user.id}', body: data);
+      final response = await _apiService.post('/account/update/$id', body: dataToSend);
 
-      // Kembalikan user yang telah diupdate
-      if (response != null && response is Map<String, dynamic>) {
-        return User.fromJson(response);
+      if (response is Map) {
+        return Map<String, dynamic>.from(response);
       }
 
-      // Fallback jika response tidak sesuai
-      throw Exception('Invalid response format');
+      return {'success': false, 'message': 'Invalid response format'};
     } catch (e) {
       log('Error updating user: $e');
-      throw Exception('Failed to update user: $e');
+      return {'success': false, 'message': 'Error: $e'};
     }
   }
 
   // Delete user
-  Future<bool> deleteUser(int id) async {
+  Future<Map<String, dynamic>> deleteUser(String id) async {
     try {
-      await _apiService.delete('/account/delete/$id');
-      return true;
+      final response = await _apiService.delete('/account/delete/$id');
+
+      if (response is Map) {
+        return Map<String, dynamic>.from(response);
+      }
+
+      return {'success': true, 'message': 'User deleted successfully'};
     } catch (e) {
       log('Error deleting user: $e');
-      return false;
+      return {'success': false, 'message': 'Error: $e'};
     }
   }
 
   // Get available roles for filtering
-  Future<List<Map<String, dynamic>>> getRoles() async {
+  Future<Map<String, dynamic>> getRoles() async {
     try {
       final response = await _apiService.get('/account/roles');
-
-      if (response is List) {
-        return response
-            .map((role) => {
-                  'id': role['id'],
-                  'name': role['name'],
-                })
-            .toList();
+      if (response is Map) {
+        return Map<String, dynamic>.from(response);
       }
-
-      return [];
+      return {'success': false, 'message': 'Invalid response format', 'data': []};
     } catch (e) {
       log('Error fetching roles: $e');
-      return [];
+      return {'success': false, 'message': 'Error: $e', 'data': []};
     }
-  }
-
-  // Get distinct branches for filtering
-  Future<List<Map<String, dynamic>>> getBranches() async {
-    try {
-      final response = await _apiService.get('/branch/lists');
-
-      if (response is List) {
-        return response
-            .map((branch) => {
-                  'id': branch['id'],
-                  'name': branch['name'],
-                })
-            .toList();
-      }
-
-      return [];
-    } catch (e) {
-      log('Error fetching branches: $e');
-      return [];
-    }
-  }
-
-  // Get available roles as string list (untuk kompatibilitas)
-  List<String> getAvailableRoles() {
-    return ['admin', 'kasir', 'gudang', 'pusat', 'branchmanager'];
   }
 }

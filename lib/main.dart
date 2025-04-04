@@ -21,16 +21,8 @@ void main() async {
   final authService = await Get.putAsync(() => AuthService().init());
 
   Get.put(NavigationController(), permanent: true);
-  final initialRoute = authService.isLoggedIn ? Routes.DASHBOARD : Routes.LOGIN;
 
-  runApp(
-    GetMaterialApp(
-      title: "Dandang Gula",
-      initialRoute: initialRoute,
-      getPages: AppPages.pages,
-      debugShowCheckedModeBanner: false,
-    ),
-  );
+  runApp(MyApp(authService: authService));
 }
 
 class MyApp extends StatelessWidget {

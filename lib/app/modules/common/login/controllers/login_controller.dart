@@ -1,8 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../data/services/api_service.dart';
 import '../../../../data/services/auth_service.dart';
 import '../../../../global_widgets/alert/app_snackbar.dart';
 import '../../../../routes/app_routes.dart';
+import '../../../../data/repositories/user_repository.dart';
 
 class LoginController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -31,71 +35,101 @@ class LoginController extends GetxController {
     super.onClose();
   }
 
+  void togglePasswordVisibility() {
+    obscurePassword.value = !obscurePassword.value;
+  }
+
   void toggleRememberMe(bool? value) {
     rememberMe.value = value ?? false;
   }
 
   void toggleMasterAdmin(bool? value) {
     isMasterAdmin.value = value ?? false;
+
+    // Reset ID Lokasi error when toggling
+    idLokasiError.value = '';
   }
 
   bool _validateForm() {
     bool isValid = true;
 
+    // Reset all errors first
+    usernameError.value = '';
+    passwordError.value = '';
+    idLokasiError.value = '';
+
     // Validate masterAdmin
     if (isMasterAdmin.value && idLokasiController.text.isEmpty) {
-      idLokasiError.value = 'ID Lokasi is required';
+      idLokasiError.value = 'ID Lokasi harus diisi';
       isValid = false;
-    } else {
-      idLokasiError.value = '';
     }
 
     // Validate username
     if (usernameController.text.isEmpty) {
-      usernameError.value = 'Username is required';
+      usernameError.value = 'Username harus diisi';
       isValid = false;
-    } else {
-      usernameError.value = '';
     }
 
     // Validate password
     if (passwordController.text.isEmpty) {
-      passwordError.value = 'Password is required';
+      passwordError.value = 'Password harus diisi';
       isValid = false;
     } else if (passwordController.text.length < 6) {
-      passwordError.value = 'Password must be at least 6 characters';
+      passwordError.value = 'Password minimal 6 karakter';
       isValid = false;
-    } else {
-      passwordError.value = '';
     }
 
     return isValid;
   }
 
   Future<void> login() async {
+    // Reset all error messages first
+    usernameError.value = '';
+    passwordError.value = '';
+    idLokasiError.value = '';
+
     if (!_validateForm()) return;
 
     isLoading.value = true;
 
     try {
-      final success = await _authService.login(
+      final response = await _authService.login(
         usernameController.text,
         passwordController.text,
         kodeBranch: idLokasiController.text.isNotEmpty ? idLokasiController.text : null,
       );
 
-      if (success) {
-        // Navigate to dashboard (the dashboard will show appropriate view based on role)
+      if (response.containsKey('success') && response['success'] == true) {
+        // Login successful
+        await _authService.fetchUserProfile();
+
+        // Lanjutkan ke dashboard
         navigateToDashboard();
       } else {
-        AppSnackBar.error(
-          message: "Invalid username or password",
-        );
+        if (response.containsKey('errors') && response['errors'] is Map) {
+          final errors = response['errors'] as Map;
+
+          // Update username error if present
+          if (errors.containsKey('username')) {
+            usernameError.value = errors['username'].toString();
+          }
+
+          // Update password error if present
+          if (errors.containsKey('password')) {
+            passwordError.value = errors['password'].toString();
+          }
+
+          // Update kode_branch error if present
+          if (errors.containsKey('kode_branch')) {
+            idLokasiError.value = errors['kode_branch'].toString();
+          }
+        }
+
+        AppSnackBar.error(message: response['message'] ?? 'Login gagal');
       }
     } catch (e) {
-      AppSnackBar.error(
-        message: "An error occurred during login",
-      );
+      log('Login error exception: $e');
+      AppSnackBar.error(message: "Terjadi kesalahan saat proses login");
     } finally {
       isLoading.value = false;
     }
@@ -114,16 +148,16 @@ class LoginController extends GetxController {
   void loginAsRole(String role) {
     switch (role) {
       case 'admin':
-        usernameController.text = 'admin';
-        passwordController.text = 'password';
+        usernameController.text = 'marthael';
+        passwordController.text = 'marthael';
         isMasterAdmin.value = false;
         break;
 
       case 'pusat':
-        usernameController.text = 'pusat';
-        passwordController.text = 'password';
+        usernameController.text = 'marthael';
+        passwordController.text = 'ADMINPUSAT';
         isMasterAdmin.value = true;
-        idLokasiController.text = '1';
+        idLokasiController.text = 'KDGMH';
         break;
 
       case 'kasir':
@@ -144,5 +178,10 @@ class LoginController extends GetxController {
         isMasterAdmin.value = false;
         break;
     }
+
+    // Reset error messages when prefilling
+    usernameError.value = '';
+    passwordError.value = '';
+    idLokasiError.value = '';
   }
 }

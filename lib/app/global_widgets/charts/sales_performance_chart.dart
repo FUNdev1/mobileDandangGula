@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_text_styles.dart';
 import '../../data/models/branch_model.dart';
@@ -71,10 +70,10 @@ class SalesPerformanceChart extends StatelessWidget {
   final String branchName;
 
   const SalesPerformanceChart({
-    Key? key,
+    super.key,
     required this.data,
     required this.branchName,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

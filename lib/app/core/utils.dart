@@ -95,7 +95,6 @@ class AssetUtils {
   static const String _basePath = 'assets';
   static const String _imagesPath = '$_basePath/images';
   static const String _iconsPath = '$_basePath/icons';
-  static const String _fontsPath = '$_basePath/fonts';
 }
 
 /// Icon paths by category
@@ -125,6 +124,7 @@ class AppIcons {
 
   // Action icons
   static const String add = '${AssetUtils._iconsPath}/add.svg';
+  static const String search = '${AssetUtils._iconsPath}/magnifying.svg';
   static const String edit = '${AssetUtils._iconsPath}/edit.svg';
   static const String delete = '${AssetUtils._iconsPath}/delete.svg';
   static const String save = '${AssetUtils._iconsPath}/save.svg';

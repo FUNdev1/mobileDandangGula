@@ -6,28 +6,28 @@ import 'app_colors.dart';
 class AppTextStyles {
   // Heading styles
   static final TextStyle h1 = FontUtils.getFont(
-    font: AppFont.sfProDisplay,
+    font: AppFont.ibmPlexSans,
     fontSize: 24,
     fontWeight: FontWeight.bold,
     color: AppColors.textPrimary,
   );
 
   static final TextStyle h2 = FontUtils.getFont(
-    font: AppFont.sfProDisplay,
+    font: AppFont.ibmPlexSans,
     fontSize: 20,
     fontWeight: FontWeight.bold,
     color: AppColors.textPrimary,
   );
 
   static final TextStyle h3 = FontUtils.getFont(
-    font: AppFont.sfProDisplay,
+    font: AppFont.ibmPlexSans,
     fontSize: 18,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
   );
 
   static final TextStyle h4 = FontUtils.getFont(
-    font: AppFont.sfProDisplay,
+    font: AppFont.ibmPlexSans,
     fontSize: 16,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
@@ -57,19 +57,19 @@ class AppTextStyles {
 
   // Button styles
   static final TextStyle buttonLarge = FontUtils.getFont(
-    font: AppFont.inter,
+    font: AppFont.ibmPlexSans,
     fontSize: 16,
     fontWeight: FontWeight.bold,
   );
 
   static final TextStyle buttonMedium = FontUtils.getFont(
-    font: AppFont.roboto,
+    font: AppFont.ibmPlexSans,
     fontSize: 15,
     fontWeight: FontWeight.bold,
   );
 
   static final TextStyle buttonSmall = FontUtils.getFont(
-    font: AppFont.inter,
+    font: AppFont.ibmPlexSans,
     fontSize: 14,
     fontWeight: FontWeight.w500,
   );
@@ -98,14 +98,14 @@ class AppTextStyles {
 
   // Input styles
   static final TextStyle inputText = FontUtils.getFont(
-    font: AppFont.roboto,
+    font: AppFont.ibmPlexSans,
     fontSize: 15,
     fontWeight: FontWeight.normal,
     color: AppColors.textPrimary,
   );
 
   static final TextStyle inputHint = FontUtils.getFont(
-    font: AppFont.roboto,
+    font: AppFont.ibmPlexSans,
     fontSize: 15,
     fontWeight: FontWeight.normal,
     color: AppColors.textTertiary,
@@ -120,7 +120,7 @@ class AppTextStyles {
   );
 
   static final TextStyle contentLabel = FontUtils.getFont(
-    font: AppFont.workSans,
+    font: AppFont.ibmPlexSans,
     fontSize: 14,
     fontWeight: FontWeight.normal,
     color: AppColors.textSecondary,
@@ -130,7 +130,7 @@ class AppTextStyles {
 
   // Code styles
   static final TextStyle codeText = FontUtils.getFont(
-    font: AppFont.ibmPlexMono,
+    font: AppFont.ibmPlexSans,
     fontSize: 14,
     fontWeight: FontWeight.normal,
     color: AppColors.textPrimary,
@@ -138,7 +138,7 @@ class AppTextStyles {
 
   // Card Styles
   static final TextStyle cardLabel = FontUtils.getFont(
-    font: AppFont.inter,
+    font: AppFont.ibmPlexSans,
     fontSize: 14,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,

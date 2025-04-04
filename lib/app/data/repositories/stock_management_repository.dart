@@ -8,31 +8,130 @@ import '../models/stock_usage_model.dart';
 import '../services/api_service.dart';
 
 abstract class StockManagementRepository {
-  Future<List<InventoryItem>> getAllInventoryItems({int page});
+  Future<Map<String, dynamic>> addGroup(Map<String, dynamic> groupData);
+  Future<Map<String, dynamic>> updateGroup(String id, Map<String, dynamic> groupData);
+  Future<Map<String, dynamic>> deleteGroup(String id);
+  Future<Map<String, dynamic>> getListGroup();
+  Future<List<InventoryItem>> getAllInventoryItems({int page, String type, String search, String? group, int limit});
+
+  Future<Map<String, dynamic>> getListUom();
+  Future<Map<String, dynamic>> recordStockOpname(List<Map<String, dynamic>> stockData);
+
   Future<List<StockAlert>> getStockAlerts();
   Future<List<StockFlowData>> getStockFlowData();
   Future<List<StockUsage>> getStockUsageByGroup();
-  Future<InventoryItem> getInventoryItemById(String id);
-  Future<void> addInventoryItem(InventoryItem item);
-  Future<void> updateInventoryItem(InventoryItem item);
-  Future<void> deleteInventoryItem(String id);
-  Future<void> recordStockPurchase(String itemId, int quantity, double price);
-  Future<void> recordStockUsage(String itemId, int quantity, String reason);
+  Future<Map<String, dynamic>> getStockDetail(String id);
+  Future<Map<String, dynamic>> addInventoryItem(Map<String, dynamic> item);
+  Future<Map<String, dynamic>> updateInventoryItem(Map<String, dynamic> item);
+  Future<Map<String, dynamic>> deleteInventoryItem(String id);
+  Future<Map<String, dynamic>> recordStockPurchase(String itemId, int quantity, double price);
+  Future<Map<String, dynamic>> recordStockUsage(String itemId, int quantity, String reason);
 }
 
 class StockManagementRepositoryImpl extends GetxService implements StockManagementRepository {
   final ApiService _apiService = Get.find<ApiService>();
 
-  @override
-  Future<List<InventoryItem>> getAllInventoryItems({int page = 1}) async {
+  Future<Map<String, dynamic>> getListIngredient() async {
     try {
-      final response = await _apiService.post('/stock/lists', body: {
-        'page': page,
-        'pageSize': 10,
-        'type': 'raw', // Default type
-        'search': '',
-        'group': ''
-      });
+      final response = await _apiService.get('/stock/ingredient');
+      return response;
+    } catch (e) {
+      log('Error adding group: $e');
+      return {'success': false, 'message': 'Failed to get list ingredient group: $e'};
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getListUom() async {
+    try {
+      final response = await _apiService.get('/stock/uom');
+      return response;
+    } catch (e) {
+      log('Error adding group: $e');
+      return {'success': false, 'message': 'Failed to get list uom group: $e'};
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> addGroup(Map<String, dynamic> groupData) async {
+    // TODO : 500 Bad Response
+    try {
+      final response = await _apiService.post('/stockgroup/create', body: groupData);
+      return response;
+    } catch (e) {
+      log('Error adding group: $e');
+      return {'success': false, 'message': 'Failed to add group: $e'};
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> recordStockOpname(List<Map<String, dynamic>> stockData) async {
+    try {
+      return await _apiService.post('/stock/opname', body: stockData);
+    } catch (e) {
+      log('Error recording stock opname: $e');
+      throw Exception('Failed to record stock opname: $e');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateGroup(String id, Map<String, dynamic> groupData) async {
+    try {
+      final response = await _apiService.put(
+        '/stockgroup/update/:$id',
+        body: groupData,
+      );
+      return response;
+    } catch (e) {
+      log('Error updating group: $e');
+      return {'success': false, 'message': 'Failed to update group: $e'};
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> deleteGroup(String id) async {
+    try {
+      if (id.isEmpty) {
+        throw Exception('Group ID cannot be empty');
+      }
+      final response = await _apiService.delete('/stockgroup/delete/$id');
+      return response;
+    } catch (e) {
+      log('Error deleting group: $e');
+      return {'success': false, 'message': 'Failed to delete group: $e'};
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getListGroup() async {
+    try {
+      final response = await _apiService.get('/stockgroup');
+      return response;
+    } catch (e) {
+      log('Error fetching group list: $e');
+      return {};
+    }
+  }
+
+  @override
+  Future<List<InventoryItem>> getAllInventoryItems({
+    int page = 1,
+    String type = "raw",
+    String search = "",
+    String? group,
+    int limit = 10,
+  }) async {
+    try {
+      final response = await _apiService.post(
+        '/stock/lists',
+        body: {
+          'page': page,
+          'pageSize': limit,
+          'type': type,
+          'search': search,
+          'group': group ?? "",
+        },
+      );
 
       if (response is Map && response.containsKey('data') && response['data'] is List) {
         return (response['data'] as List).map((item) => InventoryItem.fromJson(item)).toList();
@@ -106,10 +205,10 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   }
 
   @override
-  Future<InventoryItem> getInventoryItemById(String id) async {
+  Future<Map<String, dynamic>> getStockDetail(String id) async {
     try {
       final response = await _apiService.get('/stock/detail/$id');
-      return InventoryItem.fromJson(response);
+      return response;
     } catch (e) {
       log('Error fetching inventory item: $e');
       throw Exception('Failed to load item');
@@ -117,22 +216,19 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   }
 
   @override
-  Future<void> addInventoryItem(InventoryItem item) async {
+  Future<Map<String, dynamic>> addInventoryItem(Map<String, dynamic> item) async {
     try {
-      if (item.type == 'raw') {
-        await _apiService.post('/stock/create', body: {'name': item.name, 'uom': item.unitName, 'uom_buy': item.purchaseUnit, 'conversion': item.conversionRate, 'group_id': item.categoryId, 'stock_limit': item.minimumStock, 'type': 'raw'});
+      if (item['type'] == 'raw') {
+        return await _apiService.post(
+          '/stock/create',
+          body: item,
+        );
       } else {
         // Semi-finished item dengan resep
-        await _apiService.post('/stock/create', body: {
-          'name': item.name,
-          'uom': item.unitName,
-          'group_id': item.categoryId,
-          'result_per_recipe': item.resultPerRecipe,
-          'stock_limit': item.minimumStock,
-          'type': 'semifinished',
-          'price': item.currentPrice,
-          'recipe': item.ingredients?.map((ingredient) => {'raw_id': ingredient.id, 'amount': ingredient.amount, 'uom': ingredient.unit, 'price': ingredient.price}).toList()
-        });
+        return await _apiService.post(
+          '/stock/create',
+          body: item,
+        );
       }
     } catch (e) {
       log('Error adding inventory item: $e');
@@ -141,21 +237,19 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   }
 
   @override
-  Future<void> updateInventoryItem(InventoryItem item) async {
+  Future<Map<String, dynamic>> updateInventoryItem(Map<String, dynamic> item) async {
     try {
-      if (item.type == 'raw') {
-        await _apiService.post('/stock/update/${item.id}', body: {'name': item.name, 'uom': item.unitName, 'uom_buy': item.purchaseUnit, 'conversion': item.conversionRate, 'group_id': item.categoryId, 'stock_limit': item.minimumStock, 'type': 'raw'});
+      if (item['type'] == 'raw') {
+        return await _apiService.post(
+          '/stock/update/:${item["id"]}',
+          body: item,
+        );
       } else {
-        await _apiService.post('/stock/update/${item.id}', body: {
-          'name': item.name,
-          'uom': item.unitName,
-          'group_id': item.categoryId,
-          'result_per_recipe': item.resultPerRecipe,
-          'stock_limit': item.minimumStock,
-          'type': 'semifinished',
-          'price': item.currentPrice,
-          'recipe': item.ingredients?.map((ingredient) => {'raw_id': ingredient.id, 'amount': ingredient.amount, 'uom': ingredient.unit, 'price': ingredient.price}).toList()
-        });
+        // Semi-finished item dengan resep
+        return await _apiService.post(
+          '/stock/update/:${item["id"]}',
+          body: item,
+        );
       }
     } catch (e) {
       log('Error updating inventory item: $e');
@@ -164,9 +258,12 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   }
 
   @override
-  Future<void> deleteInventoryItem(String id) async {
+  Future<Map<String, dynamic>> deleteInventoryItem(String id) async {
     try {
-      await _apiService.delete('/stock/delete/$id');
+      if (id.isEmpty) {
+        throw Exception('ID cannot be empty');
+      }
+      return await _apiService.delete('/stock/delete/$id');
     } catch (e) {
       log('Error deleting inventory item: $e');
       throw Exception('Failed to delete item: $e');
@@ -174,9 +271,12 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   }
 
   @override
-  Future<void> recordStockPurchase(String itemId, int quantity, double price) async {
+  Future<Map<String, dynamic>> recordStockPurchase(String itemId, int quantity, double price) async {
     try {
-      await _apiService.post('/stock/dailyjournal', body: {
+      if (itemId.isEmpty) {
+        throw Exception('Item ID cannot be empty');
+      }
+      return await _apiService.post('/stock/dailyjournal', body: {
         'saldo': price + 20000, // contoh saldo awal
         'total': price,
         'balance': 20000, // saldo akhir
@@ -197,11 +297,14 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   }
 
   @override
-  Future<void> recordStockUsage(String itemId, int quantity, String reason) async {
+  Future<Map<String, dynamic>> recordStockUsage(String itemId, int quantity, String reason) async {
     try {
+      if (itemId.isEmpty) {
+        throw Exception('Item ID cannot be empty');
+      }
       // Tidak ada endpoint spesifik di Postman collection
       // Menggunakan endpoint produksi untuk sementara
-      await _apiService.post('/stock/production', body: {
+      return await _apiService.post('/stock/production', body: {
         'stock_id': itemId,
         'total': quantity.toString(),
         'result': (quantity * 1000).toString(), // Asumsi hasil dalam gram

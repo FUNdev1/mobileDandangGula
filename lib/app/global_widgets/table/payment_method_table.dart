@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../config/theme/app_colors.dart';
 import '../../data/models/payment_method_model.dart';
 import '../../core/utils.dart';
 
@@ -12,13 +11,13 @@ class PaymentMethodTable extends StatelessWidget {
   final double width;
 
   const PaymentMethodTable({
-    Key? key,
+    super.key,
     required this.title,
     required this.paymentMethods,
     required this.onViewAll,
     this.height = 410,
     this.width = 450.5,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

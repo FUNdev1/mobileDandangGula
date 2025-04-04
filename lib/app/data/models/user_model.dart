@@ -1,9 +1,11 @@
+// In lib/app/data/models/user_model.dart
 class User {
   final String? id;
   final String? name;
   final String? username;
   final String? photoUrl;
   final String? role;
+  final String? roleName;
   final String? branchName;
   final String? branchId;
   final String? createdAt;
@@ -17,6 +19,7 @@ class User {
     this.username,
     this.photoUrl,
     this.role,
+    this.roleName,
     this.branchName,
     this.branchId,
     this.createdAt,
@@ -32,6 +35,7 @@ class User {
       username: json['username'] as String?,
       photoUrl: json['photo'] as String?,
       role: json['role_id'] as String?,
+      roleName: json['role_name'] as String?,
       branchName: json['branch_name'] as String?,
       branchId: json['branch_id']?.toString(),
       createdAt: json['created_at'] as String?,
@@ -48,6 +52,7 @@ class User {
     if (id != null) data['id'] = id;
     if (photoUrl != null) data['photo'] = photoUrl;
     if (role != null) data['role'] = role;
+    if (roleName != null) data['role_name'] = roleName;
     if (branchId != null) data['branch'] = branchId;
     if (password != null) data['password'] = password;
     if (pin != null) data['pin'] = pin;

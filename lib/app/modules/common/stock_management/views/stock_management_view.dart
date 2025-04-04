@@ -22,14 +22,13 @@ class StockManagementView extends GetView<StockManagementController> {
     return AppLayout(
       key: ValueKey('stock_management_$refreshKey'),
       content: _buildContent(context),
-      onRefresh: () => controller.refreshData(),
+      onRefresh: () => controller.fetchData(),
     );
   }
 
   Widget _buildContent(BuildContext context) {
     // Dapatkan ukuran layar
-    final screenSize = MediaQuery.of(context).size;
-    final tableHeight = screenSize.height * 0.65; // 65% dari tinggi layar
+    const double tableHeight = 761;
 
     return Padding(
       padding: AppDimensions.contentPadding,
@@ -55,13 +54,16 @@ class StockManagementView extends GetView<StockManagementController> {
 
           // Low Stock Items Horizontal Scroll
           Obx(() {
-            return controller.lowStockItems.isNotEmpty ? LowStockItems(items: controller.lowStockItems) : const SizedBox.shrink();
+            if (controller.lowStockItems.isNotEmpty) {
+              return LowStockItems(items: controller.lowStockItems);
+            } else {
+              return const SizedBox.shrink();
+            }
           }),
           const SizedBox(height: 16),
 
           // Tabs and Table
           Container(
-            clipBehavior: Clip.antiAlias,
             height: tableHeight,
             width: double.infinity,
             decoration: BoxDecoration(
@@ -90,25 +92,16 @@ class StockManagementView extends GetView<StockManagementController> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Tab Content dengan Expanded
-// Di dalam _buildContent, ganti bagian tab content:
                   Expanded(
                     child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
+                      duration: const Duration(milliseconds: 100),
                       child: KeyedSubtree(
                         key: ValueKey<int>(controller.selectedTab.value),
-                        child: controller.selectedTab.value == 0
-                            ? InventoryTable(
-                                items: controller.filteredInventoryItems,
-                                isLoading: controller.isLoading.value,
-                                controller: controller,
-                              )
-                            : InventoryTable(
-                                items: controller.filteredSemiFinishedItems,
-                                isLoading: controller.isLoading.value,
-                                controller: controller,
-                                isSemiFinished: true,
-                              ),
+                        child: InventoryTable(
+                          items: controller.inventoryItems,
+                          isLoading: controller.isLoading.value,
+                          controller: controller,
+                        ),
                       ),
                     ),
                   ),

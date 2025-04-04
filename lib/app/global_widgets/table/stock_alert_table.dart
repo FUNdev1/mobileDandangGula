@@ -43,7 +43,7 @@ class StockAlertTable extends StatelessWidget {
         children: stockAlerts.map((alert) {
           return Column(
             children: [
-              _buildStockAlertItem(alert),
+              _buildStockAlertItem(alert, stockAlerts.indexOf(alert)),
               if (alert != stockAlerts.last) const Divider(),
             ],
           );
@@ -52,24 +52,20 @@ class StockAlertTable extends StatelessWidget {
     );
   }
 
-  Widget _buildStockAlertItem(StockAlert alert) {
-    Color pillColor;
-    String pillText = alert.category;
+  Widget _buildStockAlertItem(StockAlert alert, int index) {
+    // Daftar warna untuk digunakan secara random berdasarkan index
+    final List<Color> pillColors = [
+      Colors.orange,
+      Colors.green,
+      Colors.blue,
+      Colors.purple,
+      Colors.teal,
+      Colors.pink,
+    ];
 
-    switch (alert.category.toLowerCase()) {
-      case 'protein':
-        pillColor = Colors.orange;
-        break;
-      case 'sayuran':
-        pillColor = Colors.green;
-        break;
-      case 'minuman':
-        pillColor = Colors.blue;
-        break;
-      default:
-        pillColor = Colors.grey;
-    }
-
+    // Pilih warna berdasarkan index
+    Color pillColor = pillColors[index % pillColors.length];
+    String pillText = alert.name;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -111,11 +107,11 @@ class StockAlertTable extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  alert.stock ?? "",
+                  (alert.stock).toString(),
                   style: AppTextStyles.bodySmall,
                 ),
                 AppText(
-                  alert.amount ?? "",
+                  alert.unitName,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

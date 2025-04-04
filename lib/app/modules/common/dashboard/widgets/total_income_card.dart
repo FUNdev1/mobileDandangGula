@@ -181,7 +181,6 @@ class TotalIncomeCard extends StatelessWidget {
   }
 
   Widget _buildBranchCard(Branch branch) {
-    final isNegative = branch.percentChange < 0;
 
     return SizedBox(
       width: 261,

@@ -1,6 +1,10 @@
+import 'package:dandang_gula/app/config/theme/app_colors.dart';
+import 'package:dandang_gula/app/global_widgets/buttons/app_button.dart';
+import 'package:dandang_gula/app/global_widgets/input/app_dropdown_field.dart';
 import 'package:dandang_gula/app/global_widgets/input/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../../core/utils.dart';
 import '../../controllers/stock_management_controller.dart';
 import '../../data/models/inventory_item_model.dart';
 
@@ -25,43 +29,38 @@ class InventoryTable extends StatelessWidget {
     }
 
     // Gunakan SingleChildScrollView untuk membuat seluruh konten scrollable
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Filter Bar
-          _buildFilterBar(),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Filter Bar
+        _buildFilterBar(),
 
-          // Table header
-          Container(
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1),
-              ),
+        // Table header
+        Container(
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1),
             ),
-            child: _buildTableHeader(),
           ),
+          child: _buildTableHeader(),
+        ),
 
-          // Table Content - tanpa Expanded karena dalam SingleChildScrollView
-          items.isEmpty
+        Expanded(
+          child: items.isEmpty
               ? _buildEmptyState()
               : ListView.builder(
-                  // Disable scrolling untuk ListView bersarang
-                  physics: const NeverScrollableScrollPhysics(),
-                  // Tetapkan tinggi yang sesuai berdasarkan jumlah item
-                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
                   itemCount: items.length,
                   itemBuilder: (context, index) {
                     final item = items[index];
                     return _buildTableRow(item);
                   },
                 ),
+        ),
 
-          // Pagination
-          _buildPagination(),
-        ],
-      ),
+        // Pagination
+        _buildPagination(),
+      ],
     );
   }
 
@@ -71,91 +70,48 @@ class InventoryTable extends StatelessWidget {
       child: Row(
         children: [
           // Dropdown category
-          Obx(() => Container(
-                height: 40,
-                width: 180,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: const Color(0xFFE0E0E0)),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: ButtonTheme(
-                    alignedDropdown: true,
-                    child: DropdownButton<String>(
-                      value: controller.selectedCategoryFilter.value,
-                      icon: const Icon(Icons.keyboard_arrow_down),
-                      items: controller.categories.map((String category) {
-                        return DropdownMenuItem<String>(
-                          value: category,
-                          child: Text(
-                            category,
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
-                          controller.onCategoryFilterChanged(newValue);
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              )),
-
+          SizedBox(
+            width: 219,
+            child: Obx(() {
+              return AppDropdownField(
+                hint: "Semua Kategori",
+                items: controller.categories.value,
+                selectedValue: controller.selectedCategoryFilter.value ?? "",
+                displayKey: "group_name",
+                valueKey: "id",
+                onChanged: (String? newValue) {
+                  controller.onCategoryFilterChanged(newValue ?? '');
+                },
+              );
+            }),
+          ),
           const SizedBox(width: 12),
 
           // Search Box
-          Expanded(
-            child: Obx(() {
-              return AppTextField(
-                controller: TextEditingController(text: controller.searchQuery.value),
-                onChanged: controller.onSearchChanged,
-                appTextFieldEnum: AppTextFieldEnum.field,
-                hint: "Cari Bahan",
-              );
-              // return Container(
-              //     height: 40,
-              //     decoration: BoxDecoration(
-              //       color: Colors.white,
-              //       borderRadius: BorderRadius.circular(4),
-              //       border: Border.all(color: const Color(0xFFE0E0E0)),
-              //     ),
-              //     child: TextField(
-              //       controller: TextEditingController(text: controller.searchQuery.value),
-              //       onChanged: controller.onSearchChanged,
-              //       decoration: const InputDecoration(
-              //         contentPadding: EdgeInsets.symmetric(horizontal: 12),
-              //         hintText: 'Cari Bahan',
-              //         hintStyle: TextStyle(color: Color(0xFFBDBDBD)),
-              //         border: InputBorder.none,
-              //         suffixIcon: Icon(Icons.search, color: Color(0xFFBDBDBD)),
-              //       ),
-              //     ),
-              //   );
-            }),
+          SizedBox(
+            width: 200,
+            child: AppTextField(
+              controller: controller.searchTextController,
+              appTextFieldEnum: AppTextFieldEnum.field,
+              hint: "Cari Bahan",
+              suffixIcon: AppIcons.search,
+              onSubmitted: (value) => controller.refreshData(),
+            ),
           ),
 
           const SizedBox(width: 12),
 
           // Cari Button
-          SizedBox(
-            height: 40,
-            child: ElevatedButton(
-              onPressed: () {
-                // Refresh data dengan filter yang sudah dipilih
+          AppButton(
+            label: 'Cari',
+            width: 54,
+            variant: ButtonVariant.outline,
+            outlineBorderColor: const Color(0xFF88DE7B),
+            onPressed: () {
+              if (controller.searchTextController.text.trim().isNotEmpty) {
                 controller.refreshData();
-              },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: const Color(0xFF1B9851),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              child: const Text('Cari'),
-            ),
+              }
+            },
           ),
         ],
       ),
@@ -294,6 +250,7 @@ class InventoryTable extends StatelessWidget {
 
   Widget _buildTableRow(InventoryItem item) {
     return Container(
+      width: double.infinity,
       decoration: const BoxDecoration(
         border: Border(
           bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1),
@@ -305,42 +262,42 @@ class InventoryTable extends StatelessWidget {
           Expanded(
             flex: 3,
             child: Text(
-              item.name,
+              item.name ?? "",
               style: const TextStyle(fontSize: 14),
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
-              item.unit,
+              item.uom ?? "-",
               style: const TextStyle(fontSize: 14),
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
-              'Rp${item.currentPrice}',
+              'Rp${(item.currentPrice ?? 0).toStringAsFixed(0)}',
               style: const TextStyle(fontSize: 14),
             ),
           ),
           Expanded(
             flex: 1,
             child: Text(
-              item.purchases.toString(),
+              (item.purchases ?? "-").toString(),
               style: const TextStyle(fontSize: 14),
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
-              item.sales.toString(),
+              (item.sales ?? "-").toString(),
               style: const TextStyle(fontSize: 14),
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
-              item.currentStock.toString(),
+              (item.stock ?? 0).toStringAsFixed(0),
               style: const TextStyle(fontSize: 14),
             ),
           ),
@@ -354,13 +311,14 @@ class InventoryTable extends StatelessWidget {
               ),
               child: Stack(
                 children: [
+                  // TODO : FUP mba Tyas butuh stock max u/ kebutuhan bar
                   Container(
-                    width: (item.stockPercentage < 0.05
+                    width: ((item.stockPercentage ?? 0) < 0.05
                         ? 5 // Minimum size for visibility
-                        : 120 * item.stockPercentage),
+                        : 120 * (item.stockPercentage ?? 0)),
                     height: 8,
                     decoration: BoxDecoration(
-                      color: _getStockBarColor(item.stockPercentage),
+                      color: _getStockBarColor(item.stockPercentage ?? 0),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -467,10 +425,10 @@ class InventoryTable extends StatelessWidget {
         height: 32,
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF1B9851) : Colors.white,
+          color: isSelected ? AppColors.darkGreen : Colors.white,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: isSelected ? const Color(0xFF1B9851) : const Color(0xFFEAEEF2),
+            color: isSelected ? AppColors.darkGreen : const Color(0xFFEAEEF2),
           ),
         ),
         child: Center(

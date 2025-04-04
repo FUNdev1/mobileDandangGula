@@ -1,7 +1,15 @@
+import 'package:dandang_gula/app/core/utils.dart';
+import 'package:dandang_gula/app/global_widgets/text/app_text.dart';
+import 'package:dandang_gula/app/modules/common/stock_management/views/ingredient_group/ingredient_group_view.dart';
+import 'package:dandang_gula/app/modules/common/stock_management/views/stock_opname/stock_opname_view.dart';
+import 'package:dandang_gula/app/modules/common/stock_management/views/stock_purchase/stock_purchase_view.dart';
+import 'package:dandang_gula/app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../global_widgets/alert/app_snackbar.dart';
 import '../../../dashboard/widgets/filter/period_filter.dart';
 import '../../controllers/stock_management_controller.dart';
 
@@ -44,44 +52,47 @@ class StockManagementFilter extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          // Group Bahan dropdown
-          Container(
-            height: 40,
-            width: 150,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Material(
+              color: Colors.transparent,
               borderRadius: BorderRadius.circular(4),
+              child: InkWell(
+                onTap: () => Get.to(() => IngredientGroupView()),
+                borderRadius: BorderRadius.circular(4),
+                child: Container(
+                    height: 40,
+                    // width: 150,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: [
+                        AppText(
+                          "Group Bahan",
+                        ),
+                        const SizedBox(width: 8),
+                        SvgPicture.asset(
+                          AppIcons.arrowDownRight,
+                          height: 16,
+                        ),
+                      ],
+                    )),
+              ),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Obx(() => DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: controller.selectedCategoryFilter.value,
-                    isDense: true,
-                    hint: const Text('Group Bahan'),
-                    icon: const Icon(Icons.keyboard_arrow_down, size: 20),
-                    onChanged: (newValue) {
-                      if (newValue != null) {
-                        controller.onCategoryFilterChanged(newValue);
-                      }
-                    },
-                    items: <String>['Semua Group', 'Bumbu', 'Protein', 'Sayuran', 'Minuman', 'Lainnya'].map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value, style: TextStyle(fontSize: 14)),
-                      );
-                    }).toList(),
-                  ),
-                )),
           ),
 
           const SizedBox(width: 12),
 
           // // Stok Opname button
           _buildFilterButton(
-            icon: Icons.list_alt,
+            icon: AppIcons.bottlesContainer,
             label: 'Stok Opname',
-            onTap: () {
-              // Tambahkan fungsi saat tombol ditekan
+            onTap: () async {
+              final res = await Get.to(() => StockOpnameView());
+              if (res == true) controller.fetchData();
             },
           ),
 
@@ -89,10 +100,11 @@ class StockManagementFilter extends StatelessWidget {
 
           // // Pembelian Stok button
           _buildFilterButton(
-            icon: Icons.shopping_cart,
+            icon: AppIcons.shoppingCatalog,
             label: 'Pembelian Stok',
-            onTap: () {
-              // Tambahkan fungsi saat tombol ditekan
+            onTap: () async {
+              final res = await Get.to(() => StockPurchaseView());
+              if (res == true) controller.fetchData();
             },
           ),
 
@@ -106,33 +118,39 @@ class StockManagementFilter extends StatelessWidget {
   }
 
   Widget _buildFilterButton({
-    required IconData icon,
+    required String icon,
     required String label,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      child: Expanded(
-        child: Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 18, color: Colors.grey.shade700),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade800,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(4),
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            // Removed Expanded here
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Row(
+              children: [
+                SvgPicture.asset(icon, height: 18, color: Colors.black),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

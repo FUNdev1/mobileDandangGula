@@ -17,7 +17,6 @@ class SettingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<SettingController>();
-    final NumberFormat currencyFormat = NumberFormat("#,##0.00", "en_US"); // Define the number format
 
     return ColoredBox(
       color: Colors.white,

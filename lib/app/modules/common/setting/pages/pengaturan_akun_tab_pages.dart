@@ -58,7 +58,6 @@ class _PengaturanAkunTabPagesState extends State<PengaturanAkunTabPages> {
                         child: AppTextField(
                           hint: "Cari User",
                           controller: controller.searchController,
-                          suffixIcon: Icons.search,
                           onSubmitted: (_) => controller.searchUsers(),
                         ),
                       ),
@@ -67,7 +66,7 @@ class _PengaturanAkunTabPagesState extends State<PengaturanAkunTabPages> {
                       // Search Button
                       AppButton(
                         label: 'Cari',
-                        height: 40,
+                        height: 50,
                         width: 54,
                         variant: ButtonVariant.outline,
                         outlineBorderColor: const Color(0xFF88DE7B),
@@ -82,7 +81,6 @@ class _PengaturanAkunTabPagesState extends State<PengaturanAkunTabPages> {
                         width: 153,
                         height: 40,
                         prefixSvgPath: AppIcons.add,
-                        variant: ButtonVariant.primary,
                         onPressed: () => controller.openUserForm(),
                       ),
                     ],

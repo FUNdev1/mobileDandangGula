@@ -28,13 +28,19 @@ class SettingController extends GetxController {
   final isEditing = false.obs;
   final selectedUser = Rxn<User?>();
   final selectedImage = Rxn<File?>();
-  final isPanelOpen = false.obs;
-  final availableRoles = <String>['admin', 'kasir', 'gudang', 'pusat', 'branchmanager'].obs;
+
+  // Role handling
+  final roles = [].obs;
+  final selectedRoleId = RxnString();
+
+  // Status handling
+  final isAccountActive = true.obs;
 
   @override
   void onInit() {
     super.onInit();
     loadUsers();
+    loadRoles();
   }
 
   @override
@@ -70,6 +76,23 @@ class SettingController extends GetxController {
     }
   }
 
+  // Load roles from API
+  void loadRoles() async {
+    try {
+      final repository = UserRepository();
+
+      final response = await repository.getRoles();
+
+      if (response['success'] == true) {
+        roles.value = response['data'];
+      } else {
+        AppSnackBar.error(message: 'Failed to load roles: ${response['message']}');
+      }
+    } catch (e) {
+      AppSnackBar.error(message: 'Failed to load roles: $e');
+    }
+  }
+
   void searchUsers() {
     currentPage.value = 1;
     loadUsers();
@@ -90,6 +113,8 @@ class SettingController extends GetxController {
     passwordController.clear();
     pinController.clear();
     selectedImage.value = null;
+    selectedRoleId.value = null;
+    isAccountActive.value = true;
 
     // Open the panel as a dialog instead of trying to animate within the same view
     Get.dialog(
@@ -118,26 +143,24 @@ class SettingController extends GetxController {
       ),
       barrierColor: Colors.transparent,
     );
-
-    isPanelOpen.value = true;
   }
 
   // Close the user form panel
   void closeUserForm() {
-    isPanelOpen.value = false;
-
     // reset form fields
     nameController.clear();
     usernameController.clear();
     passwordController.clear();
     pinController.clear();
     selectedImage.value = null;
-    
+    selectedRoleId.value = null;
+
     Get.back();
   }
 
-  void submitUserForm() async {
-    if (nameController.text.isEmpty || usernameController.text.isEmpty || (passwordController.text.isEmpty && !isEditing.value) || (pinController.text.isEmpty && !isEditing.value)) {
+// Update your existing submitUserForm method to accept roleId and isActive
+  void submitUserForm({bool isActive = true}) async {
+    if (nameController.text.isEmpty || usernameController.text.isEmpty || (passwordController.text.isEmpty && !isEditing.value) || (pinController.text.isEmpty && !isEditing.value) || selectedRoleId.value == null) {
       AppSnackBar.error(message: 'Harap isi semua kolom wajib');
       return;
     }
@@ -160,36 +183,46 @@ class SettingController extends GetxController {
           photoUrl = "url";
         } catch (e) {
           AppSnackBar.error(message: 'Gagal mengunggah foto: $e');
-          // Continue with user creation/update even if image upload fails
         }
       }
+      Map<String, dynamic> userData = {
+        'name': nameController.text,
+        'username': usernameController.text,
+        'password': passwordController.text,
+        'pin': pinController.text,
+        'role': selectedRoleId.value,
+        'status': isActive ? 'Active' : 'Inactive',
+      };
 
       if (!isEditing.value) {
-        // Create new user
-        await repository.addUser(User(
-          name: nameController.text,
-          username: usernameController.text,
-          photoUrl: photoUrl,
-          password: passwordController.text,
-          pin: pinController.text,
-        ));
+        // Create new user with role and status
+        final result = await repository.addUser(userData, photoPath: photoUrl);
+        if (result['success'] == false) {
+          AppSnackBar.error(message: 'Gagal membuat akun: ${result['message']}');
+          return;
+        }
+
         AppSnackBar.success(message: 'Akun berhasil dibuat');
       } else {
-        // Update existing user
-        await repository.updateUser(User(
-          id: selectedUser.value?.id,
-          name: nameController.text,
-          username: usernameController.text,
-          photoUrl: photoUrl,
-          // Only include password and PIN if they were changed
-          password: passwordController.text.isNotEmpty ? passwordController.text : null,
-          pin: pinController.text.isNotEmpty ? pinController.text : null,
-        ));
+        // Update existing user with role and status
+        if (selectedUser.value == null) {
+          AppSnackBar.error(message: 'User tidak ditemukan');
+          return;
+        }
+        final result = await repository.updateUser(
+          selectedUser.value?.id ?? "",
+          userData,
+          photoPath: photoUrl,
+        );
+
+        if (result['success'] == false) {
+          AppSnackBar.error(message: 'Gagal memperbarui akun: ${result['message']}');
+          return;
+        }
         AppSnackBar.success(message: 'Akun berhasil diperbarui');
       }
 
       // Close panel and refresh user list
-      isPanelOpen.value = false;
       loadUsers();
     } catch (e) {
       AppSnackBar.error(message: 'Error: $e');
@@ -201,13 +234,13 @@ class SettingController extends GetxController {
   void deleteUser(int id) async {
     try {
       final repository = UserRepository();
-      final success = await repository.deleteUser(id);
-      if (success) {
-        AppSnackBar.success(message: 'Akun berhasil dihapus');
-        loadUsers(); // Refresh list
-      } else {
-        AppSnackBar.error(message: 'Gagal menghapus akun');
+      final response = await repository.deleteUser(id.toString());
+      if (response['success'] == false) {
+        AppSnackBar.error(message: 'Gagal menghapus akun: ${response['message']}');
+        return;
       }
+      AppSnackBar.success(message: 'Akun berhasil dihapus');
+      loadUsers(); // Refresh list
     } catch (e) {
       AppSnackBar.error(message: 'Error: $e');
     }
@@ -290,10 +323,10 @@ class SettingController extends GetxController {
               Center(
                 child: ElevatedButton(
                   onPressed: () => Get.back(),
-                  child: const Text('Close'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                   ),
+                  child: const Text('Close'),
                 ),
               ),
             ],

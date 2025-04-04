@@ -18,6 +18,7 @@ import '../../../../global_widgets/table/payment_method_table.dart';
 import '../../../../global_widgets/table/product_sales_table.dart';
 import '../../../../global_widgets/table/stock_alert_table.dart';
 import '../../../../global_widgets/card/summary_card.dart';
+import '../../../../routes/app_routes.dart';
 import '../controllers/dashboard_controller.dart';
 import '../widgets/filter/period_filter.dart';
 import '../widgets/total_income_card.dart';
@@ -341,7 +342,7 @@ class AdminDashboardView extends GetView<DashboardController> {
                 variant: ButtonVariant.primary,
                 onPressed: () {
                   // Navigate to stock in page
-                  Get.toNamed('/inventory/stock-in');
+                  Get.toNamed(Routes.STOCK_MANAGEMENT_ADD);
                 },
                 fullWidth: false,
                 width: 150,

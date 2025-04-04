@@ -18,7 +18,7 @@ enum UserRole {
   kasir,
   gudang,
   pusat,
-  branchmanager,
+  supervisor,
 }
 
 class AppLayout extends StatelessWidget {
@@ -54,8 +54,8 @@ class AppLayout extends StatelessWidget {
         return UserRole.gudang;
       case 'pusat':
         return UserRole.pusat;
-      case 'branchmanager':
-        return UserRole.branchmanager;
+      case 'supervisor':
+        return UserRole.supervisor;
       default:
         return UserRole.kasir;
     }
@@ -320,7 +320,7 @@ class AppLayout extends StatelessWidget {
         ]);
         break;
 
-      case UserRole.branchmanager:
+      case UserRole.supervisor:
         navItems.addAll([
           _buildNavItem(
             'Management Menu',
@@ -364,7 +364,6 @@ class AppLayout extends StatelessWidget {
       padding: const EdgeInsets.only(right: 8.0),
       child: InkWell(
         onTap: () {
-          // if (routeName == "") return;
           _navigationController.changePage(routeName);
         },
         borderRadius: BorderRadius.circular(8),
@@ -467,8 +466,8 @@ class AppLayout extends StatelessWidget {
     return Obx(() {
       final user = _authService.currentUser;
       final userName = user?.name ?? 'User';
-      final roleName = _getRoleDisplayName(_authService.userRole);
-      final isShowSetting = _authService.userRole == "pusat" || _authService.userRole == "branchmanager" || _authService.userRole == "kasir";
+      final roleName = _authService.userRole;
+      final isShowSetting = _authService.userRole == "pusat" || _authService.userRole == "supervisor" || _authService.userRole == "kasir";
       final isShowNotif = _authService.userRole != "kasir";
 
       return Container(
@@ -507,26 +506,7 @@ class AppLayout extends StatelessWidget {
     });
   }
 
-  String _getRoleDisplayName(String role) {
-    // Your existing implementation...
-    switch (role) {
-      case 'admin':
-        return 'Admin';
-      case 'kasir':
-        return 'Kasir';
-      case 'gudang':
-        return 'Admin Gudang';
-      case 'pusat':
-        return 'Admin Pusat';
-      case 'branchmanager':
-        return 'Branch Manager';
-      default:
-        return 'User';
-    }
-  }
-
   Widget _buildUserAvatar(String userName, String roleName) {
-    // Your existing implementation...
     return PopupMenuButton<String>(
       offset: const Offset(0, 40),
       padding: EdgeInsets.zero,
@@ -579,7 +559,7 @@ class AppLayout extends StatelessWidget {
                 ),
               ),
               AppText(
-                roleName,
+                roleName.capitalizeFirst ?? "",
                 style: AppTextStyles.bodySmall,
               ),
             ],

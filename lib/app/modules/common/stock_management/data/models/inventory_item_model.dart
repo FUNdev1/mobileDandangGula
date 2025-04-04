@@ -1,177 +1,214 @@
 class InventoryItem {
-  final String id;
-  final String name;
-  final String unit;
-  final String? purchaseUnit;
+  final String? id;
+  final String? name;
+  final String? uom;
+  final double? stock;
+  final double? price;
+  final double? uomPrice;
+  final String? groupId;
+
+  // Field yang dibutuhkan untuk create/update
   final String? unitName;
+  final String? purchaseUnit;
   final double? conversionRate;
-  final String category;
-  final String? categoryId;
-  final String type;
-  final double currentPrice;
-  final int purchases;
-  final int sales;
-  final int currentStock;
-  final int minimumStock;
-  final double stockPercentage;
+  final int? minimumStock;
+  final String? type;
+  final double? currentPrice;
   final double? resultPerRecipe;
   final List<RecipeIngredient>? ingredients;
+  final String? categoryId;
+
+  // Field tambahan lainnya
+  final String? category;
+  final double? stockPercentage;
+  final int? purchases;
+  final int? sales;
+  final Map<String, dynamic>? additionalData;
 
   InventoryItem({
-    required this.id,
-    required this.name,
-    required this.unit,
-    this.purchaseUnit,
+    this.id,
+    this.name,
+    this.uom,
+    this.stock,
+    this.price,
+    this.uomPrice,
+    this.groupId,
     this.unitName,
+    this.purchaseUnit,
     this.conversionRate,
-    required this.category,
-    this.categoryId,
-    required this.type,
-    required this.currentPrice,
-    required this.purchases,
-    required this.sales,
-    required this.currentStock,
-    required this.minimumStock,
-    required this.stockPercentage,
+    this.minimumStock,
+    this.type,
+    this.currentPrice,
     this.resultPerRecipe,
     this.ingredients,
+    this.categoryId,
+    this.category,
+    this.stockPercentage,
+    this.purchases,
+    this.sales,
+    this.additionalData,
   });
 
   factory InventoryItem.fromJson(Map<String, dynamic> json) {
-    // Safe parsing for stock values
-    final int minStock = _parseIntSafely(json, ['minimum_stock', 'limit', 'stock_limit']);
-    final int currStock = _parseIntSafely(json, ['current_stock', 'stock']);
-
-    // Calculate stock percentage safely
-    final double stockLevel = minStock > 0 ? currStock / minStock : 0.0;
-
-    // Parse recipe ingredients if available
-    List<RecipeIngredient>? recipeIngredients;
-    if (json['recipe'] != null && json['recipe'] is List) {
-      recipeIngredients = (json['recipe'] as List).map((item) => RecipeIngredient.fromJson(item)).toList();
-    }
-
     return InventoryItem(
-      id: json['id']?.toString() ?? '',
-      name: json['name']?.toString() ?? '',
-      unit: _getFirstNonNull(json, ['unit', 'uom']) ?? '',
-      purchaseUnit: json['uom_buy']?.toString(),
-      unitName: _getFirstNonNull(json, ['unit_name', 'uom']),
-      conversionRate: _parseDoubleSafely(json, ['conversion']),
-      category: json['category']?.toString() ?? '',
-      categoryId: _getFirstNonNull(json, ['group_id', 'category_id']),
-      type: json['type']?.toString() ?? 'raw',
-      currentPrice: _parseDoubleSafely(json, ['current_price', 'price']) ?? 0.0,
-      purchases: _parseIntSafely(json, ['purchases']) ?? 0,
-      sales: _parseIntSafely(json, ['sales']) ?? 0,
-      currentStock: currStock,
-      minimumStock: minStock,
-      stockPercentage: stockLevel > 1.0 ? 1.0 : stockLevel,
-      resultPerRecipe: _parseDoubleSafely(json, ['result_per_recipe']),
-      ingredients: recipeIngredients,
+      id: json['id'],
+      name: json['name'],
+      uom: json['uom'],
+      stock: _parseDouble(json['stock']),
+      price: _parseDouble(json['price']),
+      uomPrice: _parseDouble(json['uom_price']),
+      groupId: json['group_id'],
+      // Karena beberapa field mungkin memiliki nama berbeda di API
+      unitName: json['unit_name'] ?? json['uom'],
+      categoryId: json['category_id'] ?? json['group_id'],
+      minimumStock: json['minimum_stock'] ?? json['stock_limit'] != null ? int.tryParse(json['stock_limit'].toString()) : null,
+      type: json['type'] ?? 'raw',
+      currentPrice: _parseDouble(json['current_price'] ?? json['price']),
+      resultPerRecipe: _parseDouble(json['result_per_recipe']),
+      ingredients: json['recipe'] != null ? (json['recipe'] as List).map((e) => RecipeIngredient.fromJson(e)).toList() : null,
     );
   }
 
   Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{
-      'id': id,
-      'name': name,
-      'uom': unit,
-      'category': category,
-      'type': type,
-      'current_price': currentPrice,
-      'purchases': purchases,
-      'sales': sales,
-      'current_stock': currentStock,
-      'stock_limit': minimumStock,
+    return {
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (uom != null) 'uom': uom,
+      if (stock != null) 'stock': stock,
+      if (price != null) 'price': price,
+      if (uomPrice != null) 'uom_price': uomPrice,
+      if (groupId != null) 'group_id': groupId,
+      if (unitName != null) 'unit_name': unitName,
+      if (purchaseUnit != null) 'uom_buy': purchaseUnit,
+      if (conversionRate != null) 'conversion': conversionRate,
+      if (minimumStock != null) 'stock_limit': minimumStock,
+      if (type != null) 'type': type,
+      if (currentPrice != null) 'current_price': currentPrice,
+      if (resultPerRecipe != null) 'result_per_recipe': resultPerRecipe,
+      if (ingredients != null) 'recipe': ingredients!.map((i) => i.toJson()).toList(),
+      if (categoryId != null) 'category_id': categoryId,
+      if (category != null) 'category': category,
+      if (stockPercentage != null) 'stock_percentage': stockPercentage,
+      if (purchases != null) 'purchases': purchases,
+      if (sales != null) 'sales': sales,
+      if (additionalData != null) ...additionalData!,
     };
-
-    // Add optional fields only if they're not null
-    if (purchaseUnit != null) map['uom_buy'] = purchaseUnit;
-    if (conversionRate != null) map['conversion'] = conversionRate;
-    if (categoryId != null) map['group_id'] = categoryId;
-    if (resultPerRecipe != null) map['result_per_recipe'] = resultPerRecipe;
-
-    // Add recipe for semi-finished items
-    if (ingredients != null && ingredients!.isNotEmpty) {
-      map['recipe'] = ingredients!.map((ingredient) => ingredient.toJson()).toList();
-    }
-
-    return map;
   }
 
-  // Helper untuk parsing integer dari berbagai field nama yang mungkin
-  static int _parseIntSafely(Map<String, dynamic> json, List<String> possibleKeys) {
-    for (final key in possibleKeys) {
-      if (json[key] != null) {
-        try {
-          if (json[key] is int) return json[key];
-          return int.tryParse(json[key].toString()) ?? 0;
-        } catch (_) {}
-      }
-    }
-    return 0;
+  // Helper method untuk parsing double dengan aman
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    return double.tryParse(value.toString());
   }
 
-  // Helper untuk parsing double dari berbagai field nama yang mungkin
-  static double? _parseDoubleSafely(Map<String, dynamic> json, List<String> possibleKeys) {
-    for (final key in possibleKeys) {
-      if (json[key] != null) {
-        try {
-          if (json[key] is double) return json[key];
-          return double.tryParse(json[key].toString());
-        } catch (_) {}
-      }
-    }
-    return null;
-  }
-
-  // Helper untuk mendapatkan nilai pertama yang tidak null dari beberapa field
-  static String? _getFirstNonNull(Map<String, dynamic> json, List<String> keys) {
-    for (final key in keys) {
-      if (json[key] != null) {
-        return json[key].toString();
-      }
-    }
-    return null;
+  // Copy with method untuk memudahkan pembaruan
+  InventoryItem copyWith({
+    String? id,
+    String? name,
+    String? uom,
+    double? stock,
+    double? price,
+    double? uomPrice,
+    String? groupId,
+    String? unitName,
+    String? purchaseUnit,
+    double? conversionRate,
+    int? minimumStock,
+    String? type,
+    double? currentPrice,
+    double? resultPerRecipe,
+    List<RecipeIngredient>? ingredients,
+    String? categoryId,
+    String? category,
+    double? stockPercentage,
+    int? purchases,
+    int? sales,
+    Map<String, dynamic>? additionalData,
+  }) {
+    return InventoryItem(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      uom: uom ?? this.uom,
+      stock: stock ?? this.stock,
+      price: price ?? this.price,
+      uomPrice: uomPrice ?? this.uomPrice,
+      groupId: groupId ?? this.groupId,
+      unitName: unitName ?? this.unitName,
+      purchaseUnit: purchaseUnit ?? this.purchaseUnit,
+      conversionRate: conversionRate ?? this.conversionRate,
+      minimumStock: minimumStock ?? this.minimumStock,
+      type: type ?? this.type,
+      currentPrice: currentPrice ?? this.currentPrice,
+      resultPerRecipe: resultPerRecipe ?? this.resultPerRecipe,
+      ingredients: ingredients ?? this.ingredients,
+      categoryId: categoryId ?? this.categoryId,
+      category: category ?? this.category,
+      stockPercentage: stockPercentage ?? this.stockPercentage,
+      purchases: purchases ?? this.purchases,
+      sales: sales ?? this.sales,
+      additionalData: additionalData ?? this.additionalData,
+    );
   }
 }
 
 class RecipeIngredient {
-  final String id;
-  final double amount;
-  final String unit;
-  final double price;
-  final String? name; // Tambahan untuk menyimpan nama bahan jika tersedia
+  final String? id;
+  final String? name;
+  final num? amount;
+  final String? unit;
+  final num? price;
 
   RecipeIngredient({
-    required this.id,
-    required this.amount,
-    required this.unit,
-    required this.price,
+    this.id,
     this.name,
+    this.amount,
+    this.unit,
+    this.price,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (id != null) 'raw_id': id, // Perhatikan 'raw_id' bukan 'id' sesuai kebutuhan API
+      if (name != null) 'name': name,
+      if (amount != null) 'amount': amount,
+      if (unit != null) 'uom': unit, // Perhatikan 'uom' bukan 'unit' sesuai kebutuhan API
+      if (price != null) 'price': price,
+    };
+  }
 
   factory RecipeIngredient.fromJson(Map<String, dynamic> json) {
     return RecipeIngredient(
-      id: json['raw_id']?.toString() ?? '',
-      amount: json['amount'] != null ? (json['amount'] is double ? json['amount'] : double.tryParse(json['amount'].toString()) ?? 0.0) : 0.0,
-      unit: json['uom']?.toString() ?? '',
-      price: json['price'] != null ? (json['price'] is double ? json['price'] : double.tryParse(json['price'].toString()) ?? 0.0) : 0.0,
-      name: json['name']?.toString(),
+      id: json['raw_id'] ?? json['id'],
+      name: json['name'],
+      amount: _parseDouble(json['amount']),
+      unit: json['uom'] ?? json['unit'],
+      price: _parseDouble(json['price']),
     );
   }
 
-  Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{
-      'raw_id': id,
-      'amount': amount,
-      'uom': unit,
-      'price': price,
-    };
+  // Helper method untuk parsing double dengan aman
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    return double.tryParse(value.toString());
+  }
 
-    if (name != null) map['name'] = name;
-
-    return map;
+  RecipeIngredient copyWith({
+    String? id,
+    String? name,
+    double? amount,
+    String? unit,
+    double? price,
+  }) {
+    return RecipeIngredient(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      amount: amount ?? this.amount,
+      unit: unit ?? this.unit,
+      price: price ?? this.price,
+    );
   }
 }

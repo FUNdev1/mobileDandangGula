@@ -3,7 +3,6 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_text_styles.dart';
 import '../../data/models/chart_data_model.dart';
 import '../text/app_text.dart';
-import '../../modules/common/dashboard/views/components/dashboard_view.dart';
 
 class TotalIncomeChart extends StatelessWidget {
   final List<ChartData> data;

@@ -6,7 +6,6 @@ import '../../config/theme/app_text_styles.dart';
 import '../../data/models/chart_data_model.dart';
 import '../charts/simple_line_chart.dart';
 import '../layout/app_card.dart';
-import '../layout/app_layout.dart';
 import '../text/app_text.dart';
 
 class BranchPerformanceCard extends StatelessWidget {
@@ -29,7 +28,7 @@ class BranchPerformanceCard extends StatelessWidget {
       title: title,
       action: TextButton(
         onPressed: onViewDetails,
-        child: Row(
+        child: const Row(
           children: [
             AppText(
               'Detail',

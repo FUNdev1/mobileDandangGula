@@ -4,7 +4,6 @@ import '../../config/theme/app_dimensions.dart';
 import '../../config/theme/app_text_styles.dart';
 import '../../data/models/branch_model.dart';
 import '../layout/app_card.dart';
-import '../layout/app_layout.dart';
 import '../text/app_text.dart';
 
 class BranchIncomeCard extends StatelessWidget {

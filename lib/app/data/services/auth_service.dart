@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:dandang_gula/app/data/repositories/user_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,7 +23,7 @@ class AuthService extends GetxService {
   // Getters
   User? get currentUser => _currentUser.value;
   bool get isLoggedIn => _isLoggedIn.value;
-  String get userRole => _currentUser.value?.role ?? '';
+  String get userRole => _currentUser.value?.roleName ?? '';
 
   // Initialize service
   Future<AuthService> init() async {
@@ -48,7 +49,9 @@ class AuthService extends GetxService {
 
       if (isUserLoggedIn) {
         final String? token = _prefs.getString(AppConstants.TOKEN_STORAGE_KEY);
+
         if (token != null && token.isNotEmpty) {
+          // This is the critical line - set token for API requests
           _apiService.setAuthToken(token);
 
           final String? userStr = _prefs.getString(AppConstants.USER_STORAGE_KEY);
@@ -57,7 +60,7 @@ class AuthService extends GetxService {
             _currentUser.value = User.fromJson(userData);
             _isLoggedIn.value = true;
           } else {
-            // Token ada tapi tidak ada data user, coba fetch profile
+            // Token exists but no user data, try to fetch profile
             try {
               await fetchUserProfile();
             } catch (e) {
@@ -75,34 +78,29 @@ class AuthService extends GetxService {
     }
   }
 
-  // Login dengan API
-  Future<bool> login(String username, String password, {String? kodeBranch}) async {
+  Future<Map> login(String username, String password, {String? kodeBranch}) async {
     try {
       final response = await _apiService.post('/auth/login', body: {
-        'kode_branch': kodeBranch ?? 'KDGMH', // Default jika tidak disediakan
+        'kode_branch': kodeBranch ?? 'KDGMH',
         'username': username,
         'password': password,
       });
 
-      // Handle response based on the structure from your log
+      // If successful, set token and return success
       if (response is Map && response.containsKey('success') && response['success'] == true && response.containsKey('data') && response['data'] is Map && response['data'].containsKey('access_token')) {
         final token = response['data']['access_token'];
         _apiService.setAuthToken(token);
-
-        // Simpan token di SharedPreferences
         await _prefs.setString(AppConstants.TOKEN_STORAGE_KEY, token);
         await _prefs.setBool(AppConstants.IS_LOGGED_IN_KEY, true);
 
-        // Ambil profil user
-        await fetchUserProfile();
-
-        return true;
+        return {'success': true};
       }
 
-      return false;
+      // Return the response as is without throwing exception
+      return response is Map ? response : {'success': false, 'message': 'Login gagal'};
     } catch (e) {
       log('Login error: $e');
-      return false;
+      return {'success': false, 'message': e.toString().replaceAll('Exception: ', '')};
     }
   }
 
@@ -111,13 +109,56 @@ class AuthService extends GetxService {
     try {
       final response = await _apiService.get('/account/profile');
 
-      if (response != null) {
-        final User user = User.fromJson(response);
-        _currentUser.value = user;
+      if (response != null && response["data"] != null) {
+        // Create user from response
+        final User user = User.fromJson(response["data"]);
+
+        // If role_name isn't included in the response, fetch it separately
+        if (user.roleName == null && user.role != null) {
+          try {
+            final rolesResponse = await UserRepository().getRoles();
+
+            // Parse the response according to the format you shared
+            if (rolesResponse.containsKey('data') && rolesResponse['data'] is List) {
+              final rolesList = rolesResponse['data'] as List;
+
+              // Find the matching role by ID
+              Map roleInfo = rolesList.firstWhere(
+                (role) => role['id'].toString() == user.role,
+                orElse: () => {},
+              );
+
+              // Update user with role name
+              if (roleInfo.isNotEmpty && roleInfo.containsKey('role')) {
+                _currentUser.value = User(
+                  id: user.id,
+                  name: user.name,
+                  username: user.username,
+                  photoUrl: user.photoUrl,
+                  role: user.role,
+                  roleName: roleInfo['role'].toString().toLowerCase(),
+                  branchName: user.branchName,
+                  branchId: user.branchId,
+                  createdAt: user.createdAt,
+                  status: user.status,
+                );
+              } else {
+                _currentUser.value = user;
+              }
+            }
+          } catch (e) {
+            // If fetching role name fails, just continue with the user as is
+            log('Error fetching role name: $e');
+            _currentUser.value = user;
+          }
+        } else {
+          _currentUser.value = user;
+        }
+
         _isLoggedIn.value = true;
 
-        // Simpan data user
-        await _saveUserToStorage(user);
+        // Save user to storage
+        await _saveUserToStorage(_currentUser.value!);
       } else {
         throw Exception('Failed to fetch user profile: Empty response');
       }

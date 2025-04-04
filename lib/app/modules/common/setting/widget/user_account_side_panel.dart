@@ -1,10 +1,14 @@
 import 'dart:io';
+import 'package:dandang_gula/app/global_widgets/input/app_dropdown_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../data/repositories/user_repository.dart';
 import '../../../../global_widgets/buttons/app_button.dart';
 import '../../../../global_widgets/input/app_password_field.dart';
+import '../../../../global_widgets/input/app_switch_field';
 import '../../../../global_widgets/input/app_text_field.dart';
 import '../controllers/setting_controller.dart';
 
@@ -22,11 +26,18 @@ class UserAccountSidePanel extends StatefulWidget {
 
 class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
   File? selectedImage;
+  String? selectedRole;
+  bool isActive = true;
+
+  final roles = [].obs;
 
   @override
   void initState() {
     super.initState();
     selectedImage = widget.controller.selectedImage.value;
+
+    // Fetch roles from API when the panel is initialized
+    _loadRoles();
 
     // Listen for changes in the selected image from controller
     ever(widget.controller.selectedImage, (image) {
@@ -34,6 +45,24 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
         selectedImage = image;
       });
     });
+  }
+
+  // Method to load roles from API
+  void _loadRoles() async {
+    try {
+      final repository = UserRepository();
+      final response = await repository.getRoles();
+
+      if (response['success'] == true) {
+        roles.value = response['data'];
+      } else {
+        // Handle error
+        print('Failed to load roles: ${response['message']}');
+      }
+    } catch (e) {
+      // Handle error
+      print('Error loading roles: $e');
+    }
   }
 
   @override
@@ -84,8 +113,8 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                       child: Stack(
                         children: [
                           Container(
-                            width: 120,
-                            height: 120,
+                            width: 93,
+                            height: 93,
                             decoration: BoxDecoration(
                               color: const Color(0xFF0D4927),
                               shape: BoxShape.circle,
@@ -107,18 +136,22 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                           Positioned(
                             right: 0,
                             bottom: 0,
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: const Color(0xFFE0E0E0)),
-                              ),
-                              child: IconButton(
-                                icon: const Icon(Icons.edit, size: 18),
-                                padding: EdgeInsets.zero,
-                                onPressed: () => _pickImage(),
+                            child: GestureDetector(
+                              onTap: _pickImage,
+                              child: Container(
+                                width: 24,
+                                height: 24,
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: const Color(0xFFE0E0E0)),
+                                ),
+                                child: SvgPicture.asset(
+                                  'assets/icons/edit.svg',
+                                  width: 16,
+                                  height: 16,
+                                ),
                               ),
                             ),
                           ),
@@ -127,14 +160,14 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                     ),
                     const SizedBox(height: 32),
 
-                    // Name field
+                    // Role selection field
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Row(
                           children: [
                             Text(
-                              'Nama Lengkap',
+                              'Roles',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
@@ -152,110 +185,83 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        AppTextField(
-                          controller: widget.controller.nameController,
-                          hint: 'Nama lengkap akun..',
-                        ),
+                        Obx(() => AppDropdownField(
+                              hint: "Pilih Role Akun",
+                              items: widget.controller.roles.value,
+                              selectedValue: widget.controller.selectedRoleId.value ?? "",
+                              valueKey: "id",
+                              displayKey: "role",
+                              onChanged: (String? newValue) {
+                                if (newValue != null) {
+                                  widget.controller.selectedRoleId.value = newValue;
+                                }
+                              },
+                            )),
                       ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Name field
+                    AppTextField(
+                      label: "Nama Lengkap",
+                      isMandatory: true,
+                      controller: widget.controller.nameController,
+                      hint: 'Nama lengkap akun..',
                     ),
                     const SizedBox(height: 24),
 
                     // Username field
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Text(
-                              'Username',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              '*',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        AppTextField(
-                          controller: widget.controller.usernameController,
-                          hint: 'Tulis username disini...',
-                        ),
-                      ],
+                    AppTextField(
+                      label: "Username",
+                      isMandatory: true,
+                      controller: widget.controller.usernameController,
+                      hint: 'Tulis username disini...',
                     ),
                     const SizedBox(height: 24),
 
                     // Password field
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Text(
-                              'Password',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              '*',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        AppPasswordField(
-                          controller: widget.controller.passwordController,
-                          hint: 'Tulis password akun..',
-                        ),
-                      ],
+                    AppPasswordField(
+                      label: "Password",
+                      controller: widget.controller.passwordController,
+                      hint: 'Tulis password akun..',
                     ),
                     const SizedBox(height: 24),
 
                     // PIN field
+                    AppTextField(
+                      label: "PIN",
+                      isMandatory: true,
+                      controller: widget.controller.pinController,
+                      hint: 'Masukan 6 Digit angka',
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(6),
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Account Status
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
-                          children: [
-                            Text(
-                              'PIN',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              '*',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
+                        const Text(
+                          'Status Akun',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         const SizedBox(height: 8),
-                        AppTextField(
-                          controller: widget.controller.pinController,
-                          hint: 'Masukan 6 Digit angka',
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [LengthLimitingTextInputFormatter(6)],
+                        AppSwitch(
+                          activeText: "Aktif",
+                          inactiveText: "Nonaktif",
+                          value: isActive,
+                          onChanged: (value) {
+                            setState(() {
+                              isActive = value;
+                            });
+                          },
                         ),
                       ],
                     ),
@@ -289,12 +295,14 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: Obx(() => AppButton(
-                          label: 'Create',
-                          variant: ButtonVariant.primary,
-                          isLoading: widget.controller.isSubmitting.value,
-                          onPressed: () => widget.controller.submitUserForm(),
-                        )),
+                    child: Obx(() {
+                      return AppButton(
+                        label: 'Create',
+                        variant: ButtonVariant.primary,
+                        isLoading: widget.controller.isSubmitting.value,
+                        onPressed: () => widget.controller.submitUserForm(isActive: isActive),
+                      );
+                    }),
                   ),
                 ],
               ),
@@ -359,6 +367,23 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
         selectedImage = File(pickedFile.path);
       });
       widget.controller.selectedImage.value = File(pickedFile.path);
+    }
+  }
+
+  String _getRoleDisplay(String role) {
+    switch (role) {
+      case 'admin':
+        return 'Admin';
+      case 'kasir':
+        return 'Kasir';
+      case 'gudang':
+        return 'Gudang';
+      case 'pusat':
+        return 'Pusat';
+      case 'branchmanager':
+        return 'Branch Manager';
+      default:
+        return role;
     }
   }
 }
