@@ -12,13 +12,28 @@ import '../../../../global_widgets/input/app_switch_field';
 import '../../../../global_widgets/input/app_text_field.dart';
 import '../controllers/setting_controller.dart';
 
-class UserAccountSidePanel extends StatefulWidget {
-  final SettingController controller;
+abstract class UserFormController {
+  // Properties
+  Rxn<File?> get selectedImage;
+  RxnString get selectedRoleId;
+  RxList get roles;
+  TextEditingController get nameController;
+  TextEditingController get usernameController;
+  TextEditingController get passwordController;
+  TextEditingController get pinController;
+  RxBool get isSubmitting;
+  RxBool get isEditing;
+  RxBool get isAccountActive;
 
-  const UserAccountSidePanel({
-    super.key,
-    required this.controller,
-  });
+  // Methods
+  void closeUserForm();
+  void submitUserForm({bool isActive});
+}
+
+class UserAccountSidePanel<T extends UserFormController> extends StatefulWidget {
+  final T controller;
+
+  const UserAccountSidePanel({super.key, required this.controller});
 
   @override
   State<UserAccountSidePanel> createState() => _UserAccountSidePanelState();
@@ -35,9 +50,7 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
   void initState() {
     super.initState();
     selectedImage = widget.controller.selectedImage.value;
-
-    // Fetch roles from API when the panel is initialized
-    _loadRoles();
+    isActive = widget.controller.isAccountActive.value;
 
     // Listen for changes in the selected image from controller
     ever(widget.controller.selectedImage, (image) {
@@ -45,24 +58,13 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
         selectedImage = image;
       });
     });
-  }
 
-  // Method to load roles from API
-  void _loadRoles() async {
-    try {
-      final repository = UserRepository();
-      final response = await repository.getRoles();
-
-      if (response['success'] == true) {
-        roles.value = response['data'];
-      } else {
-        // Handle error
-        print('Failed to load roles: ${response['message']}');
-      }
-    } catch (e) {
-      // Handle error
-      print('Error loading roles: $e');
-    }
+    // Listen for changes in the account active status
+    ever(widget.controller.isAccountActive, (active) {
+      setState(() {
+        isActive = active;
+      });
+    });
   }
 
   @override
@@ -90,13 +92,13 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                     child: const Icon(Icons.close, size: 24),
                   ),
                   const SizedBox(width: 12),
-                  const Text(
-                    'Buat Akun baru',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  Obx(() => Text(
+                        widget.controller.isEditing.value ? 'Edit Akun' : 'Buat Akun baru',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )),
                 ],
               ),
             ),
@@ -220,11 +222,13 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                     const SizedBox(height: 24),
 
                     // Password field
-                    AppPasswordField(
-                      label: "Password",
-                      controller: widget.controller.passwordController,
-                      hint: 'Tulis password akun..',
-                    ),
+                    Obx(() => AppPasswordField(
+                          label: "Password",
+                          
+                          // isMandatory: !widget.controller.isEditing.value,
+                          controller: widget.controller.passwordController,
+                          hint: widget.controller.isEditing.value ? 'Kosongkan jika tidak diubah' : 'Tulis password akun..',
+                        )),
                     const SizedBox(height: 24),
 
                     // PIN field
@@ -261,6 +265,7 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                             setState(() {
                               isActive = value;
                             });
+                            widget.controller.isAccountActive.value = value;
                           },
                         ),
                       ],
@@ -297,7 +302,7 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                   Expanded(
                     child: Obx(() {
                       return AppButton(
-                        label: 'Create',
+                        label: widget.controller.isEditing.value ? 'Update' : 'Create',
                         variant: ButtonVariant.primary,
                         isLoading: widget.controller.isSubmitting.value,
                         onPressed: () => widget.controller.submitUserForm(isActive: isActive),
@@ -367,23 +372,6 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
         selectedImage = File(pickedFile.path);
       });
       widget.controller.selectedImage.value = File(pickedFile.path);
-    }
-  }
-
-  String _getRoleDisplay(String role) {
-    switch (role) {
-      case 'admin':
-        return 'Admin';
-      case 'kasir':
-        return 'Kasir';
-      case 'gudang':
-        return 'Gudang';
-      case 'pusat':
-        return 'Pusat';
-      case 'branchmanager':
-        return 'Branch Manager';
-      default:
-        return role;
     }
   }
 }

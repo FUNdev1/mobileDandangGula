@@ -13,13 +13,13 @@ import '../../routes/app_routes.dart';
 import '../buttons/icon_button.dart';
 import '../text/app_text.dart';
 
-enum UserRole {
-  admin,
-  kasir,
-  gudang,
-  pusat,
-  supervisor,
-}
+// enum UserRole {
+//   admin,
+//   kasir,
+//   gudang,
+//   pusat,
+//   supervisor,
+// }
 
 class AppLayout extends StatelessWidget {
   final Widget content;
@@ -44,22 +44,22 @@ class AppLayout extends StatelessWidget {
     this.onBackPressed,
   });
 
-  UserRole _getUserRoleEnum() {
-    switch (_authService.userRole) {
-      case 'admin':
-        return UserRole.admin;
-      case 'kasir':
-        return UserRole.kasir;
-      case 'gudang':
-        return UserRole.gudang;
-      case 'pusat':
-        return UserRole.pusat;
-      case 'supervisor':
-        return UserRole.supervisor;
-      default:
-        return UserRole.kasir;
-    }
-  }
+  // UserRole _getUserRoleEnum() {
+  //   switch (_authService.userRole) {
+  //     case 'admin':
+  //       return UserRole.admin;
+  //     case 'kasir':
+  //       return UserRole.kasir;
+  //     case 'gudang':
+  //       return UserRole.gudang;
+  //     case 'pusat':
+  //       return UserRole.pusat;
+  //     case 'supervisor':
+  //       return UserRole.supervisor;
+  //     default:
+  //       return UserRole.kasir;
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +213,7 @@ class AppLayout extends StatelessWidget {
 
   List<Widget> _getNavigationItemsByRole() {
     final navItems = <Widget>[];
-    final currentRole = _getUserRoleEnum();
+    final currentRole = _authService.userRole;
     final currentRoute = _navigationController.currentRoute.value;
 
     // Add Dashboard button for all roles
@@ -228,7 +228,7 @@ class AppLayout extends StatelessWidget {
 
     // Add role-specific menu items
     switch (currentRole) {
-      case UserRole.admin:
+      case "admin":
         navItems.addAll([
           _buildNavItem(
             'Stok Bahan',
@@ -251,13 +251,13 @@ class AppLayout extends StatelessWidget {
           _buildNavItem(
             'Manajemen User',
             AppIcons.userAccess,
-            currentRoute == "",
-            "",
+            currentRoute == Routes.USER_MANAGEMENT,
+            Routes.USER_MANAGEMENT,
           ),
         ]);
         break;
 
-      case UserRole.kasir:
+      case "kasir":
         navItems.addAll([
           _buildNavItem(
             'Pesanan',
@@ -280,7 +280,7 @@ class AppLayout extends StatelessWidget {
         ]);
         break;
 
-      case UserRole.gudang:
+      case "staffgudang":
         navItems.addAll([
           _buildNavItem(
             'Stok Bahan',
@@ -297,7 +297,7 @@ class AppLayout extends StatelessWidget {
         ]);
         break;
 
-      case UserRole.pusat:
+      case "staff": // todo tanyain rules
         navItems.addAll([
           _buildNavItem(
             'Manajemen Cabang',
@@ -306,7 +306,7 @@ class AppLayout extends StatelessWidget {
             "",
           ),
           _buildNavItem(
-            'Management User',
+            'Managemen User',
             AppIcons.userAccess,
             currentRoute == Routes.USER_MANAGEMENT,
             Routes.USER_MANAGEMENT,
@@ -320,7 +320,7 @@ class AppLayout extends StatelessWidget {
         ]);
         break;
 
-      case UserRole.supervisor:
+      case "supervisor":
         navItems.addAll([
           _buildNavItem(
             'Management Menu',
@@ -347,7 +347,7 @@ class AppLayout extends StatelessWidget {
             "",
           ),
           _buildNavItem(
-            'Management User',
+            'Managemen User',
             AppIcons.userAccess,
             currentRoute == Routes.USER_MANAGEMENT,
             Routes.USER_MANAGEMENT,

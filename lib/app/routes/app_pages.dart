@@ -1,5 +1,7 @@
 import 'package:dandang_gula/app/modules/common/stock_management/bindings/stock_management_binding.dart';
 import 'package:dandang_gula/app/modules/common/stock_management/views/stock_management_view.dart';
+import 'package:dandang_gula/app/modules/common/user_management/bindings/user_management_binding.dart';
+import 'package:dandang_gula/app/modules/common/user_management/views/user_management_view.dart';
 import 'package:get/get.dart';
 import '../core/middleware/auth_middleware.dart';
 
@@ -8,9 +10,12 @@ import '../modules/common/dashboard/views/components/dashboard_view.dart';
 import '../modules/common/login/bindings/login_binding.dart';
 import '../modules/common/login/views/login_view.dart';
 import '../modules/common/dashboard/bindings/dashboard_binding.dart';
+import '../modules/common/menu_management/bindings/menu_management_binding.dart';
+import '../modules/common/menu_management/views/menu_management_view.dart';
 import '../modules/common/reports/bindings/reports_binding.dart';
 import '../modules/common/reports/views/reports_view.dart';
 import '../modules/common/setting/bindings/setting_binding.dart';
+import '../modules/common/setting/pages/pengaturan_akun_tab_pages.dart';
 import '../modules/common/setting/views/setting_view.dart';
 
 // Admin modules
@@ -34,10 +39,6 @@ import '../modules/pusat/branch_management/views/branch_management_view.dart';
 // // Kasir modules
 // import '../modules/kasir/attendance/bindings/attendance_binding.dart';
 // import '../modules/kasir/attendance/views/attendance_view.dart';
-
-// // Branch Manager modules
-// import '../modules/branch_manager/menu_management/bindings/menu_management_binding.dart';
-// import '../modules/branch_manager/menu_management/views/menu_management_view.dart';
 
 import 'app_routes.dart';
 
@@ -68,6 +69,13 @@ class AppPages {
     ),
 
     GetPage(
+      name: Routes.USER_MANAGEMENT, // Pengaturan Akun/Managemen User
+      page: () => const UserManagementView(),
+      binding: UserManagementBinding(),
+      // middlewares: [AuthMiddleware()],
+    ),
+
+    GetPage(
       name: Routes.REPORTS,
       page: () => const ReportsView(),
       binding: ReportsBinding(),
@@ -90,7 +98,7 @@ class AppPages {
     //   page: () => const UserManagementView(),
     //   binding: UserManagementBinding(),
     //   middlewares: [
-    //     AuthMiddleware(allowedRoles: ['admin', 'pusat', 'branchmanager']),
+    //     AuthMiddleware(allowedRoles: ['admin', 'pusat', 'supervisor']),
     //   ],
     // ),
 
@@ -118,14 +126,13 @@ class AppPages {
       binding: AddStockBinding(),
     ),
 
-
     // // Orders (common)
     // GetPage(
     //   name: Routes.ORDERS,
     //   page: () => const OrdersView(),
     //   binding: OrdersBinding(),
     //   middlewares: [
-    //     AuthMiddleware(allowedRoles: ['kasir', 'branchmanager']),
+    //     AuthMiddleware(allowedRoles: ['kasir', 'supervisor']),
     //   ],
     // ),
     // GetPage(
@@ -133,7 +140,7 @@ class AppPages {
     //   page: () => const NewOrderView(),
     //   binding: OrdersBinding(),
     //   middlewares: [
-    //     AuthMiddleware(allowedRoles: ['kasir', 'branchmanager']),
+    //     AuthMiddleware(allowedRoles: ['kasir', 'supervisor']),
     //   ],
     // ),
     // GetPage(
@@ -141,7 +148,7 @@ class AppPages {
     //   page: () => const OrderDetailsView(),
     //   binding: OrdersBinding(),
     //   middlewares: [
-    //     AuthMiddleware(allowedRoles: ['kasir', 'branchmanager']),
+    //     AuthMiddleware(allowedRoles: ['kasir', 'supervisor']),
     //   ],
     // ),
 
@@ -155,15 +162,15 @@ class AppPages {
     //   ],
     // ),
 
-    // // Menu management (branch manager)
-    // GetPage(
-    //   name: Routes.MENU_MANAGEMENT,
-    //   page: () => const MenuManagementView(),
-    //   binding: MenuManagementBinding(),
-    //   middlewares: [
-    //     AuthMiddleware(allowedRoles: ['branchmanager']),
-    //   ],
-    // ),
+    // Menu management (branch manager)
+    GetPage(
+      name: Routes.MENU_MANAGEMENT,
+      page: () => const MenuManagementView(),
+      binding: MenuManagementBinding(),
+      middlewares: [
+        AuthMiddleware(allowedRoles: ['supervisor']),
+      ],
+    ),
   ];
 
   static const initialRoute = Routes.LOGIN;

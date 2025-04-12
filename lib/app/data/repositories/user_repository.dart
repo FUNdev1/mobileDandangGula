@@ -10,7 +10,7 @@ class UserRepository {
   // Get paginated and filtered users
   Future<PaginatedResponse<User>> getUsers({
     required int page,
-    required int limit,
+    int limit = 8,
     String searchQuery = '',
     String? roleId,
     String? branchId,
@@ -81,10 +81,8 @@ class UserRepository {
 
       Map<String, dynamic> dataToSend = Map<String, dynamic>.from(userData);
 
-      if (photoPath != null && photoPath.isNotEmpty) {
-        dataToSend['photo'] = photoPath;
-        log('Adding photo path to request: $photoPath');
-      }
+      dataToSend['photo'] = photoPath ?? "";
+      log('Adding photo path to request: $photoPath');
 
       final response = await _apiService.post(
         '/account/create',

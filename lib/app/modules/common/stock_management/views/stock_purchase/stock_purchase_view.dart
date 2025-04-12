@@ -11,6 +11,8 @@ import 'package:get/get.dart';
 import '../../../../../global_widgets/buttons/app_button.dart';
 import '../../../../../global_widgets/text/app_text.dart';
 import '../../controllers/stock_management_controller.dart';
+import '../../data/models/inventory_item_model.dart';
+import '../ingredient_select/ingredient_select_view.dart';
 
 class StockPurchaseView extends StatelessWidget {
   final StockManagementController controller = Get.find<StockManagementController>();
@@ -214,7 +216,31 @@ class StockPurchaseView extends StatelessWidget {
                         prefixSvgPath: AppIcons.add,
                         variant: ButtonVariant.text,
                         customBackgroundColor: const Color(0xFF88DE7B),
-                        onPressed: () {},
+                        onPressed: () {
+                          Get.to(() {
+                            return SelectIngredientPage(
+                              existingIngredients: controller.inventoryItems.map((item) {
+                                return RecipeIngredient(
+                                  id: item.id,
+                                  name: item.name,
+                                  unit: item.unitName,
+                                  amount: item.stock,
+                                  price: item.price,
+                                );
+                              }).toList(),
+                            );
+                          })?.then((result) {
+                            // if (result != null && result is List<RecipeIngredient>) {
+                            //   // Clear existing ingredients first
+                            //   controller.ingredients.clear();
+
+                            //   // Add all selected ingredients
+                            //   for (var ingredient in result) {
+                            //     controller.addIngredient(ingredient);
+                            //   }
+                            // }
+                          });
+                        },
                       ),
                     ),
                   ],

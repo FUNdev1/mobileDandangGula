@@ -190,9 +190,9 @@ class DashboardController extends GetxController {
       // salesData.value = await dashboardRepository.getRevenueChartData(filterParams: filterParams);
 
       // TODO : penerapan filter date ?
-      categorySales.value = await orderRepository.getCategorySales();
-      productSales.value = await orderRepository.getTopProductSales();
-      paymentMethods.value = await orderRepository.getPaymentMethodData();
+      // categorySales.value = await orderRepository.getCategorySales();
+      // productSales.value = await orderRepository.getTopProductSales();
+      // paymentMethods.value = await orderRepository.getPaymentMethodData();
     } catch (e) {
       if (kDebugMode) {
         print('Error loading admin data: $e');
@@ -216,9 +216,9 @@ class DashboardController extends GetxController {
       // Load branch-specific chart data
       salesData.value = await branchRepository.getBranchRevenueChartData(branchId);
 
-      categorySales.value = await orderRepository.getCategorySales();
-      productSales.value = await orderRepository.getTopProductSales();
-      paymentMethods.value = await orderRepository.getPaymentMethodData();
+      // categorySales.value = await orderRepository.getCategorySales();
+      // productSales.value = await orderRepository.getTopProductSales();
+      // paymentMethods.value = await orderRepository.getPaymentMethodData();
     } catch (e) {
       if (kDebugMode) {
         print('Error loading branch manager data: $e');
@@ -229,8 +229,8 @@ class DashboardController extends GetxController {
   Future<void> loadKasirData() async {
     try {
       // Use available methods instead of undefined ones
-      todaySales.value = await orderRepository.getTotalRevenue() / branchRepository.branches.length;
-      completedOrders.value = (await orderRepository.getTotalOrders()) - 5;
+      // todaySales.value = await orderRepository.getTotalRevenue() / branchRepository.branches.length;
+      // completedOrders.value = (await orderRepository.getTotalOrders()) - 5;
       pendingOrders.value = 5;
       attendanceRate.value = 95.5;
     } catch (e) {

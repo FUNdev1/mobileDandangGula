@@ -37,7 +37,7 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
       return response;
     } catch (e) {
       log('Error adding group: $e');
-      return {'success': false, 'message': 'Failed to get list ingredient group: $e'};
+      return {};
     }
   }
 
@@ -218,18 +218,10 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   @override
   Future<Map<String, dynamic>> addInventoryItem(Map<String, dynamic> item) async {
     try {
-      if (item['type'] == 'raw') {
-        return await _apiService.post(
-          '/stock/create',
-          body: item,
-        );
-      } else {
-        // Semi-finished item dengan resep
-        return await _apiService.post(
-          '/stock/create',
-          body: item,
-        );
-      }
+      return await _apiService.post(
+        '/stock/create',
+        body: item,
+      );
     } catch (e) {
       log('Error adding inventory item: $e');
       throw Exception('Failed to add item: $e');
@@ -240,14 +232,14 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   Future<Map<String, dynamic>> updateInventoryItem(Map<String, dynamic> item) async {
     try {
       if (item['type'] == 'raw') {
-        return await _apiService.post(
-          '/stock/update/:${item["id"]}',
+        return await _apiService.put(
+          '/stock/update/${item["id"]}',
           body: item,
         );
       } else {
         // Semi-finished item dengan resep
-        return await _apiService.post(
-          '/stock/update/:${item["id"]}',
+        return await _apiService.put(
+          '/stock/update/${item["id"]}',
           body: item,
         );
       }

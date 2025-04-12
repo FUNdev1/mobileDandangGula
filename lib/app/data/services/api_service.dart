@@ -11,22 +11,22 @@ class ApiService extends GetxService {
   final bool devMode = false;
 
   ApiService({required this.baseUrl}) {
-    _dio = dio.Dio(dio.BaseOptions(
+    _dio = dio.Dio(
+      dio.BaseOptions(
         baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
-        headers: {'Content-Type': 'application/json'},
-        validateStatus: (status) {
-          return status! < 500;
-        }));
+        validateStatus: (status) => status! < 500,
+      ),
+    );
 
-    // _dio.interceptors.add(
-    //   dio.LogInterceptor(
-    //     requestBody: true,
-    //     responseBody: true,
-    //     // logPrint: (object) => log(object.toString()),
-    //   ),
-    // );
+    _dio.interceptors.add(
+      dio.LogInterceptor(
+        requestBody: true,
+        responseBody: true,
+        // logPrint: (object) => log(object.toString()),
+      ),
+    );
   }
 
   // Metode untuk set token setelah login
@@ -48,6 +48,17 @@ class ApiService extends GetxService {
 
     try {
       dynamic data = body;
+      Map<String, dynamic> headers = {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
+
+      if (data is dio.FormData) {
+        log('Sending FormData with fields: ${data.fields}');
+        if (data.files.isNotEmpty) {
+          log('Files: ${data.files.map((f) => f.key).toList()}');
+        }
+      }
 
       // Jika ada file, convert ke FormData
       if (body is Map<String, dynamic> && (body.containsKey('files') || body.containsKey('photo'))) {
@@ -89,13 +100,14 @@ class ApiService extends GetxService {
             ));
           }
         }
-
         data = formData;
+        headers.remove('Content-Type');
       }
 
       final response = await _dio.post(
         endpoint,
         data: data,
+        options: dio.Options(headers: headers),
       );
 
       return _processResponse(response);

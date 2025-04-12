@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../../../../data/repositories/stock_management_repository.dart';
 import '../../../../../../global_widgets/alert/app_snackbar.dart';
 import '../../../data/models/inventory_item_model.dart';
+import '../../ingredient_select/ingredient_select_view.dart';
 
 class AddStockController extends GetxController {
   final StockManagementRepository stockManagementRepository = Get.find<StockManagementRepository>();
@@ -14,7 +15,6 @@ class AddStockController extends GetxController {
 
   // Form controllers for basic information
   final nameController = TextEditingController();
-  final priceController = TextEditingController();
   final stockController = TextEditingController();
   final minStockController = TextEditingController();
 
@@ -46,7 +46,6 @@ class AddStockController extends GetxController {
   // Error states for form fields
   final isNameError = false.obs;
   final isCategoryError = false.obs;
-  final isPriceError = false.obs;
   final isStockError = false.obs;
   final isMinStockError = false.obs;
   final isRecipeUnitNameError = false.obs;
@@ -115,8 +114,8 @@ class AddStockController extends GetxController {
   @override
   void onClose() {
     // Dispose all controllers
+    _resetFormFields();
     nameController.dispose();
-    priceController.dispose();
     stockController.dispose();
     minStockController.dispose();
     conversionRateController.dispose();
@@ -129,7 +128,6 @@ class AddStockController extends GetxController {
   void _populateFormWithExistingData() {
     if (editItem != null) {
       nameController.text = editItem!.name ?? "";
-      priceController.text = (editItem!.currentPrice ?? 0).toStringAsFixed(0);
       stockController.text = editItem!.stock.toString();
       minStockController.text = editItem!.minimumStock.toString();
       selectedType.value = editItem!.type ?? "raw";
@@ -200,7 +198,6 @@ class AddStockController extends GetxController {
     // Reset all error states
     isNameError.value = false;
     isCategoryError.value = false;
-    isPriceError.value = false;
     isStockError.value = false;
     isMinStockError.value = false;
     isRecipeUnitNameError.value = false;
@@ -221,11 +218,6 @@ class AddStockController extends GetxController {
 
     if (selectedCategoryFilter.value == null) {
       isCategoryError.value = true;
-      isValid = false;
-    }
-
-    if (selectedType.value == 'semi-finished' && priceController.text.isEmpty) {
-      isPriceError.value = true;
       isValid = false;
     }
 
@@ -318,9 +310,9 @@ class AddStockController extends GetxController {
     return ingredients.map((ingredient) {
       return {
         'raw_id': ingredient.id,
-        'amount': ingredient.amount,
+        'amount': ingredient.amount.toString(),
         'uom': ingredient.unit,
-        'price': ingredient.price,
+        'price': ingredient.price.toString(),
       };
     }).toList();
   }
@@ -337,23 +329,22 @@ class AddStockController extends GetxController {
         'uom': selectedUomName,
         'group_id': selectedCategoryFilter.value?['id'],
         'stock_limit': int.tryParse(minStockController.text) ?? 0,
-        'type': selectedType.value,
+        'type': selectedType.value.replaceAll("-", ""),
       };
 
       // Add type-specific fields
       if (selectedType.value == 'raw') {
         // For raw materials
         data['uom_buy'] = purchaseUnitController.text;
-        data['conversion'] = double.tryParse(conversionRateController.text);
-        data['price'] = double.tryParse(priceController.text) ?? 0;
+        data['conversion'] = conversionRateController.text;
       } else {
         // For semi-finished products
-        data['result_per_recipe'] = double.tryParse(resultPerRecipeController.text);
+        data['result_per_recipe'] = resultPerRecipeController.text;
         data['price'] = totalCost.value;
         data['recipe'] = _ingredientsToMapList();
       }
 
-      final res = await stockManagementRepository.addInventoryItem(data);
+      final res = await stockManagementRepository.addInventoryItem((data));
       if (res["status"] == false) {
         AppSnackBar.error(message: res["message"]);
         return;
@@ -390,11 +381,10 @@ class AddStockController extends GetxController {
       if (selectedType.value == 'raw') {
         // For raw materials
         data['uom_buy'] = purchaseUnitController.text;
-        data['conversion'] = double.tryParse(conversionRateController.text);
-        data['price'] = double.tryParse(priceController.text) ?? 0;
+        data['conversion'] = conversionRateController.text;
       } else {
         // For semi-finished products
-        data['result_per_recipe'] = double.tryParse(resultPerRecipeController.text);
+        data['result_per_recipe'] = resultPerRecipeController.text;
         data['price'] = totalCost.value;
         data['recipe'] = _ingredientsToMapList();
       }
@@ -413,5 +403,23 @@ class AddStockController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void showAddIngredientDialog(BuildContext? context) {
+    if (context == null) return;
+
+    Get.to(() => SelectIngredientPage(
+          existingIngredients: ingredients.toList(),
+        ))?.then((result) {
+      if (result != null && result is List<RecipeIngredient>) {
+        // Clear existing ingredients first
+        ingredients.clear();
+
+        // Add all selected ingredients
+        for (var ingredient in result) {
+          addIngredient(ingredient);
+        }
+      }
+    });
   }
 }

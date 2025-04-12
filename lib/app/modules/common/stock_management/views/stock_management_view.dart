@@ -22,7 +22,7 @@ class StockManagementView extends GetView<StockManagementController> {
     return AppLayout(
       key: ValueKey('stock_management_$refreshKey'),
       content: _buildContent(context),
-      onRefresh: () => controller.fetchData(),
+      onRefresh: () => controller.refreshData(),
     );
   }
 

@@ -99,11 +99,9 @@ class LoginView extends StatelessWidget {
                                   )),
                               const SizedBox(width: 8),
                               Text(
-                                'Masuk sebagai ${controller.isMasterAdmin.value ? "Master Admin" : "Branch Admin"}',
+                                'Masuk Master Admin',
                                 style: const TextStyle(
-                                  fontFamily: 'Inter',
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w400,
                                   color: Color(0xFF1A1A1A),
                                 ),
                               ),

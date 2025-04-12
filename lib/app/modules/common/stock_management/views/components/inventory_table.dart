@@ -92,7 +92,6 @@ class InventoryTable extends StatelessWidget {
             width: 200,
             child: AppTextField(
               controller: controller.searchTextController,
-              appTextFieldEnum: AppTextFieldEnum.field,
               hint: "Cari Bahan",
               suffixIcon: AppIcons.search,
               onSubmitted: (value) => controller.refreshData(),

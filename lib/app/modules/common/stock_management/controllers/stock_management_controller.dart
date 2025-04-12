@@ -147,18 +147,20 @@ class StockManagementController extends GetxController {
                 AppIcons.wheat,
                 "Tambah Bahan Dasar",
                 "Bahan mentah untuk membuat resep atau bahan setengah jadi. Contoh: Air, Gula, dll",
-                () {
+                () async {
                   Get.back();
-                  Get.toNamed(Routes.STOCK_MANAGEMENT_ADD, arguments: {'type': 'raw'});
+                  final res = await Get.toNamed(Routes.STOCK_MANAGEMENT_ADD, arguments: {'type': 'raw'});
+                  if (res == true) fetchData();
                 },
               ),
               _itemAddStock(
                 AppIcons.noodleBowl,
                 "Tambah Bahan Setengah Jadi",
                 "Bahan yang diolah dari beberapa bahan dasar. Contoh: Sambal, Kaldu, dll.",
-                () {
+                () async {
                   Get.back();
-                  Get.toNamed(Routes.STOCK_MANAGEMENT_ADD, arguments: {'type': 'semi-finished'});
+                  final res = await Get.toNamed(Routes.STOCK_MANAGEMENT_ADD, arguments: {'type': 'semi-finished'});
+                  if (res == true) fetchData();
                 },
               ),
             ],

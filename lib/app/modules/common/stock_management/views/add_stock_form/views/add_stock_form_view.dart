@@ -528,7 +528,7 @@ class AddStockForm extends GetView<AddStockController> {
                       child: AppButton(
                         label: "Tambah",
                         variant: ButtonVariant.outline,
-                        onPressed: () => _showAddIngredientDialog(context),
+                        onPressed: () => _showAddIngredientDialog(),
                         prefixSvgPath: AppIcons.add,
                       ),
                     ),
@@ -619,7 +619,7 @@ class AddStockForm extends GetView<AddStockController> {
   }
 
   Widget _buildIngredientItem(BuildContext context, RecipeIngredient ingredient) {
-    final textController = TextEditingController(text: ingredient.amount.toString());
+    final textController = TextEditingController(text: ingredient.amount?.toStringAsFixed(0).toString());
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -633,24 +633,14 @@ class AddStockForm extends GetView<AddStockController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                AppText(
                   ingredient.name ?? 'Bahan',
-                  style: const TextStyle(
-                    fontFamily: 'IBM Plex Sans',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    height: 1.3,
-                    color: Colors.black,
-                  ),
                 ),
                 const SizedBox(height: 4),
-                Text(
+                AppText(
                   'Rp${ingredient.price?.toStringAsFixed(0) ?? '0'}',
                   style: const TextStyle(
-                    fontFamily: 'IBM Plex Sans',
                     fontSize: 12,
-                    fontWeight: FontWeight.w300,
-                    height: 1.3,
                     color: Color(0xFF8B8B8B),
                   ),
                 ),
@@ -662,24 +652,15 @@ class AddStockForm extends GetView<AddStockController> {
             child: SizedBox(
               child: AppTextField(
                 controller: textController,
+                hint: "${ingredient.unit}",
               ),
             ),
           ),
-          // Text(
-          //   '${ingredient.amount} ${ingredient.unit ?? ''}',
-          //   style: const TextStyle(
-          //     fontFamily: 'IBM Plex Sans',
-          //     fontSize: 14,
-          //     fontWeight: FontWeight.w400,
-          //     height: 1.3,
-          //     color: Colors.black,
-          //   ),
-          // ),
           SizedBox(width: 16),
           Row(
             children: [
               InkWell(
-                onTap: () => _showAddIngredientDialog(context),
+                onTap: () => _showAddIngredientDialog(),
                 child: Container(
                   width: 32,
                   height: 32,
@@ -726,12 +707,12 @@ class AddStockForm extends GetView<AddStockController> {
     );
   }
 
-  void _showAddIngredientDialog(BuildContext? context) {
-    if (context == null) return;
-
-    Get.to(() => SelectIngredientPage(
-          existingIngredients: controller.ingredients.toList(),
-        ))?.then((result) {
+  void _showAddIngredientDialog() {
+    Get.to(() {
+      return SelectIngredientPage(
+        existingIngredients: controller.ingredients.toList(),
+      );
+    })?.then((result) {
       if (result != null && result is List<RecipeIngredient>) {
         // Clear existing ingredients first
         controller.ingredients.clear();

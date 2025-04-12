@@ -63,50 +63,50 @@ class _StockDetailViewState extends State<StockDetailView> {
           _stockDetail = response['data'];
 
           // Mock stock history data - in a real implementation, you would fetch this from an API
-          _stockHistory = [
-            {
-              'date': '2/4/2025 13:00',
-              'type': 'usage',
-              'description': 'Penjualan\nID Pesanan #1123345',
-              'quantity': -400,
-              'unit': _stockDetail?['uom'] ?? 'gram',
-            },
-            {
-              'date': '2/4/2025 13:00',
-              'type': 'usage',
-              'description': 'Penjualan\nID Pesanan #1123345',
-              'quantity': -400,
-              'unit': _stockDetail?['uom'] ?? 'gram',
-            },
-            {
-              'date': '2/4/2025 13:00',
-              'type': 'usage',
-              'description': 'Penjualan\nID Pesanan #1123345',
-              'quantity': -400,
-              'unit': _stockDetail?['uom'] ?? 'gram',
-            },
-            {
-              'date': '2/4/2025 13:00',
-              'type': 'purchase',
-              'description': 'Pembelian\nDiinput oleh Firman Arivianto',
-              'quantity': 1000,
-              'unit': _stockDetail?['uom'] ?? 'gram',
-            },
-            {
-              'date': '2/4/2025 13:00',
-              'type': 'usage',
-              'description': 'Penjualan\nID Pesanan #1123345',
-              'quantity': -400,
-              'unit': _stockDetail?['uom'] ?? 'gram',
-            },
-            {
-              'date': '2/4/2025 13:00',
-              'type': 'purchase',
-              'description': 'Pembelian\nDiinput oleh Firman Arivianto',
-              'quantity': 1000,
-              'unit': _stockDetail?['uom'] ?? 'gram',
-            },
-          ];
+          // _stockHistory = [
+          //   {
+          //     'date': '2/4/2025 13:00',
+          //     'type': 'usage',
+          //     'description': 'Penjualan\nID Pesanan #1123345',
+          //     'quantity': -400,
+          //     'unit': _stockDetail?['uom'] ?? 'gram',
+          //   },
+          //   {
+          //     'date': '2/4/2025 13:00',
+          //     'type': 'usage',
+          //     'description': 'Penjualan\nID Pesanan #1123345',
+          //     'quantity': -400,
+          //     'unit': _stockDetail?['uom'] ?? 'gram',
+          //   },
+          //   {
+          //     'date': '2/4/2025 13:00',
+          //     'type': 'usage',
+          //     'description': 'Penjualan\nID Pesanan #1123345',
+          //     'quantity': -400,
+          //     'unit': _stockDetail?['uom'] ?? 'gram',
+          //   },
+          //   {
+          //     'date': '2/4/2025 13:00',
+          //     'type': 'purchase',
+          //     'description': 'Pembelian\nDiinput oleh Firman Arivianto',
+          //     'quantity': 1000,
+          //     'unit': _stockDetail?['uom'] ?? 'gram',
+          //   },
+          //   {
+          //     'date': '2/4/2025 13:00',
+          //     'type': 'usage',
+          //     'description': 'Penjualan\nID Pesanan #1123345',
+          //     'quantity': -400,
+          //     'unit': _stockDetail?['uom'] ?? 'gram',
+          //   },
+          //   {
+          //     'date': '2/4/2025 13:00',
+          //     'type': 'purchase',
+          //     'description': 'Pembelian\nDiinput oleh Firman Arivianto',
+          //     'quantity': 1000,
+          //     'unit': _stockDetail?['uom'] ?? 'gram',
+          //   },
+          // ];
 
           _isLoading = false;
         });
@@ -546,46 +546,45 @@ class _StockDetailViewState extends State<StockDetailView> {
   Widget _buildCustomTabs() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey.shade300,
-            width: 1,
-          ),
-        ),
+        color: Color(0xFFFAFAFA),
+        borderRadius: BorderRadius.circular(8),
       ),
+      margin: EdgeInsets.symmetric(horizontal: 24),
       child: Row(
         children: List.generate(
           _tabTitles.length,
-          (index) => Expanded(
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  _selectedTabIndex = index;
-                });
-              },
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: _selectedTabIndex == index ? Colors.blue : Colors.transparent,
-                      width: 2,
+          (index) {
+            return Container(
+              padding: EdgeInsets.symmetric(horizontal: 14),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    _selectedTabIndex = index;
+                  });
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: _selectedTabIndex == index ? Colors.blue : Colors.transparent,
+                        width: 4,
+                      ),
                     ),
                   ),
-                ),
-                child: Center(
-                  child: Text(
-                    _tabTitles[index],
-                    style: TextStyle(
-                      color: _selectedTabIndex == index ? Colors.blue : Colors.grey,
-                      fontWeight: _selectedTabIndex == index ? FontWeight.bold : FontWeight.normal,
+                  child: Center(
+                    child: Text(
+                      _tabTitles[index],
+                      style: TextStyle(
+                        color: _selectedTabIndex == index ? Colors.blue : Colors.grey,
+                        fontWeight:  FontWeight.normal,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );

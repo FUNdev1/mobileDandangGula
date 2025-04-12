@@ -25,25 +25,18 @@ class BranchRepositoryImpl extends BranchRepository {
   final RxList<Branch> branches = <Branch>[].obs;
 
   @override
-  Future<void> fetchAllBranches() async {
+  Future<Map<String, dynamic>> fetchAllBranches() async {
     try {
       final response = await _apiService.get('/branch/lists');
-
-      final List<Branch> branchList = [];
-
       if (response is List) {
-        for (var item in response) {
-          branchList.add(Branch.fromJson(item));
-        }
+        branches.assignAll(response.map((item) => Branch.fromJson(item)).toList());
       } else if (response is Map && response.containsKey('data') && response['data'] is List) {
-        for (var item in response['data']) {
-          branchList.add(Branch.fromJson(item));
-        }
+        branches.assignAll((response['data'] as List).map((item) => Branch.fromJson(item)).toList());
       }
-
-      branches.assignAll(branchList);
+      return response;
     } catch (e) {
       log('Error fetching branches: $e');
+      return {};
     }
   }
 
@@ -141,12 +134,7 @@ class BranchRepositoryImpl extends BranchRepository {
       };
     } catch (e) {
       log('Error getting branch revenue: $e');
-      return {
-        'revenue': 0.0,
-        'cogs': 0.0,
-        'netProfit': 0.0,
-        'growth': 0.0,
-      };
+      return {};
     }
   }
 

@@ -7,14 +7,8 @@ import '../../../../data/services/auth_service.dart';
 import '../../../../global_widgets/alert/app_snackbar.dart';
 import '../widget/user_account_side_panel.dart';
 
-class SettingController extends GetxController {
-  final AuthService _authService = Get.find<AuthService>();
-
+class SettingController extends GetxController implements UserFormController {
   // Text controllers
-  final nameController = TextEditingController();
-  final usernameController = TextEditingController();
-  final passwordController = TextEditingController();
-  final pinController = TextEditingController();
   final searchController = TextEditingController();
 
   // Observable variables
@@ -24,17 +18,28 @@ class SettingController extends GetxController {
   final totalPages = 1.obs;
   final itemsPerPage = 5.obs;
   final isLoading = false.obs;
-  final isSubmitting = false.obs;
   final isEditing = false.obs;
   final selectedUser = Rxn<User?>();
-  final selectedImage = Rxn<File?>();
-
-  // Role handling
-  final roles = [].obs;
-  final selectedRoleId = RxnString();
 
   // Status handling
   final isAccountActive = true.obs;
+
+  @override
+  final isSubmitting = false.obs;
+  @override
+  final roles = [].obs;
+  @override
+  final selectedRoleId = RxnString();
+  @override
+  final nameController = TextEditingController();
+  @override
+  final usernameController = TextEditingController();
+  @override
+  final passwordController = TextEditingController();
+  @override
+  final pinController = TextEditingController();
+  @override
+  final selectedImage = Rxn<File?>();
 
   @override
   void onInit() {
