@@ -11,7 +11,11 @@ import '../modules/common/login/bindings/login_binding.dart';
 import '../modules/common/login/views/login_view.dart';
 import '../modules/common/dashboard/bindings/dashboard_binding.dart';
 import '../modules/common/menu_management/bindings/menu_management_binding.dart';
+import '../modules/common/menu_management/component/page/add_menu_management_binding.dart';
+import '../modules/common/menu_management/component/page/add_menu_management_view.dart';
+import '../modules/common/menu_management/controllers/menu_management_controller.dart';
 import '../modules/common/menu_management/views/menu_management_view.dart';
+import '../modules/common/menu_management/component/menu_category_view.dart';
 import '../modules/common/reports/bindings/reports_binding.dart';
 import '../modules/common/reports/views/reports_view.dart';
 import '../modules/common/setting/bindings/setting_binding.dart';
@@ -166,6 +170,19 @@ class AppPages {
     GetPage(
       name: Routes.MENU_MANAGEMENT,
       page: () => const MenuManagementView(),
+      binding: MenuManagementBinding(),
+      middlewares: [
+        AuthMiddleware(allowedRoles: ['supervisor']),
+      ],
+    ),
+    GetPage(
+      name: Routes.ADD_MENU_MANAGEMENT,
+      page: () => AddMenuPage(menuController: Get.find<MenuManagementController>()),
+      binding: AddMenuManagementBinding(),
+    ),
+    GetPage(
+      name: Routes.MENU_MANAGEMENT_CATEGORY,
+      page: () => MenuCategoryView(),
       binding: MenuManagementBinding(),
       middlewares: [
         AuthMiddleware(allowedRoles: ['supervisor']),

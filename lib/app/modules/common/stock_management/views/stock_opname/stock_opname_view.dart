@@ -147,7 +147,7 @@ class StockOpnameView extends StatelessWidget {
               appTextFieldEnum: AppTextFieldEnum.field,
               suffixIcon: AppIcons.search,
               hint: "Cari Bahan",
-              onSubmitted: (val) {
+              onFocusChanged: (val) {
                 if (val.trim().isNotEmpty) {
                   searchQuery.value = val.trim(); // Update searchQuery
                   _filterItemsBySearch(searchQuery.value);
@@ -300,9 +300,7 @@ class StockOpnameView extends StatelessWidget {
   ) {
     return Container(
       height: 71,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         color: Color(0xFFFBFCFE),
@@ -329,7 +327,7 @@ class StockOpnameView extends StatelessWidget {
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
                 ],
-                onChanged: (value) {
+                onFocusChanged: (value) {
                   // Calculate difference
                   if (value.isNotEmpty) {
                     final physical = int.tryParse(value) ?? 0;

@@ -34,4 +34,6 @@ abstract class Routes {
   
   // Menu management (branch manager only)
   static const MENU_MANAGEMENT = '/menu-management';
+  static const ADD_MENU_MANAGEMENT = '/menu-management/add';
+  static const MENU_MANAGEMENT_CATEGORY = '/menu-management/category';
 }

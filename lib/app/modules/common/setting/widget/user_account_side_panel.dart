@@ -8,7 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../data/repositories/user_repository.dart';
 import '../../../../global_widgets/buttons/app_button.dart';
 import '../../../../global_widgets/input/app_password_field.dart';
-import '../../../../global_widgets/input/app_switch_field';
+import '../../../../global_widgets/input/app_switch_field.dart';
 import '../../../../global_widgets/input/app_text_field.dart';
 import '../controllers/setting_controller.dart';
 
@@ -30,7 +30,8 @@ abstract class UserFormController {
   void submitUserForm({bool isActive});
 }
 
-class UserAccountSidePanel<T extends UserFormController> extends StatefulWidget {
+class UserAccountSidePanel<T extends UserFormController>
+    extends StatefulWidget {
   final T controller;
 
   const UserAccountSidePanel({super.key, required this.controller});
@@ -93,7 +94,9 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                   ),
                   const SizedBox(width: 12),
                   Obx(() => Text(
-                        widget.controller.isEditing.value ? 'Edit Akun' : 'Buat Akun baru',
+                        widget.controller.isEditing.value
+                            ? 'Edit Akun'
+                            : 'Buat Akun baru',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -147,7 +150,8 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: const Color(0xFFE0E0E0)),
+                                  border: Border.all(
+                                      color: const Color(0xFFE0E0E0)),
                                 ),
                                 child: SvgPicture.asset(
                                   'assets/icons/edit.svg',
@@ -190,12 +194,14 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                         Obx(() => AppDropdownField(
                               hint: "Pilih Role Akun",
                               items: widget.controller.roles.value,
-                              selectedValue: widget.controller.selectedRoleId.value ?? "",
+                              selectedValue:
+                                  widget.controller.selectedRoleId.value ?? "",
                               valueKey: "id",
                               displayKey: "role",
                               onChanged: (String? newValue) {
                                 if (newValue != null) {
-                                  widget.controller.selectedRoleId.value = newValue;
+                                  widget.controller.selectedRoleId.value =
+                                      newValue;
                                 }
                               },
                             )),
@@ -224,10 +230,12 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                     // Password field
                     Obx(() => AppPasswordField(
                           label: "Password",
-                          
+
                           // isMandatory: !widget.controller.isEditing.value,
                           controller: widget.controller.passwordController,
-                          hint: widget.controller.isEditing.value ? 'Kosongkan jika tidak diubah' : 'Tulis password akun..',
+                          hint: widget.controller.isEditing.value
+                              ? 'Kosongkan jika tidak diubah'
+                              : 'Tulis password akun..',
                         )),
                     const SizedBox(height: 24),
 
@@ -302,10 +310,13 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                   Expanded(
                     child: Obx(() {
                       return AppButton(
-                        label: widget.controller.isEditing.value ? 'Update' : 'Create',
+                        label: widget.controller.isEditing.value
+                            ? 'Update'
+                            : 'Create',
                         variant: ButtonVariant.primary,
                         isLoading: widget.controller.isSubmitting.value,
-                        onPressed: () => widget.controller.submitUserForm(isActive: isActive),
+                        onPressed: () => widget.controller
+                            .submitUserForm(isActive: isActive),
                       );
                     }),
                   ),
@@ -344,7 +355,8 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
           if (selectedImage != null)
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('Hapus Foto', style: TextStyle(color: Colors.red)),
+              title:
+                  const Text('Hapus Foto', style: TextStyle(color: Colors.red)),
               onTap: () {
                 Navigator.of(context).pop();
                 setState(() {

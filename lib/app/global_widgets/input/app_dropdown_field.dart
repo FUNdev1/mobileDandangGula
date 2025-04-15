@@ -130,7 +130,7 @@ class _AppDropdownFieldState extends State<AppDropdownField> {
                         controller: _searchController,
                         hint: 'Search...',
                         prefixIcon: AppIcons.search,
-                        onChanged: (value) {
+                        onFocusChanged: (value) {
                           setState(() {
                             _searchText = value;
                             _updateOverlay();
@@ -165,7 +165,7 @@ class _AppDropdownFieldState extends State<AppDropdownField> {
                             ),
                             color: isSelected ? const Color(0xFFEEEEEE) : Colors.white,
                             child: AppText(
-                              item[widget.displayKey],
+                              item[widget.displayKey] ?? "",
                               style: const TextStyle(
                                 color: Colors.black,
                               ),

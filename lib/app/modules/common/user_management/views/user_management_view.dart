@@ -70,7 +70,7 @@ class UserManagementView extends GetView<UserManagementController> {
                       hint: "Cari User",
                       controller: controller.searchController,
                       suffixIcon: AppIcons.search,
-                      onSubmitted: (_) => controller.searchUsers(),
+                      onFocusChanged: (_) => controller.searchUsers(),
                     ),
                   ),
                   const SizedBox(width: 12),

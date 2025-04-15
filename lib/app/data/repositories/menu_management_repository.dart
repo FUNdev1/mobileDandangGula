@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../mock/menu_mock_data.dart';
 import '../services/api_service.dart';
 import '../models/menu_model.dart';
 import '../models/menu_category_model.dart';
@@ -18,7 +19,6 @@ abstract class MenuManagementRepository {
   Future<Menu> getMenuDetail(String id);
   Future<List<Menu>> getMenuCardList({int page = 1, int pageSize = 10, String search = '', String sort = '', String category = ''});
   Future<Menu> getMenuCardDetail(String id);
-  Future<Map<String, dynamic>> getListGroupCategory();
 }
 
 class MenuManagementRepositoryImpl implements MenuManagementRepository {
@@ -33,7 +33,7 @@ class MenuManagementRepositoryImpl implements MenuManagementRepository {
         return (response['data'] as List).map((item) => MenuCategory.fromJson(item)).toList();
       }
 
-      return [];
+      return MenuMockData.getCategories();
     } catch (e) {
       log('Error getting menu categories: $e');
       return [];
@@ -89,14 +89,14 @@ class MenuManagementRepositoryImpl implements MenuManagementRepository {
         body: {'page': page, 'pageSize': pageSize, 'search': search, 'category': category},
       );
 
-      if (response is Map && response.containsKey('data') && response['data'] is List) {
-        return response["data"];
+      if (response is Map<String, dynamic> && response.containsKey('data')) {
+        return response;
       }
 
-      return {'data': []};
+      return {'data': MenuMockData.getMenuList(), 'success': true, 'message': 'Invalid response format'};
     } catch (e) {
       log('Error getting menu list: $e');
-      return {'data': []};
+      return {'data': MenuMockData.getMenuList(), 'success': true, 'message': 'Failed to get menu list: $e'};
     }
   }
 
@@ -181,21 +181,6 @@ class MenuManagementRepositoryImpl implements MenuManagementRepository {
     } catch (e) {
       log('Error getting menu card detail: $e');
       throw Exception('Failed to get menu card detail: $e');
-    }
-  }
-
-  @override
-  Future<Map<String, dynamic>> getListGroupCategory() async {
-    try {
-      final response = await _apiService.get('/stockgroup/list');
-
-      if (response is Map && response.containsKey('data')) {
-        return response["data"];
-      }
-      return {'success': false, 'message': 'Invalid response format'};
-    } catch (e) {
-      log('Error getting menu card detail: $e');
-      return {'success': false, 'message': 'Failed to get menu card detail: $e'};
     }
   }
 }

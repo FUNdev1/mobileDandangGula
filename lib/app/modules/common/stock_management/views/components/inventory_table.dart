@@ -94,7 +94,7 @@ class InventoryTable extends StatelessWidget {
               controller: controller.searchTextController,
               hint: "Cari Bahan",
               suffixIcon: AppIcons.search,
-              onSubmitted: (value) => controller.refreshData(),
+              onFocusChanged: (value) => controller.refreshData(),
             ),
           ),
 

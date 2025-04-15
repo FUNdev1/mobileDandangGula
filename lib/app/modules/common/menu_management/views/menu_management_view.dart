@@ -111,14 +111,7 @@ class MenuManagementView extends GetView<MenuManagementController> {
             return AppDropdownField(
               selectedValue: controller.selectedCategory.value ?? "",
               displayKey: "category_name",
-              items: [
-                ...controller.categories.map((category) {
-                  return {
-                    'label': category['category_name'] ?? 'Unnamed',
-                    'value': category['id'] ?? '',
-                  };
-                }),
-              ],
+              items: controller.categories,
               onChanged: (value) {
                 controller.selectedCategory.value = value;
                 controller.loadRolesAndUsers();
@@ -132,7 +125,7 @@ class MenuManagementView extends GetView<MenuManagementController> {
           child: AppTextField(
             hint: 'Cari Menu',
             controller: controller.searchController,
-            onSubmitted: (val) {
+            onFocusChanged: (val) {
               if (val.isNotEmpty) {
                 controller.searchMenu();
               }
@@ -166,22 +159,18 @@ class MenuManagementView extends GetView<MenuManagementController> {
             )
           else
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.grey.shade200),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: ListView(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    _buildTableHeader(),
-                    ...controller.roles.map((menu) => _buildMenuRow(menu)).toList(),
-                  ],
-                ),
+              child: ListView(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _buildTableHeader(),
+                  ...controller.roles.map((menu) => _buildMenuRow(menu)),
+                ],
               ),
             ),
           if (controller.roles.isNotEmpty) _buildPagination(),
@@ -322,7 +311,7 @@ class MenuManagementView extends GetView<MenuManagementController> {
 class MenuDetailDialog extends StatelessWidget {
   final dynamic menu;
 
-  const MenuDetailDialog({Key? key, required this.menu}) : super(key: key);
+  const MenuDetailDialog({super.key, required this.menu});
 
   @override
   Widget build(BuildContext context) {

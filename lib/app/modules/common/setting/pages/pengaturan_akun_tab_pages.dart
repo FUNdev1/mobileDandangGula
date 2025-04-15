@@ -58,7 +58,7 @@ class _PengaturanAkunTabPagesState extends State<PengaturanAkunTabPages> {
                         child: AppTextField(
                           hint: "Cari User",
                           controller: controller.searchController,
-                          onSubmitted: (_) => controller.searchUsers(),
+                          onFocusChanged: (_) => controller.searchUsers(),
                         ),
                       ),
                       const SizedBox(width: 10),

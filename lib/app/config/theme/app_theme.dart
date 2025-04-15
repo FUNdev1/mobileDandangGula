@@ -90,8 +90,8 @@ class AppTheme {
 
       // AppBar theme
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.cardBackground,
-        elevation: 0,
+        backgroundColor: AppColors.cardBackground,scrolledUnderElevation: 1,
+        elevation: 1,
         centerTitle: false,
         titleTextStyle: AppTextStyles.h3,
       ),

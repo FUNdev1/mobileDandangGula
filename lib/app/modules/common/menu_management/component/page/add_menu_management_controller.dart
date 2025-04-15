@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,6 +17,13 @@ class AddMenuController extends GetxController {
 
   // Search ingredients
   final ingredientSearchController = TextEditingController();
+
+  // Validation error states
+  final menuNameError = false.obs;
+  final categoryError = false.obs;
+  final ingredientsError = false.obs;
+  final ingredientAmountErrors = <String, bool>{}.obs;
+  final ingredientPriceErrors = <String, bool>{}.obs;
 
   // Observable variables
   final selectedCategoryId = RxnString();
@@ -42,50 +50,49 @@ class AddMenuController extends GetxController {
     // Initialize controllers with default values
     productionCostController.text = '0';
     sellingPriceController.text = '0';
-    
-    // Setup listeners after controllers are initialized
-    setupListeners();
-    
+
     // Load ingredients
     loadIngredients();
   }
 
-  void setupListeners() {
-    // Remove existing listeners to avoid duplicates
-    productionCostController.removeListener(calculateTotals);
-    sellingPriceController.removeListener(calculateGrossMargin);
-    
-    // Add new listeners
-    productionCostController.addListener(calculateTotals);
-    sellingPriceController.addListener(calculateGrossMargin);
-    
-    // Calculate initial values
-    calculateTotals();
+  void _validateMenuName() {
+    menuNameError.value = menuNameController.text.trim().isEmpty;
+  }
+
+  void _validateProductionCost() {
+    final cost = int.tryParse(productionCostController.text) ?? 0;
+    if (cost < 0) {
+      productionCostController.text = '0';
+    }
   }
 
   Future<void> loadIngredients() async {
     if (isLoadingIngredients.value) return;
-    
+
     isLoadingIngredients.value = true;
     try {
-      final repository = Get.find<StockManagementRepositoryImpl>();
+      final repository = Get.find<StockManagementRepository>();
       final response = await repository.getAllInventoryItems(type: 'menu');
 
-      if (response != null) {
+      if (response.isNotEmpty) {
         allIngredients.value = response.map((item) {
           return {
             'id': item.id,
             'name': item.name,
             'uom': item.uom,
             'type': item.type,
+            'stock': item.stock,
           };
         }).toList();
         filteredIngredients.value = allIngredients;
       } else {
-        AppSnackBar.error(message: 'Failed to load ingredients: No data received');
+        allIngredients.value = [];
+        filteredIngredients.value = [];
       }
     } catch (e) {
       AppSnackBar.error(message: 'Failed to load ingredients: $e');
+      allIngredients.value = [];
+      filteredIngredients.value = [];
     } finally {
       isLoadingIngredients.value = false;
     }
@@ -112,11 +119,22 @@ class AddMenuController extends GetxController {
         'price': '0',
         'type': ingredient['type'] ?? 'Ingredient',
       });
+      // Reset validation states when adding new ingredient
+      ingredientAmountErrors[ingredient['id']] = false;
+      ingredientPriceErrors[ingredient['id']] = false;
+      ingredientsError.value = false;
+      selectedIngredients.refresh();
+      calculateTotals();
     }
   }
 
   void removeIngredient(String id) {
     selectedIngredients.removeWhere((ingredient) => ingredient['id'] == id);
+    // Reset validation states when removing ingredient
+    ingredientAmountErrors.remove(id);
+    ingredientPriceErrors.remove(id);
+    ingredientsError.value = false;
+    selectedIngredients.refresh();
     calculateTotals();
   }
 
@@ -126,6 +144,7 @@ class AddMenuController extends GetxController {
       final ingredient = Map<String, dynamic>.from(selectedIngredients[index]);
       ingredient['amount'] = amount;
       selectedIngredients[index] = ingredient;
+      selectedIngredients.refresh();
       calculateTotals();
     }
   }
@@ -136,6 +155,7 @@ class AddMenuController extends GetxController {
       final ingredient = Map<String, dynamic>.from(selectedIngredients[index]);
       ingredient['price'] = price;
       selectedIngredients[index] = ingredient;
+      selectedIngredients.refresh();
       calculateTotals();
     }
   }
@@ -166,48 +186,59 @@ class AddMenuController extends GetxController {
     priceWithTax.value = sellingPrice + (sellingPrice * 0.1).round();
   }
 
+  void validateCategory(String? value) {
+    categoryError.value = value == null || value.isEmpty;
+  }
+
   bool validateForm() {
-    if (menuNameController.text.isEmpty) {
-      AppSnackBar.error(message: 'Nama menu harus diisi');
-      return false;
+    // Reset all error states
+    menuNameError.value = false;
+    categoryError.value = false;
+    ingredientsError.value = false;
+    ingredientAmountErrors.clear();
+    ingredientPriceErrors.clear();
+
+    bool isValid = true;
+
+    // Validate menu name
+    if (menuNameController.text.trim().isEmpty) {
+      menuNameError.value = true;
+      isValid = false;
     }
 
+    // Validate category
     if (selectedCategoryId.value == null || selectedCategoryId.value!.isEmpty) {
-      AppSnackBar.error(message: 'Kategori harus dipilih');
-      return false;
+      categoryError.value = true;
+      isValid = false;
     }
 
+    // Validate ingredients
     if (selectedIngredients.isEmpty) {
-      AppSnackBar.error(message: 'Minimal 1 bahan harus dipilih');
-      return false;
+      ingredientsError.value = true;
+      isValid = false;
     }
 
     // Validate ingredient amounts and prices
     for (final ingredient in selectedIngredients) {
-      final amount = int.tryParse(ingredient['amount'] ?? '0') ?? 0;
-      if (amount <= 0) {
-        AppSnackBar.error(message: 'Jumlah ${ingredient['name']} harus lebih dari 0');
-        return false;
+      final amount = int.tryParse(ingredient['amount']?.toString() ?? '0') ?? 0;
+      if (amount == 0) {
+        ingredientAmountErrors[ingredient['id']] = true;
+        isValid = false;
       }
 
-      final price = int.tryParse(ingredient['price'] ?? '0') ?? 0;
-      if (price <= 0) {
-        AppSnackBar.error(message: 'Harga ${ingredient['name']} harus lebih dari 0');
-        return false;
+      final price = int.tryParse(ingredient['price']?.toString() ?? '0') ?? 0;
+      if (price == 0) {
+        ingredientPriceErrors[ingredient['id']] = true;
+        isValid = false;
       }
     }
 
-    final sellingPrice = int.tryParse(sellingPriceController.text) ?? 0;
-    if (sellingPrice <= 0) {
-      AppSnackBar.error(message: 'Harga jual harus lebih dari 0');
-      return false;
-    }
-
-    return true;
+    return isValid;
   }
 
   void validateAndSave() {
     if (!validateForm()) {
+      AppSnackBar.error(message: 'Mohon lengkapi semua field yang diperlukan');
       return;
     }
 
@@ -234,8 +265,9 @@ class AddMenuController extends GetxController {
         'hpp': hpp.value.toString(),
         'price': sellingPriceController.text,
         'gross_margin': grossMargin.value.toString(),
-        'ingredients': ingredients,
+        'ingredients': jsonEncode(ingredients),
       };
+      // debugPrint('Complete form data: $formData');
 
       final response = await repository.createMenu(formData);
 

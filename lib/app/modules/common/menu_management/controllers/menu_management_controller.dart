@@ -11,10 +11,13 @@ import '../../../../data/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../global_widgets/alert/app_snackbar.dart';
-import '../component/menu_management_component.dart';
+import '../../../../routes/app_routes.dart';
 import '../component/page/add_menu_management_view.dart';
 
 class MenuManagementController extends GetxController {
+  // Repository
+  final menuManagementRepository = Get.find<MenuManagementRepositoryImpl>();
+
   // Observable variables
   final isLoading = false.obs;
   final users = <User>[].obs;
@@ -68,15 +71,14 @@ class MenuManagementController extends GetxController {
     isLoading.value = true;
     try {
       // First load categories
-      final repository = MenuManagementRepositoryImpl();
-      final categoriesResponse = await repository.getListGroupCategory();
-      if (categoriesResponse.containsKey('data') && categoriesResponse['data'] is List) {
-        categories.value = categoriesResponse['data'];
+      final categoriesResponse = await menuManagementRepository.getMenuCategories();
+      if (categoriesResponse.isNotEmpty) {
+        categories.value = categoriesResponse.map((e) => e.toJson()).toList();
         selectedCategory.value ??= '';
       }
 
       // Then load menu list
-      final menuResponse = await repository.getMenuList(
+      final menuResponse = await menuManagementRepository.getMenuList(
         page: currentPage.value,
         category: selectedCategory.value ?? "",
         search: searchController.text,
@@ -113,42 +115,27 @@ class MenuManagementController extends GetxController {
   }
 
   void openAddMenu() {
-    Get.to(
-      () => Material(
-        color: Colors.transparent,
-        child: Center(
-          child: Container(
-            width: 1000,
-            height: 700,
-            color: Colors.white,
-            padding: EdgeInsets.all(16),
-            child: AddMenuDialog(menuController: this),
-          ),
-        ),
-      ),
-      fullscreenDialog: true,
-    );
+    Get.toNamed(Routes.ADD_MENU_MANAGEMENT, arguments: this)?.then((result) {
+      if (result == true) {
+        // Refresh menu list if a menu was added
+        loadRolesAndUsers();
+      }
+    });
   }
 
   void openManajemenKategori() {
-    Get.dialog(
-      Dialog(
-        insetPadding: const EdgeInsets.all(24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: CategoryManagementDialog(controller: this),
-      ),
-      barrierDismissible: false,
-    ).then((_) {
+    Get.toNamed(Routes.MENU_MANAGEMENT_CATEGORY)?.then((_) {
       // Refresh categories after dialog is closed
-      loadRolesAndUsers();
+      if (_ == true) {
+        loadRolesAndUsers();
+      }
     });
   }
 
   void openMenuDetail(String menuId) async {
     isLoading.value = true;
     try {
-      final repository = MenuManagementRepositoryImpl();
-      final response = await repository.getMenuDetail(menuId);
+      final response = await menuManagementRepository.getMenuDetail(menuId);
 
       final menuData = response;
       // Show menu detail dialog
@@ -168,8 +155,7 @@ class MenuManagementController extends GetxController {
   void editMenu(String menuId) async {
     isLoading.value = true;
     try {
-      final repository = MenuManagementRepositoryImpl();
-      final response = await repository.getMenuDetail(menuId);
+      final response = await menuManagementRepository.getMenuDetail(menuId);
 
       final menuData = response;
       // Open edit menu dialog
@@ -253,17 +239,16 @@ class MenuManagementController extends GetxController {
   void _confirmDeleteMenu(String menuId) async {
     isLoading.value = true;
     try {
-      final repository = MenuManagementRepositoryImpl();
-      final response = await repository.deleteMenu(menuId);
+      final response = await menuManagementRepository.deleteMenu(menuId);
 
       if (response['success'] == true) {
-        AppSnackBar.success(message: 'Menu berhasil dihapus');
+        AppSnackBar.success(message: response['message'] ?? 'Menu berhasil dihapus');
         loadRolesAndUsers();
       } else {
-        AppSnackBar.error(message: 'Gagal menghapus menu: ${response['message']}');
+        AppSnackBar.error(message: response['message'] ?? 'Gagal menghapus menu');
       }
     } catch (e) {
-      AppSnackBar.error(message: 'Error: $e');
+      AppSnackBar.error(message: 'Gagal menghapus menu');
     } finally {
       isLoading.value = false;
     }

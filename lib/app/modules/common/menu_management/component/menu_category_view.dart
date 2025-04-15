@@ -3,18 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
-import '../../../../../config/theme/app_colors.dart';
-import '../../../../../core/utils.dart';
-import '../../../../../global_widgets/alert/app_snackbar.dart';
-import '../../controllers/stock_management_controller.dart';
+import '../../../../config/theme/app_colors.dart';
+import '../../../../core/utils.dart';
+import '../../../../global_widgets/alert/app_snackbar.dart';
+import '../controllers/menu_management_controller.dart';
 
-class IngredientGroupView extends StatelessWidget {
-  final StockManagementController controller = Get.find<StockManagementController>();
+class MenuCategoryView extends StatelessWidget {
+  final MenuManagementController controller = Get.find<MenuManagementController>();
   final TextEditingController nameController = TextEditingController();
-  final RxString selectedGroupId = RxString('');
+  final RxString selectedCategoryId = RxString('');
   final RxBool isAddingNew = RxBool(true);
 
-  IngredientGroupView({super.key});
+  MenuCategoryView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class IngredientGroupView extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          'Manajemen Group Bahan',
+          'Manajemen Kategori Menu',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -44,14 +44,14 @@ class IngredientGroupView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Add/Edit Group section
+                // Add/Edit Category section
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Obx(() => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isAddingNew.value ? 'Tambahkan Group' : 'Edit Group',
+                            isAddingNew.value ? 'Tambahkan Kategori' : 'Edit Kategori',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -66,7 +66,7 @@ class IngredientGroupView extends StatelessWidget {
                               Row(
                                 children: [
                                   const Text(
-                                    'Nama Group',
+                                    'Nama Kategori',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
@@ -85,7 +85,7 @@ class IngredientGroupView extends StatelessWidget {
                               const SizedBox(height: 8),
                               AppTextField(
                                 controller: nameController,
-                                hint: 'Masukkan nama group',
+                                hint: 'Masukkan nama kategori',
                                 onFocusChanged: (value) {
                                   if (value.isNotEmpty) {
                                     nameController.text = value;
@@ -104,34 +104,34 @@ class IngredientGroupView extends StatelessWidget {
                                       child: ElevatedButton(
                                         onPressed: () async {
                                           if (nameController.text.isEmpty) {
-                                            AppSnackBar.error(message: 'Nama group tidak boleh kosong');
+                                            AppSnackBar.error(message: 'Nama kategori tidak boleh kosong');
                                             return;
                                           }
 
                                           try {
-                                            Map<String, dynamic> groupData = {
-                                              'group_name': nameController.text.trim(),
+                                            Map<String, dynamic> categoryData = {
+                                              'category_name': nameController.text.trim(),
                                             };
 
                                             Map<String, dynamic> response;
 
                                             if (isAddingNew.value) {
-                                              response = await controller.stockManagementRepository.addGroup(groupData);
+                                              response = await controller.menuManagementRepository.createMenuCategory(nameController.text.trim());
                                             } else {
-                                              response = await controller.stockManagementRepository.updateGroup(selectedGroupId.value, groupData);
+                                              response = await controller.menuManagementRepository.updateMenuCategory(selectedCategoryId.value, nameController.text.trim());
                                             }
 
                                             if (response['success'] == true) {
                                               AppSnackBar.success(message: response['message']);
                                               nameController.clear();
                                               isAddingNew.value = true;
-                                              selectedGroupId.value = '';
-                                              controller.fetchData();
+                                              selectedCategoryId.value = '';
+                                              controller.loadRolesAndUsers();
                                             } else {
                                               AppSnackBar.error(message: response['message'] ?? 'Terjadi kesalahan');
                                             }
                                           } catch (e) {
-                                            AppSnackBar.error(message: isAddingNew.value ? 'Gagal menambahkan group' : 'Gagal memperbarui group');
+                                            AppSnackBar.error(message: isAddingNew.value ? 'Gagal menambahkan kategori' : 'Gagal memperbarui kategori');
                                           }
                                         },
                                         style: ElevatedButton.styleFrom(
@@ -155,7 +155,7 @@ class IngredientGroupView extends StatelessWidget {
                                         onPressed: () {
                                           nameController.clear();
                                           isAddingNew.value = true;
-                                          selectedGroupId.value = '';
+                                          selectedCategoryId.value = '';
                                         },
                                         style: OutlinedButton.styleFrom(
                                           foregroundColor: Colors.black87,
@@ -193,7 +193,7 @@ class IngredientGroupView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Group',
+                    'Kategori',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -201,7 +201,7 @@ class IngredientGroupView extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  // List of groups
+                  // List of categories
                   Expanded(
                     child: Obx(() {
                       return ListView.builder(
@@ -217,7 +217,7 @@ class IngredientGroupView extends StatelessWidget {
                             ),
                             child: ListTile(
                               title: Text(
-                                category['group_name'] ?? '',
+                                category['category_name'] ?? '',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
@@ -235,8 +235,8 @@ class IngredientGroupView extends StatelessWidget {
                                     ),
                                     onPressed: () {
                                       // Set edit mode for this item only
-                                      nameController.text = category['group_name'] ?? '';
-                                      selectedGroupId.value = category['id'] ?? '';
+                                      nameController.text = category['category_name'] ?? '';
+                                      selectedCategoryId.value = category['id'] ?? '';
                                       isAddingNew.value = false;
                                     },
                                   ),
@@ -249,7 +249,7 @@ class IngredientGroupView extends StatelessWidget {
                                       colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
                                     ),
                                     onPressed: () {
-                                      _showDeleteGroupConfirmation(context, category);
+                                      _showDeleteCategoryConfirmation(context, category);
                                     },
                                   ),
                                 ],
@@ -269,7 +269,7 @@ class IngredientGroupView extends StatelessWidget {
     );
   }
 
-  void _showDeleteGroupConfirmation(BuildContext context, dynamic category) {
+  void _showDeleteCategoryConfirmation(BuildContext context, dynamic category) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -300,7 +300,7 @@ class IngredientGroupView extends StatelessWidget {
 
                 // Title
                 const Text(
-                  'Yakin ingin menghapus group?',
+                  'Yakin ingin menghapus kategori?',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -310,7 +310,7 @@ class IngredientGroupView extends StatelessWidget {
 
                 // Content
                 const Text(
-                  'Semua bahan yang menggunakan group ini akan dihapus dari groupnya.',
+                  'Semua menu yang menggunakan kategori ini akan dihapus dari kategorinya.',
                   style: TextStyle(
                     fontSize: 14,
                     color: Color(0xFF6B7280),
@@ -346,15 +346,15 @@ class IngredientGroupView extends StatelessWidget {
                         onPressed: () async {
                           Navigator.of(context).pop();
                           try {
-                            final response = await controller.stockManagementRepository.deleteGroup(category['id']);
+                            final response = await controller.menuManagementRepository.deleteMenuCategory(category['id']);
                             if (response['success'] == true) {
-                              AppSnackBar.success(message: response['message'] ?? 'Group berhasil dihapus');
-                              controller.fetchData();
+                              AppSnackBar.success(message: response['message'] ?? 'Kategori berhasil dihapus');
+                              controller.loadRolesAndUsers();
                             } else {
-                              AppSnackBar.error(message: response['message'] ?? 'Gagal menghapus group');
+                              AppSnackBar.error(message: response['message'] ?? 'Gagal menghapus kategori');
                             }
                           } catch (e) {
-                            AppSnackBar.error(message: 'Gagal menghapus group');
+                            AppSnackBar.error(message: 'Gagal menghapus kategori');
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -376,4 +376,4 @@ class IngredientGroupView extends StatelessWidget {
       },
     );
   }
-}
+} 

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_dimensions.dart';
+import '../../core/utils.dart';
 
 enum AppTextFieldEnum { login, field }
 
@@ -15,9 +16,8 @@ class AppTextField extends StatefulWidget {
   final bool obscureText;
   final TextInputType keyboardType;
   final String? errorText;
-  final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onFocusChanged;
   final VoidCallback? onTap;
-  final ValueChanged<String>? onSubmitted;
   final bool readOnly;
   final bool enabled;
   final List<TextInputFormatter>? inputFormatters;
@@ -37,9 +37,8 @@ class AppTextField extends StatefulWidget {
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.errorText,
-    this.onChanged,
+    this.onFocusChanged,
     this.onTap,
-    this.onSubmitted,
     this.readOnly = false,
     this.enabled = true,
     this.inputFormatters,
@@ -58,12 +57,14 @@ class AppTextField extends StatefulWidget {
 class _AppTextFieldState extends State<AppTextField> {
   late FocusNode _focusNode;
   bool _hasFocus = false;
+  String? _lastValue;
 
   @override
   void initState() {
     super.initState();
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(_onFocusChange);
+    _lastValue = widget.controller?.text;
   }
 
   @override
@@ -79,13 +80,27 @@ class _AppTextFieldState extends State<AppTextField> {
   void _onFocusChange() {
     setState(() {
       _hasFocus = _focusNode.hasFocus;
+
+      if (!_hasFocus && widget.onFocusChanged != null && widget.controller != null) {
+        final currentValue = widget.controller!.text;
+        if (currentValue != _lastValue) {
+          widget.onFocusChanged!(currentValue);
+          _lastValue = currentValue;
+        }
+      }
     });
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     final isDisabled = !widget.enabled;
+
+    // Add automatic input formatter for numeric input
+    final List<TextInputFormatter> formatters = [
+      ...?widget.inputFormatters,
+      if (widget.keyboardType == TextInputType.number)
+        FilteringTextInputFormatter.digitsOnly,
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,20 +133,18 @@ class _AppTextFieldState extends State<AppTextField> {
           height: 40,
           decoration: BoxDecoration(
             color: isDisabled ? Color(0xFFF5F5F5) : Colors.white,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: widget.errorText != null
                   ? Colors.red
                   : _hasFocus
                       ? AppColors.primary
                       : const Color(0xFFDFDFDF),
-              width: _hasFocus || widget.errorText != null ? 1.5 : 1,
             ),
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Prefix Icon (if any)
               if (widget.prefixIcon != null)
                 Positioned(
                   left: 10,
@@ -152,8 +165,6 @@ class _AppTextFieldState extends State<AppTextField> {
                           ),
                         ),
                 ),
-
-              // TextField with adjusted padding
               Padding(
                 padding: EdgeInsets.only(
                   left: widget.prefixIcon != null ? 36 : 10,
@@ -166,10 +177,8 @@ class _AppTextFieldState extends State<AppTextField> {
                   keyboardType: widget.keyboardType,
                   readOnly: widget.readOnly,
                   enabled: widget.enabled,
-                  onChanged: widget.onChanged,
                   onTap: widget.onTap,
-                  onSubmitted: widget.onSubmitted,
-                  inputFormatters: widget.inputFormatters,
+                  inputFormatters: formatters,
                   style: TextStyle(
                     color: isDisabled ? Color(0xFF8B8B8B) : Colors.black,
                     fontSize: 14,
@@ -192,8 +201,6 @@ class _AppTextFieldState extends State<AppTextField> {
                   ),
                 ),
               ),
-
-              // Suffix Icon (if any)
               if (widget.suffixIcon != null)
                 Positioned(
                   right: 10,

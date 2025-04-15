@@ -195,7 +195,7 @@ class StockPurchaseView extends StatelessWidget {
                         suffixIcon: AppIcons.search,
                         appTextFieldEnum: AppTextFieldEnum.field,
                         hint: "Cari Bahan",
-                        onSubmitted: (val) {},
+                        onFocusChanged: (val) {},
                       ),
                     ),
                     const SizedBox(width: 8),

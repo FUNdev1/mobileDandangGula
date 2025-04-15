@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:dio/dio.dart' as dio;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ApiService extends GetxService {
@@ -24,7 +25,6 @@ class ApiService extends GetxService {
       dio.LogInterceptor(
         requestBody: true,
         responseBody: true,
-        // logPrint: (object) => log(object.toString()),
       ),
     );
   }
@@ -52,13 +52,6 @@ class ApiService extends GetxService {
         'Content-Type': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
       };
-
-      if (data is dio.FormData) {
-        log('Sending FormData with fields: ${data.fields}');
-        if (data.files.isNotEmpty) {
-          log('Files: ${data.files.map((f) => f.key).toList()}');
-        }
-      }
 
       // Jika ada file, convert ke FormData
       if (body is Map<String, dynamic> && (body.containsKey('files') || body.containsKey('photo'))) {
@@ -103,6 +96,13 @@ class ApiService extends GetxService {
         data = formData;
         headers.remove('Content-Type');
       }
+
+      // if (data is dio.FormData) {
+      //   log('Sending FormData with fields: ${data.fields}');
+      //   if (data.files.isNotEmpty) {
+      //     log('Files: ${data.files.map((f) => f.key).toList()}');
+      //   }
+      // }
 
       final response = await _dio.post(
         endpoint,
