@@ -5,13 +5,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../../../core/utils.dart';
-import '../../../../../global_widgets/buttons/app_button.dart';
-import '../../../../../global_widgets/input/app_checkbox.dart';
-import '../../../../../global_widgets/input/app_dropdown_field.dart';
-import '../../../../../global_widgets/input/app_text_field.dart';
-import '../../../../../global_widgets/text/app_text.dart';
-import '../../controllers/menu_management_controller.dart';
+import '../../../../../../core/utils.dart';
+import '../../../../../../global_widgets/buttons/app_button.dart';
+import '../../../../../../global_widgets/input/app_checkbox.dart';
+import '../../../../../../global_widgets/input/app_dropdown_field.dart';
+import '../../../../../../global_widgets/input/app_text_field.dart';
+import '../../../../../../global_widgets/text/app_text.dart';
+import '../../../controllers/menu_management_controller.dart';
 import 'add_menu_management_controller.dart';
 
 class AddMenuPage extends GetView<AddMenuController> {

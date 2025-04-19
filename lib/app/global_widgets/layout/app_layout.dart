@@ -481,25 +481,35 @@ class AppLayout extends StatelessWidget {
           children: [
             if (isShowSetting) ...[
               AppIconButton(
+                tooltip: "Settings",
                 icon: AppIcons.settings,
                 onPressed: () {
                   Get.toNamed('/settings');
                 },
-                backgroundColor: Colors.transparent,
               ),
               const SizedBox(width: AppDimensions.spacing12),
             ],
             if (isShowNotif) ...[
               AppIconButton(
+                tooltip: "Notification ",
                 icon: AppIcons.notification,
                 onPressed: () {
                   // Handle notifications
                 },
-                backgroundColor: Colors.transparent,
               ),
               const SizedBox(width: AppDimensions.spacing12),
             ],
             _buildUserAvatar(userName, roleName),
+            if(_authService.userRole == "kasir")...[
+              AppIconButton(
+                backgroundColor: Colors.white12,
+                tooltip: "Presensi ",
+                icon: AppIcons.caretRight,
+                onPressed: () {
+                  // Handle pressnsi
+                },
+              ),
+            ],            
           ],
         ),
       );

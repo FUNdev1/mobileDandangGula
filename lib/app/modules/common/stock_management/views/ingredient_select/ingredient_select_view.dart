@@ -69,14 +69,11 @@ class _SelectIngredientPageState extends State<SelectIngredientPage> {
         final List<dynamic> groupsList = groupsResponse['data'];
 
         // Prepare a new list with the All category
-        List<Map<String, dynamic>> newCategories = [
-          {'id': 'all', 'group_name': 'Semua', 'items': 0}
-        ];
 
         // Add each group to new categories list
         for (var group in groupsList) {
           if (group is Map<String, dynamic>) {
-            newCategories.add({
+            categories.add({
               'id': group['id'],
               'group_name': group['group_name'],
               'items': 0 // Will update count after fetching ingredients
@@ -85,7 +82,7 @@ class _SelectIngredientPageState extends State<SelectIngredientPage> {
         }
 
         // Update categories list
-        categories.value = newCategories;
+        categories.refresh();
       }
 
       // Then fetch ingredients

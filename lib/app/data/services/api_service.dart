@@ -23,8 +23,8 @@ class ApiService extends GetxService {
 
     _dio.interceptors.add(
       dio.LogInterceptor(
-        requestBody: true,
-        responseBody: true,
+        requestBody: false,
+        responseBody: false,
       ),
     );
   }

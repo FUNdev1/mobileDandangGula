@@ -25,27 +25,28 @@ class AppIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip ?? '',
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: backgroundColor ?? Colors.transparent,
+    return SizedBox(
+      width: size,
+      height: size,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          surfaceTintColor: backgroundColor,
+          backgroundColor: backgroundColor ?? Colors.transparent,
+          shadowColor: backgroundColor ??Colors.transparent,
+          elevation: 0,
+          padding: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+            side: backgroundColor != null ? const BorderSide(color: Color(0xFFEAEEF2)) : BorderSide.none,
           ),
-          child: Center(
-            child: SvgPicture.asset(
-              icon,
-              colorFilter: ColorFilter.mode(
-                iconColor ?? AppColors.textPrimary,
-                BlendMode.srcIn,
-              ),
-              height: iconSize ?? AppDimensions.iconSizeMedium,
-            ),
+        ),
+        child: SvgPicture.asset(
+          icon,
+          height: iconSize ?? AppDimensions.iconSizeMedium,
+          colorFilter: ColorFilter.mode(
+            iconColor ?? AppColors.textPrimary,
+            BlendMode.srcIn,
           ),
         ),
       ),

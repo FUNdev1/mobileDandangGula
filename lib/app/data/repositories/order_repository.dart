@@ -5,18 +5,26 @@ import '../services/api_service.dart';
 import '../models/menu_model.dart';
 import '../models/order_model.dart';
 import '../models/payment_method_model.dart';
+import '../models/category_sales_model.dart';
+import '../models/product_sales_model.dart';
 
 abstract class OrderRepository {
   Future<List<Menu>> getMenuCards({int page = 1, int pageSize = 10, String search = '', String sort = '', String category = ''});
   Future<Menu> getMenuCardDetail(String id);
   Future<Map<String, dynamic>> createInitialBalance(double amount);
   Future<Map<String, dynamic>> createOrder(OrderData orderData);
-  Future<List<Order>> getOrderHistory({String startDate, String endDate});
+  Future<List<Order>> getOrderHistory({String? startDate, String? endDate});
   Future<Order> getOrderDetail(String id);
   Future<Map<String, dynamic>> processPayment(String orderId, PaymentData paymentData);
   Future<double> getCurrentBalance();
   Future<double> getDailyRevenue();
   Future<int> getDailyOrderCount();
+  Future<List<CategorySales>> getCategorySales({Map<String, dynamic>? filterParams});
+  Future<List<ProductSales>> getTopProductSales({Map<String, dynamic>? filterParams});
+  Future<List<PaymentMethod>> getPaymentMethodData({Map<String, dynamic>? filterParams});
+  Future<double> getTotalRevenue({Map<String, dynamic>? filterParams});
+  Future<int> getTotalOrders({Map<String, dynamic>? filterParams});
+  Future<int> getPendingOrders();
 }
 
 class OrderRepositoryImpl implements OrderRepository {
@@ -60,7 +68,6 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<Map<String, dynamic>> createInitialBalance(double amount) async {
     try {
-      // Assuming there might be an endpoint for creating initial balance
       final response = await _apiService.post(
         '/cashier/initial-balance',
         body: {'amount': amount},
@@ -181,6 +188,102 @@ class OrderRepositoryImpl implements OrderRepository {
       return 0;
     } catch (e) {
       log('Error getting daily order count: $e');
+      return 0;
+    }
+  }
+
+  @override
+  Future<List<CategorySales>> getCategorySales({Map<String, dynamic>? filterParams}) async {
+    try {
+      final response = await _apiService.get('/reports/category-sales', queryParams: filterParams);
+
+      if (response is Map && response.containsKey('data') && response['data'] is List) {
+        return (response['data'] as List).map((item) => CategorySales.fromJson(item)).toList();
+      }
+
+      return [];
+    } catch (e) {
+      log('Error getting category sales: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<ProductSales>> getTopProductSales({Map<String, dynamic>? filterParams}) async {
+    try {
+      final response = await _apiService.get('/reports/top-products', queryParams: filterParams);
+
+      if (response is Map && response.containsKey('data') && response['data'] is List) {
+        return (response['data'] as List).map((item) => ProductSales.fromJson(item)).toList();
+      }
+
+      return [];
+    } catch (e) {
+      log('Error getting top product sales: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<PaymentMethod>> getPaymentMethodData({Map<String, dynamic>? filterParams}) async {
+    try {
+      final response = await _apiService.get('/reports/payment-methods', queryParams: filterParams);
+
+      if (response is Map && response.containsKey('data') && response['data'] is List) {
+        return (response['data'] as List).map((item) => PaymentMethod.fromJson(item)).toList();
+      }
+
+      return [];
+    } catch (e) {
+      log('Error getting payment method data: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<double> getTotalRevenue({Map<String, dynamic>? filterParams}) async {
+    try {
+      final response = await _apiService.get('/reports/total-revenue', queryParams: filterParams);
+
+      if (response is Map && response.containsKey('total')) {
+        return double.parse(response['total'].toString());
+      }
+
+      return 0.0;
+    } catch (e) {
+      log('Error getting total revenue: $e');
+      return 0.0;
+    }
+  }
+
+  @override
+  Future<int> getTotalOrders({Map<String, dynamic>? filterParams}) async {
+    try {
+      final response = await _apiService.get('/reports/total-orders', queryParams: filterParams);
+
+      if (response is Map && response.containsKey('total')) {
+        return int.parse(response['total'].toString());
+      }
+
+      return 0;
+    } catch (e) {
+      log('Error getting total orders: $e');
+      return 0;
+    }
+  }
+
+  @override
+  Future<int> getPendingOrders() async {
+    try {
+      final response = await _apiService.get('/order/pending-orders');
+
+      if (response is Map && response.containsKey('count')) {
+        return int.parse(response['count'].toString());
+      }
+
+      return 0;
+    } catch (e) {
+      log('Error getting pending orders: $e');
       return 0;
     }
   }

@@ -12,7 +12,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../global_widgets/alert/app_snackbar.dart';
 import '../../../../routes/app_routes.dart';
-import '../component/page/add_menu_management_view.dart';
+import '../component/page/add_menu_management/add_menu_management_view.dart';
+import '../component/page/menu_management_detail/menu_management_detail_view.dart';
 
 class MenuManagementController extends GetxController {
   // Repository
@@ -34,6 +35,8 @@ class MenuManagementController extends GetxController {
 
   // Role filter variables
   final selectedRoleFilter = RxnString();
+  final sortColumn = RxString('');
+  final sortAscending = RxBool(true);
 
   // Text controllers
   final selectedUser = Rxn<User?>();
@@ -133,7 +136,6 @@ class MenuManagementController extends GetxController {
   }
 
   void openMenuDetail(String menuId) async {
-    isLoading.value = true;
     try {
       final response = await menuManagementRepository.getMenuDetail(menuId);
 
@@ -147,8 +149,6 @@ class MenuManagementController extends GetxController {
       );
     } catch (e) {
       AppSnackBar.error(message: 'Error: $e');
-    } finally {
-      isLoading.value = false;
     }
   }
 
@@ -159,19 +159,19 @@ class MenuManagementController extends GetxController {
 
       final menuData = response;
       // Open edit menu dialog
-      Get.dialog(
-        Dialog(
-          insetPadding: EdgeInsets.zero,
-          backgroundColor: Colors.transparent,
-          child: EditMenuDialog(menuController: this, menuData: menuData),
-        ),
-        barrierDismissible: false,
-      ).then((result) {
-        if (result == true) {
-          // Refresh menu list if a menu was edited
-          loadRolesAndUsers();
-        }
-      });
+      // Get.dialog(
+      //   Dialog(
+      //     insetPadding: EdgeInsets.zero,
+      //     backgroundColor: Colors.transparent,
+      //     child: EditMenuDialog(menuController: this, menuData: menuData),
+      //   ),
+      //   barrierDismissible: false,
+      // ).then((result) {
+      //   if (result == true) {
+      //     // Refresh menu list if a menu was edited
+      //     loadRolesAndUsers();
+      //   }
+      // });
     } catch (e) {
       AppSnackBar.error(message: 'Error: $e');
     } finally {
@@ -253,30 +253,40 @@ class MenuManagementController extends GetxController {
       isLoading.value = false;
     }
   }
-}
 
-// Add placeholder classes for the dialogs to be implemented
-class MenuDetailDialog extends StatelessWidget {
-  final dynamic menu;
+// Add this method to your controller
+  void sortBy(String column) {
+    if (sortColumn.value == column) {
+      // Toggle sort direction if clicking the same column
+      sortAscending.value = !sortAscending.value;
+    } else {
+      // Set new sort column and default to ascending
+      sortColumn.value = column;
+      sortAscending.value = true;
+    }
 
-  const MenuDetailDialog({Key? key, required this.menu}) : super(key: key);
+    // Sort the data
+    roles.sort((a, b) {
+      var aValue = a[column];
+      var bValue = b[column];
 
-  @override
-  Widget build(BuildContext context) {
-    // This will be implemented in a separate artifact
-    return Container();
-  }
-}
+      // Handle null values
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null) return sortAscending.value ? -1 : 1;
+      if (bValue == null) return sortAscending.value ? 1 : -1;
 
-class EditMenuDialog extends StatelessWidget {
-  final MenuManagementController menuController;
-  final dynamic menuData;
+      // Compare based on data type
+      int result;
+      if (aValue is String && bValue is String) {
+        result = aValue.compareTo(bValue);
+      } else if (aValue is num && bValue is num) {
+        result = aValue.compareTo(bValue);
+      } else {
+        // Convert to string for comparison if types don't match
+        result = aValue.toString().compareTo(bValue.toString());
+      }
 
-  const EditMenuDialog({Key? key, required this.menuController, required this.menuData}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    // This will be implemented in a separate artifact
-    return Container();
+      return sortAscending.value ? result : -result;
+    });
   }
 }

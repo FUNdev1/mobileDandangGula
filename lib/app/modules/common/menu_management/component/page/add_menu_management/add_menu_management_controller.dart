@@ -6,7 +6,7 @@ import 'package:dandang_gula/app/data/repositories/menu_management_repository.da
 import 'package:dandang_gula/app/data/repositories/stock_management_repository.dart';
 import 'package:dandang_gula/app/global_widgets/alert/app_snackbar.dart';
 
-import '../../../stock_management/data/models/inventory_item_model.dart';
+import '../../../../stock_management/data/models/inventory_item_model.dart';
 
 class AddMenuController extends GetxController {
   // Form controllers

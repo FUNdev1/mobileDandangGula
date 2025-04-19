@@ -23,7 +23,7 @@ class DashboardController extends GetxController {
   final BranchRepository branchRepository = Get.find<BranchRepository>();
   final DashboardRepository dashboardRepository = Get.find<DashboardRepository>();
   final OrderRepository orderRepository = Get.find<OrderRepository>();
-  final StockManagementRepository inventoryRepository = Get.find<StockManagementRepository>();
+  final StockManagementRepository stockRepository = Get.find<StockManagementRepository>();
   final AuthService authService = Get.find<AuthService>();
   final periodFilterController = Get.find<PeriodFilterController>();
 
@@ -50,9 +50,9 @@ class DashboardController extends GetxController {
   final branchesSalesData = <String, List<ChartData>>{}.obs;
 
   // Data untuk kasir
+  final listStockGroup = <Map<String, dynamic>>[].obs; // TODO : Sementara ambil dari group stock, bukan kasir page menu
+  final selectedStockGroup = ''.obs;
   final completedOrders = 0.obs;
-  final pendingOrders = 0.obs;
-  final attendanceRate = 0.0.obs;
 
   // Data untuk gudang
   final lowStockItems = 0.obs;
@@ -231,8 +231,40 @@ class DashboardController extends GetxController {
       // Use available methods instead of undefined ones
       // todaySales.value = await orderRepository.getTotalRevenue() / branchRepository.branches.length;
       // completedOrders.value = (await orderRepository.getTotalOrders()) - 5;
-      pendingOrders.value = 5;
-      attendanceRate.value = 95.5;
+      listStockGroup.clear();
+      // Add the All category
+      listStockGroup.add({'id': 'all', 'group_name': 'Semua', 'items': 0});
+
+      final groupsResponse = await stockRepository.getListGroup();
+      if (groupsResponse.containsKey('data') && groupsResponse['data'] is List) {
+        final List<dynamic> groupsList = groupsResponse['data'];
+
+        // Prepare a new list with the All category
+
+        // Add each group to new categories list
+        for (var group in groupsList) {
+          if (group is Map<String, dynamic>) {
+            listStockGroup.add({
+              'id': group['id'],
+              'group_name': group['group_name'],
+              'items': group["items"],
+            });
+          }
+        }
+        // Counting all items
+        num totalItems = 0;
+        for (var group in groupsList) {
+          if (group is Map<String, dynamic>) {
+            totalItems += num.tryParse(group["items"]) ?? 0;
+          }
+        }
+        // Update the All category
+        listStockGroup.first['items'] = totalItems;
+        // Update categories list
+
+        listStockGroup.refresh();
+        selectedStockGroup.value = 'all';
+      }
     } catch (e) {
       if (kDebugMode) {
         print('Error loading kasir data: $e');
@@ -243,7 +275,7 @@ class DashboardController extends GetxController {
   Future<void> loadGudangData() async {
     try {
       // Get stock alerts
-      stockAlerts.value = await inventoryRepository.getStockAlerts();
+      stockAlerts.value = await stockRepository.getStockAlerts();
 
       // Calculate stock item counts from alerts
       lowStockItems.value = stockAlerts.where((alert) => alert.alertLevel > 0.5).length;
@@ -253,8 +285,8 @@ class DashboardController extends GetxController {
       lastRestockDate.value = DateTime.now().subtract(const Duration(days: 2));
 
       // Get stock flow and usage data
-      stockFlowData.value = await inventoryRepository.getStockFlowData();
-      stockUsageData.value = await inventoryRepository.getStockUsageByGroup();
+      stockFlowData.value = await stockRepository.getStockFlowData();
+      stockUsageData.value = await stockRepository.getStockUsageByGroup();
     } catch (e) {
       if (kDebugMode) {
         print('Error loading gudang data: $e');

@@ -17,7 +17,7 @@ class PaymentMethod {
     this.isActive = true,
   });
 
-  factory PaymentMethod.fromJson(Map<String, dynamic> json, {required IconData defaultIcon}) {
+  factory PaymentMethod.fromJson(Map<String, dynamic> json, {IconData defaultIcon = Icons.credit_card}) {
     return PaymentMethod(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -38,4 +38,3 @@ class PaymentMethod {
     };
   }
 }
-

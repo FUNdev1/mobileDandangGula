@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
-import '../../../../config/theme/app_colors.dart';
-import '../../../../core/utils.dart';
-import '../../../../global_widgets/alert/app_snackbar.dart';
-import '../controllers/menu_management_controller.dart';
+import '../../../../../../config/theme/app_colors.dart';
+import '../../../../../../core/utils.dart';
+import '../../../../../../global_widgets/alert/app_snackbar.dart';
+import '../../../controllers/menu_management_controller.dart';
 
 class MenuCategoryView extends StatelessWidget {
   final MenuManagementController controller = Get.find<MenuManagementController>();
@@ -376,4 +376,4 @@ class MenuCategoryView extends StatelessWidget {
       },
     );
   }
-} 
+}

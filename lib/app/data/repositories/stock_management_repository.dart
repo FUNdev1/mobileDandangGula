@@ -31,16 +31,6 @@ abstract class StockManagementRepository {
 class StockManagementRepositoryImpl extends GetxService implements StockManagementRepository {
   final ApiService _apiService = Get.find<ApiService>();
 
-  Future<Map<String, dynamic>> getListIngredient() async {
-    try {
-      final response = await _apiService.get('/stock/ingredient');
-      return response;
-    } catch (e) {
-      log('Error adding group: $e');
-      return {};
-    }
-  }
-
   @override
   Future<Map<String, dynamic>> getListUom() async {
     try {

@@ -162,8 +162,8 @@ class LoginController extends GetxController {
 
       case 'kasir':
         usernameController.text = 'kasir';
-        passwordController.text = 'password';
-        isMasterAdmin.value = false;
+        passwordController.text = 'kasir123';
+        isMasterAdmin.value = false; 
         break;
 
       case 'gudang':

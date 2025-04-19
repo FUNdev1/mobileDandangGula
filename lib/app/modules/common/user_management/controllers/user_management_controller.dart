@@ -247,6 +247,8 @@ class UserManagementController extends GetxController implements UserFormControl
         'role': selectedRoleId.value,
         'status': isActive ? 'Active' : 'Inactive',
       };
+      // Close panel and refresh user list
+      closeUserForm();
 
       if (!isEditing.value) {
         // Create new user with role and status
@@ -276,8 +278,6 @@ class UserManagementController extends GetxController implements UserFormControl
         AppSnackBar.success(message: result["message"] ?? 'Akun berhasil diperbarui');
       }
 
-      // Close panel and refresh user list
-      closeUserForm();
       loadRolesAndUsers();
     } catch (e) {
       AppSnackBar.error(message: 'Error: $e');
