@@ -68,10 +68,11 @@ class SettingController extends GetxController implements UserFormController {
         limit: itemsPerPage.value,
         searchQuery: searchController.text,
       );
-
-      users.value = response.data;
-      totalPages.value = response.totalPages;
-      currentPage.value = response.page;
+      if (response.isNotEmpty) {
+        users.value = response["user"];
+        totalPages.value = response["totalPages"];
+        currentPage.value = response["page"];
+      }
     } catch (e) {
       AppSnackBar.error(
         message: 'Failed to load users: $e',

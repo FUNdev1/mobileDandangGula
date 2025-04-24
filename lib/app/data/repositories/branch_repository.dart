@@ -28,15 +28,19 @@ class BranchRepositoryImpl extends BranchRepository {
   Future<Map<String, dynamic>> fetchAllBranches() async {
     try {
       final response = await _apiService.get('/branch/lists');
-      if (response is List) {
+      if (response is Map<String, dynamic>) {
+        if (response.containsKey('data') && response['data'] is List) {
+          branches.assignAll((response['data'] as List).map((item) => Branch.fromJson(item)).toList());
+        }
+        return response;
+      } else if (response is List) {
         branches.assignAll(response.map((item) => Branch.fromJson(item)).toList());
-      } else if (response is Map && response.containsKey('data') && response['data'] is List) {
-        branches.assignAll((response['data'] as List).map((item) => Branch.fromJson(item)).toList());
+        return {'success': true, 'message': 'OK', 'data': response};
       }
-      return response;
+      return {'success': false, 'message': 'Invalid response format', 'data': []};
     } catch (e) {
       log('Error fetching branches: $e');
-      return {};
+      return {'success': false, 'message': 'Error: $e', 'data': []};
     }
   }
 

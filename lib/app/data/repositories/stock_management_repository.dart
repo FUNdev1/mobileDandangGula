@@ -12,7 +12,7 @@ abstract class StockManagementRepository {
   Future<Map<String, dynamic>> updateGroup(String id, Map<String, dynamic> groupData);
   Future<Map<String, dynamic>> deleteGroup(String id);
   Future<Map<String, dynamic>> getListGroup();
-  Future<List<InventoryItem>> getAllInventoryItems({int page, String type, String search, String? group, int limit});
+  Future<Map<String, dynamic>> getAllInventoryItems({int page, String type, String search, String? group, int limit});
 
   Future<Map<String, dynamic>> getListUom();
   Future<Map<String, dynamic>> recordStockOpname(List<Map<String, dynamic>> stockData);
@@ -104,7 +104,7 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
   }
 
   @override
-  Future<List<InventoryItem>> getAllInventoryItems({
+  Future<Map<String, dynamic>> getAllInventoryItems({
     int page = 1,
     String type = "raw",
     String search = "",
@@ -119,20 +119,16 @@ class StockManagementRepositoryImpl extends GetxService implements StockManageme
           'pageSize': limit,
           'type': type,
           'search': search,
-          'group': group ?? "",
+          if (group != null) 'group': group,
         },
       );
-
-      if (response is Map && response.containsKey('data') && response['data'] is List) {
-        return (response['data'] as List).map((item) => InventoryItem.fromJson(item)).toList();
-      } else if (response is List) {
-        return response.map((item) => InventoryItem.fromJson(item)).toList();
+      if (response is Map<String, dynamic>) {
+        return response;
       }
-
-      return [];
+      return {'success': false, 'message': 'Invalid response format', 'data': []};
     } catch (e) {
       log('Error fetching inventory items: $e');
-      return [];
+      return {'success': false, 'message': 'Error: $e', 'data': []};
     }
   }
 

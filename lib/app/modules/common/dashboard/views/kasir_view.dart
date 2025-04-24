@@ -9,11 +9,13 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../core/utils.dart';
 import '../controllers/dashboard_controller.dart';
 import '../../../../config/theme/app_dimensions.dart';
+import '../controllers/kasir_dashboard_controller.dart';
+import 'components/kasir/pembayaran_page.dart';
 
 class KasirDashboardView extends StatelessWidget {
-  final DashboardController controller;
+  final controller = DashboardController.to as KasirDashboardController;
 
-  const KasirDashboardView({super.key, required this.controller});
+  KasirDashboardView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,7 @@ class KasirDashboardView extends StatelessWidget {
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ...controller.listStockGroup.map((e) {
+                    ...controller.menuPage.map((e) {
                       return _buildCategoryChip(e["group_name"], controller.selectedStockGroup.value == e["id"], e["items"].toString());
                     }),
                   ],
@@ -206,6 +208,7 @@ class KasirDashboardView extends StatelessWidget {
                       const SizedBox(height: 10),
                       Container(
                         height: 293,
+                        width: double.infinity,
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -224,14 +227,38 @@ class KasirDashboardView extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
                             Expanded(
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  children: [
-                                    _buildOrderItem('Nasi Ayam Lada Hitam', 'Rp25,000'),
-                                    _buildOrderItem('Cumi Telur Asin', 'Rp25,000'),
-                                    _buildOrderItem('Nasi Goreng Spesial', 'Rp25,000'),
-                                  ],
-                                ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  if (controller.selectedItems.isNotEmpty)
+                                    ...controller.selectedItems.map((element) {
+                                      return _buildOrderItem(
+                                        element['name'],
+                                        element['price'],
+                                      );
+                                    })
+                                  else
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: Column(
+                                        children: [
+                                          AppText(
+                                            'Belum ada pesanan',
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          AppText(
+                                            "Pesanan yang kamu pilih akan tampil disini",
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                           ],
@@ -248,6 +275,11 @@ class KasirDashboardView extends StatelessWidget {
                           children: [
                             _buildOrderSummaryRow('Subtotal', CurrencyFormatter.formatRupiah(75000)),
                             _buildOrderSummaryRow('Biaya layanan', CurrencyFormatter.formatRupiah(10000)),
+                            Container(
+                              height: 1,
+                              decoration: BoxDecoration(color: Colors.grey[200]),
+                            ),
+                            // Total sectio
                             _buildOrderSummaryRow('Total', CurrencyFormatter.formatRupiah(76000), isTotal: true),
                             const SizedBox(height: 16),
                             Row(
@@ -263,13 +295,39 @@ class KasirDashboardView extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
+                                // Update the "Bayar Sekarang" button to open the payment page
                                 Expanded(
                                   child: SizedBox(
                                     height: 56,
                                     child: AppButton(
                                       label: "Bayar Sekarang\nTotal 3 Produk",
                                       suffixSvgPath: AppIcons.caretRight,
-                                      onPressed: () {},
+                                      customBackgroundColor: Color(0xFF1B9851),
+                                      onPressed: () {
+                                        // Get the selected items from the order
+                                        // List<Map<String, dynamic>> selectedItems = [
+                                        //   {'name': 'Nasi Ayam Lada Hitam', 'price': 'Rp25,000', 'quantity': 1},
+                                        //   {'name': 'Cumi Telur Asin', 'price': 'Rp25,000', 'quantity': 1},
+                                        //   {'name': 'Nasi Goreng Spesial', 'price': 'Rp25,000', 'quantity': 1},
+                                        // ];
+
+                                        // Open the payment page
+
+                                        Get.to(() {
+                                          return PembayaranPage(selectedItems: controller.selectedItems.value);
+                                        })?.then((result) {
+                                          if (result != null && result['success'] == true) {
+                                            // Handle successful payment
+                                            // For example, clear the cart, show a success message, etc.
+                                            Get.snackbar(
+                                              'Pembayaran Berhasil',
+                                              'Transaksi telah selesai',
+                                              backgroundColor: Colors.green,
+                                              colorText: Colors.white,
+                                            );
+                                          }
+                                        });
+                                      },
                                     ),
                                   ),
                                 ),
@@ -379,26 +437,26 @@ class KasirDashboardView extends StatelessWidget {
   }
 
   Widget _buildMenuCard(int index) {
-    List<Map<String, dynamic>> menuItems = [
-      {'name': 'Nasi Ayam Lada Hitam', 'price': 'Rp 25,000', 'category': 'Main Dish'},
-      {'name': 'Rawon Surabaya', 'price': 'Rp 25,000', 'category': 'Main Dish'},
-      {'name': 'Soto Betawi', 'price': 'Rp 25,000', 'category': 'Main Dish'},
-      {'name': 'Sapi Bulgogi Lada Hitam', 'price': 'Rp 25,000', 'category': 'Main Dish'},
-      {'name': 'Ikan Sambal Matah', 'price': 'Rp 25,000', 'category': 'Main Dish'},
-      {'name': 'Cumi Telur Asin', 'price': 'Rp 25,000', 'category': 'Main Dish'},
-      {'name': 'Bihun Goreng Dandang Tempoe Doeloe', 'price': 'Rp 25,000', 'category': 'Main Dish'},
-      {'name': 'Nasi Goreng Spesial', 'price': 'Rp 25,000', 'category': 'Main Dish'},
-      {'name': 'Mie Goreng India', 'price': 'Rp 25,000', 'category': 'Main Dish'},
-      {'name': 'Sate Maranggi Sriwedari', 'price': 'Rp 25,000', 'category': 'Pesona Nusantara'},
-      {'name': 'Salmon Steak', 'price': 'Rp 25,000', 'category': 'Steak & Grill'},
-      {'name': 'Chicken Cordon Blue', 'price': 'Rp 25,000', 'category': 'Pasta Fiesta'},
-    ];
+    // List<Map<String, dynamic>> menuItems = [
+    //   {'name': 'Nasi Ayam Lada Hitam', 'price': 'Rp 25,000', 'category': 'Main Dish'},
+    //   {'name': 'Rawon Surabaya', 'price': 'Rp 25,000', 'category': 'Main Dish'},
+    //   {'name': 'Soto Betawi', 'price': 'Rp 25,000', 'category': 'Main Dish'},
+    //   {'name': 'Sapi Bulgogi Lada Hitam', 'price': 'Rp 25,000', 'category': 'Main Dish'},
+    //   {'name': 'Ikan Sambal Matah', 'price': 'Rp 25,000', 'category': 'Main Dish'},
+    //   {'name': 'Cumi Telur Asin', 'price': 'Rp 25,000', 'category': 'Main Dish'},
+    //   {'name': 'Bihun Goreng Dandang Tempoe Doeloe', 'price': 'Rp 25,000', 'category': 'Main Dish'},
+    //   {'name': 'Nasi Goreng Spesial', 'price': 'Rp 25,000', 'category': 'Main Dish'},
+    //   {'name': 'Mie Goreng India', 'price': 'Rp 25,000', 'category': 'Main Dish'},
+    //   {'name': 'Sate Maranggi Sriwedari', 'price': 'Rp 25,000', 'category': 'Pesona Nusantara'},
+    //   {'name': 'Salmon Steak', 'price': 'Rp 25,000', 'category': 'Steak & Grill'},
+    //   {'name': 'Chicken Cordon Blue', 'price': 'Rp 25,000', 'category': 'Pasta Fiesta'},
+    // ];
 
-    if (index - 1 >= menuItems.length) {
+    if (index - 1 >= controller.menuCards.length) {
       return Container();
     }
 
-    var menuItem = menuItems[index - 1];
+    var menuItem = controller.menuCards[index - 1];
 
     return Container(
       constraints: const BoxConstraints(
@@ -435,7 +493,7 @@ class KasirDashboardView extends StatelessWidget {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Text(menuItem['category']),
+                  child: Text(menuItem.categoryName),
                 ),
               ),
             ],
@@ -448,13 +506,13 @@ class KasirDashboardView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    menuItem['name'],
+                    menuItem.menuName,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    menuItem['price'],
+                    CurrencyFormatter.formatRupiah(menuItem.price), // Format harga men
                     style: const TextStyle(fontSize: 12),
                   ),
                 ],
@@ -490,28 +548,26 @@ class KasirDashboardView extends StatelessWidget {
           ),
           Row(
             children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Icon(Icons.remove, color: Colors.white),
+              AppIconButton(
+                icon: AppIcons.minus,
+                backgroundColor: Color(0xFF136C3A),
+                iconColor: Colors.white,
+                size: 32,
+                iconSize: 16,
+                onPressed: () {},
               ),
               Container(
                 width: 40,
                 alignment: Alignment.center,
-                child: const Text('1'),
+                child: const AppText('1'),
               ),
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Icon(Icons.add, color: Colors.white),
+              AppIconButton(
+                icon: AppIcons.add,
+                backgroundColor: Color(0xFF136C3A),
+                iconColor: Colors.white,
+                size: 32,
+                iconSize: 16,
+                onPressed: () {},
               ),
             ],
           ),

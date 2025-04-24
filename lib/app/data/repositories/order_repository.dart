@@ -9,6 +9,7 @@ import '../models/category_sales_model.dart';
 import '../models/product_sales_model.dart';
 
 abstract class OrderRepository {
+  Future<Map<String, dynamic>> getMenuPage({int page = 1, int pageSize = 10, String search = '', String category = ''});
   Future<List<Menu>> getMenuCards({int page = 1, int pageSize = 10, String search = '', String sort = '', String category = ''});
   Future<Menu> getMenuCardDetail(String id);
   Future<Map<String, dynamic>> createInitialBalance(double amount);
@@ -29,6 +30,22 @@ abstract class OrderRepository {
 
 class OrderRepositoryImpl implements OrderRepository {
   final ApiService _apiService = Get.find<ApiService>();
+
+  @override
+  Future<Map<String, dynamic>> getMenuPage({
+    int page = 1,
+    int pageSize = 10,
+    String search = "",
+    String category = "",
+  }) async {
+    try {
+      final response = await _apiService.post('/menu');
+      return response;
+    } catch (e) {
+      log('Error getting menu page: $e');
+      return {'success': false, 'message': 'Failed to get menu page: $e'};
+    }
+  }
 
   @override
   Future<List<Menu>> getMenuCards({int page = 1, int pageSize = 10, String search = '', String sort = '', String category = ''}) async {

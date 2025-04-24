@@ -9,9 +9,10 @@ import '../../../../data/models/branch_model.dart';
 import '../../../../data/models/revenue_expense_data.dart';
 import '../../../../global_widgets/text/app_text.dart';
 import '../controllers/dashboard_controller.dart';
+import '../controllers/pusat_dashboard_controller.dart';
 
 class RevenueExpenseChartCard extends StatelessWidget {
-  final DashboardController controller;
+  final PusatDashboardController controller;
 
   const RevenueExpenseChartCard({
     super.key,
@@ -40,7 +41,6 @@ class RevenueExpenseChartCard extends StatelessWidget {
               final branchRepo = controller.branchRepository;
               final selectedBranchId = controller.selectedBranchId.value;
               final selectedBranch = branchRepo.branches.isNotEmpty ? branchRepo.getBranchById(selectedBranchId) : null;
-
 
               return RevenueVsExpenseChart(
                 data: controller.dashboardRepository.revenueExpenseData.value,

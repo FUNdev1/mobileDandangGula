@@ -1,3 +1,4 @@
+import 'package:dandang_gula/app/modules/common/dashboard/controllers/pusat_dashboard_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -10,7 +11,7 @@ import '../../../../global_widgets/text/app_text.dart';
 import '../controllers/dashboard_controller.dart';
 
 class TotalIncomeCard extends StatelessWidget {
-  final DashboardController controller;
+  final PusatDashboardController controller;
 
   const TotalIncomeCard({
     super.key,
@@ -181,7 +182,6 @@ class TotalIncomeCard extends StatelessWidget {
   }
 
   Widget _buildBranchCard(Branch branch) {
-
     return SizedBox(
       width: 261,
       child: Card(

@@ -53,14 +53,17 @@ class StockManagementController extends GetxController {
       }
 
       // Fetch inventory items
-      final items = await stockManagementRepository.getAllInventoryItems(
+      final respone = await stockManagementRepository.getAllInventoryItems(
         page: page,
         type: selectedTab.value == 0 ? 'raw' : 'semi-finished',
         search: searchTextController.text,
         group: selectedCategoryFilter.value,
       );
-      inventoryItems.value = items;
-      currentPage.value = page;
+      if (respone.containsKey('data') && respone['data'] is List) {
+        inventoryItems.value = respone['data'].map((item) => InventoryItem.fromJson(item)).toList();
+        currentPage.value = page;
+        totalPages.value = respone['meta']['total_pages'];
+      }
 
       // Fetch low stock items
       final alerts = await stockManagementRepository.getStockAlerts();
@@ -386,7 +389,11 @@ class StockManagementController extends GetxController {
         group: category,
       )
           .then((items) {
-        inventoryItems.value = items;
+        if (items.isNotEmpty && items.containsKey("data") && items["data"] is List) {
+          inventoryItems.value = items["data"].map((item) => InventoryItem.fromJson(item)).toList();
+        } else {
+          inventoryItems.value = [];
+        }
       });
     }
   }
@@ -401,7 +408,11 @@ class StockManagementController extends GetxController {
         search: query,
       )
           .then((items) {
-        inventoryItems.value = items;
+        if (items.isNotEmpty && items.containsKey("data") && items["data"] is List) {
+          inventoryItems.value = items["data"].map((item) => InventoryItem.fromJson(item)).toList();
+        } else {
+          inventoryItems.value = [];
+        }
       });
     }
   }

@@ -100,8 +100,11 @@ class _SelectIngredientPageState extends State<SelectIngredientPage> {
         type: 'raw',
         limit: 100,
       );
-
-      allIngredients.value = response;
+      if (response.isNotEmpty && response.containsKey("data") && response['data'] is List) {
+        final List<dynamic> dataList = response['data'];
+        final List<InventoryItem> ingredients = dataList.map((item) => InventoryItem.fromJson(item)).toList();
+        allIngredients.value = ingredients;
+      }
 
       // Update item counts for each category
       _updateCategoryCounts();

@@ -91,7 +91,7 @@ class LoginView extends StatelessWidget {
                           // Master admin toggle
                           Row(
                             children: [
-                              Obx(() => ToogleButton(
+                              Obx(() => AppToogleButton(
                                     value: controller.isMasterAdmin.value,
                                     onChanged: controller.toggleMasterAdmin,
                                     activeColor: const Color(0xFF23C368),

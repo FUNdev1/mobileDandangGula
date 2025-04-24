@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class ToogleButton extends StatelessWidget {
+class AppToogleButton extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
   final Color activeColor;
   final Color inactiveColor;
   final Color knobColor;
 
-  const ToogleButton({
+  const AppToogleButton({
     Key? key,
     required this.value,
     required this.onChanged,

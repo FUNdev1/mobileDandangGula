@@ -17,13 +17,14 @@ import '../../../../global_widgets/table/product_sales_table.dart';
 import '../../../../global_widgets/table/stock_alert_table.dart';
 import '../../../../global_widgets/card/summary_card.dart';
 import '../controllers/dashboard_controller.dart';
+import '../controllers/gudang_dashboard_controller.dart';
 import '../widgets/filter/period_filter.dart';
 import '../../../../routes/app_routes.dart';
 
 class GudangDashboardView extends StatelessWidget {
-  final DashboardController controller;
+  final controller = DashboardController.to as GudangDashboardController;
 
-  const GudangDashboardView({Key? key, required this.controller}) : super(key: key);
+  GudangDashboardView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -57,8 +58,7 @@ class GudangDashboardView extends StatelessWidget {
                 width: 200,
                 variant: ButtonVariant.secondary,
                 prefixSvgPath: AppIcons.shoppingBag,
-                onPressed: () {
-                },
+                onPressed: () {},
               )
             ],
           ),
@@ -70,10 +70,12 @@ class GudangDashboardView extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Obx(() => AppText(
-                      "${controller.totalBranches.value * 40}",
-                      style: AppTextStyles.h1,
-                    )),
+                Obx(() {
+                  return AppText(
+                    "${controller.branchRepository.branches.value.length}",
+                    style: AppTextStyles.h1,
+                  );
+                }),
                 const SizedBox(width: 8),
                 AppText(
                   "Items",

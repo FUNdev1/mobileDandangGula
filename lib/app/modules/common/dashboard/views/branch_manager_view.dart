@@ -18,12 +18,13 @@ import '../../../../global_widgets/table/stock_alert_table.dart';
 import '../../../../global_widgets/card/summary_card.dart';
 import '../../../../routes/app_routes.dart';
 import '../controllers/dashboard_controller.dart';
+import '../controllers/supervisor_dashboard_controller.dart';
 import '../widgets/filter/period_filter.dart';
 
 class BranchManagerDashboardView extends StatelessWidget {
-  final DashboardController controller;
+  final controller = DashboardController.to as SupervisorDashboardController;
 
-  const BranchManagerDashboardView({super.key, required this.controller});
+  BranchManagerDashboardView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +118,7 @@ class BranchManagerDashboardView extends StatelessWidget {
                   flex: 2,
                   child: ProductSalesTable(
                     title: 'Penjualan Produk',
-                    products: controller.productSales,
+                    products: controller.topProducts,
                     onViewAll: () {
                       // Action untuk melihat semua produk
                     },

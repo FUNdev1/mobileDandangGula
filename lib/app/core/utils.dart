@@ -124,6 +124,7 @@ class AppIcons {
 
   // Action icons
   static const String add = '${AssetUtils._iconsPath}/add.svg';
+  static const String minus = '${AssetUtils._iconsPath}/minus.svg';
   static const String search = '${AssetUtils._iconsPath}/magnifying.svg';
   static const String edit = '${AssetUtils._iconsPath}/edit.svg';
   static const String delete = '${AssetUtils._iconsPath}/delete.svg';

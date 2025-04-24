@@ -14,8 +14,11 @@ class DashboardView extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
+    // Gunakan factory pattern untuk mendapatkan controller yang sesuai
+    final dashboardController = DashboardController.to;
+
     return Obx(() {
-      if (controller.isLoading.value) {
+      if (dashboardController.isLoading.value) {
         return const Scaffold(
           body: Center(
             child: CircularProgressIndicator(),
@@ -23,32 +26,27 @@ class DashboardView extends GetView<DashboardController> {
         );
       }
 
-      // Kasir view memiliki layout khusus
-      // if (controller.userRole.value == 'kasir') {
-      //   return KasirDashboardView(controller: controller);
-      // }
-
       // Untuk role lainnya, gunakan AppLayout dengan content yang sesuai
       Widget dashboardContent;
-      switch (controller.userRole.value) {
+      switch (dashboardController.userRole.value) {
         case 'admin':
-          dashboardContent = const AdminDashboardView();
+          dashboardContent = AdminDashboardView();
           break;
         case 'pusat':
-          dashboardContent = PusatDashboardView(controller: controller);
+          dashboardContent = PusatDashboardView();
           break;
         case 'supervisor':
-          dashboardContent = BranchManagerDashboardView(controller: controller);
+          dashboardContent = BranchManagerDashboardView();
           break;
         case 'gudang':
-          dashboardContent = GudangDashboardView(controller: controller);
+          dashboardContent = GudangDashboardView();
           break;
         case 'kasir':
-          dashboardContent = KasirDashboardView(controller: controller);
+          dashboardContent = KasirDashboardView();
           break;
         default:
           dashboardContent = Center(
-            child: Text('Role tidak valid: ${controller.userRole.value}'),
+            child: Text('Role tidak valid: ${dashboardController.userRole.value}'),
           );
       }
 
@@ -60,7 +58,7 @@ class DashboardView extends GetView<DashboardController> {
         key: ValueKey('dashboard_$refreshKey'),
         content: dashboardContent,
         onRefresh: () async {
-          await controller.initializeData();
+          await dashboardController.initializeController();
         },
       );
     });

@@ -116,10 +116,13 @@ class UserManagementController extends GetxController implements UserFormControl
           branchId: isAdminPusat.value ? selectedBranchId.value : null,
           roleId: selectedRoleFilter.value,
         );
-
-        users.value = usersResponse.data;
-        totalPages.value = usersResponse.totalPages;
-        currentPage.value = usersResponse.page;
+        if (usersResponse['success'] == true) {
+          users.value = usersResponse['data'];
+          totalPages.value = usersResponse['totalPages'];
+          currentPage.value = usersResponse['page'];
+        } else {
+          AppSnackBar.error(message: 'Failed to load users: ${usersResponse['message']}');
+        }
       } else {
         AppSnackBar.error(message: 'Failed to load roles: ${rolesResponse['message']}');
       }

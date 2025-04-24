@@ -8,7 +8,7 @@ class UserRepository {
   final ApiService _apiService = Get.find<ApiService>();
 
   // Get paginated and filtered users
-  Future<PaginatedResponse<User>> getUsers({
+  Future<Map<String, dynamic>> getUsers({
     required int page,
     int limit = 8,
     String searchQuery = '',
@@ -23,36 +23,13 @@ class UserRepository {
         if (roleId != null) 'role': roleId,
         if (branchId != null) 'branch': branchId,
       });
-
-      if (response is Map && response.containsKey('data') && response['data'] is List) {
-        final List<User> users = (response['data'] as List).map((item) => User.fromJson(item)).toList();
-
-        return PaginatedResponse<User>(
-          data: users,
-          page: response['current_page'] ?? page,
-          limit: limit,
-          total: response['total'] ?? users.length,
-          totalPages: response['last_page'] ?? 1,
-        );
+      if (response is Map<String, dynamic>) {
+        return response;
       }
-
-      // Fallback jika format response tidak sesuai
-      return PaginatedResponse<User>(
-        data: [],
-        page: page,
-        limit: limit,
-        total: 0,
-        totalPages: 1,
-      );
+      return {'success': false, 'message': 'Invalid response format', 'data': []};
     } catch (e) {
       log('Error fetching users: $e');
-      return PaginatedResponse<User>(
-        data: [],
-        page: page,
-        limit: limit,
-        total: 0,
-        totalPages: 1,
-      );
+      return {'success': false, 'message': 'Error: $e', 'data': []};
     }
   }
 

@@ -74,8 +74,8 @@ class AddMenuController extends GetxController {
       final repository = Get.find<StockManagementRepository>();
       final response = await repository.getAllInventoryItems(type: 'menu');
 
-      if (response.isNotEmpty) {
-        allIngredients.value = response.map((item) {
+      if (response["data"].isNotEmpty) {
+        allIngredients.value = response["data"].map((item) {
           return {
             'id': item.id,
             'name': item.name,

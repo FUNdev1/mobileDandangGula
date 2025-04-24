@@ -1,4 +1,5 @@
 import 'package:dandang_gula/app/core/utils.dart';
+import 'package:dandang_gula/app/modules/common/dashboard/controllers/admin_dashboard_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../global_widgets/charts/total_income_chart.dart';
@@ -24,8 +25,10 @@ import '../widgets/filter/period_filter.dart';
 import '../widgets/total_income_card.dart';
 import '../widgets/revenue_expense_chart_card.dart';
 
-class AdminDashboardView extends GetView<DashboardController> {
-  const AdminDashboardView({super.key});
+class AdminDashboardView extends StatelessWidget {
+  final controller = DashboardController.to as AdminDashboardController;
+
+  AdminDashboardView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +122,7 @@ class AdminDashboardView extends GetView<DashboardController> {
                   flex: 2,
                   child: ProductSalesTable(
                     title: 'Penjualan Produk',
-                    products: controller.productSales,
+                    products: controller.topProducts.value,
                     onViewAll: () {
                       // Action untuk melihat semua produk
                     },
@@ -304,7 +307,7 @@ class AdminDashboardView extends GetView<DashboardController> {
           // Stock Alert
           StockAlertTable(
             title: 'Stock alert',
-            stockAlerts: controller.stockAlerts,
+            stockAlerts: controller.stockAlertsData,
             onViewAll: () {
               // Action untuk melihat semua stock alert
             },
@@ -323,7 +326,7 @@ class AdminDashboardView extends GetView<DashboardController> {
                 SizedBox(
                   height: 200,
                   child: StockUsageChart(
-                    data: controller.stockUsageData,
+                    data: controller.stockUsageData.value,
                     isDoughnut: true,
                   ),
                 ),

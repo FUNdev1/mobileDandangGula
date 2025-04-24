@@ -11,17 +11,16 @@ import '../../../../global_widgets/buttons/icon_button.dart';
 import '../../../../global_widgets/charts/total_income_chart.dart';
 import '../../../../global_widgets/text/app_text.dart';
 import '../controllers/dashboard_controller.dart';
+import '../controllers/pusat_dashboard_controller.dart'; // Import controller baru
 import '../widgets/filter/period_filter.dart';
 import '../widgets/revenue_expense_chart_card.dart';
 import '../widgets/total_income_card.dart';
 
 class PusatDashboardView extends StatelessWidget {
-  final DashboardController controller;
+  // Ubah tipe controller menjadi PusatDashboardController
+  final controller = DashboardController.to as PusatDashboardController;
 
-  const PusatDashboardView({
-    super.key,
-    required this.controller,
-  });
+  PusatDashboardView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +95,8 @@ class PusatDashboardView extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(), // Prevent grid from scrolling
         itemBuilder: (context, index) {
           final branch = branches[index];
-          final branchData = controller.branchesSalesData[branch.id] ?? [];
+          // Gunakan data dari controller pusat
+          final branchData = controller.allBranchSales.where((item) => item.label == branch.name).toList();
           return BranchSalesPerformanceWidget(
             branch: branch,
             data: branchData,
