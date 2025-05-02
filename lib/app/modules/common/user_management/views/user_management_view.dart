@@ -200,7 +200,7 @@ class UserManagementView extends GetView<UserManagementController> {
         child: AppText(
           roleName,
           style: TextStyle(
-            color: isSelected ? Color(0xFF88DE7B) : AppColors.darkGreen,
+            color: isSelected ? Color(0xFF88DE7B) : AppColors.darkGreen80,
           ),
           textAlign: TextAlign.center,
         ),
@@ -261,7 +261,7 @@ class UserManagementView extends GetView<UserManagementController> {
         child: AppText(
           branchName,
           style: TextStyle(
-            color: AppColors.darkGreen,
+            color: AppColors.darkGreen80,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
             fontSize: 14,
           ),

@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../data/models/chart_data_model.dart';
 import '../../../../data/models/menu_model.dart';
 import '../../../../data/models/product_sales_model.dart';
 import '../../../../data/models/payment_method_model.dart';
+import '../../../../data/services/auth_service.dart';
 import 'base_dashboard_controller.dart';
 
 class KasirDashboardController extends BaseDashboardController {
@@ -25,26 +27,35 @@ class KasirDashboardController extends BaseDashboardController {
 
   var selectedStockGroup = <Map<String, dynamic>>{}.obs;
 
-  var searchValue = ''.obs;
+  final searchController = TextEditingController();
+
+  final subtotal = 0.0.obs;
+  final serviceFee = 0.0.obs;
+  final total = 0.0.obs;
+  final orderType = 'Dine in'.obs;
 
   @override
   Future<void> loadDashboardData() async {
     try {
       isLoading.value = true;
-      final filterParams = periodFilterController.getFilterParams();
 
       // Dapatkan data dasar dashboard
-      final summary = await dashboardRepository.fetchDashboardSummary(filterParams: filterParams);
+      final summary = await dashboardRepository.fetchDashboardSummary();
       todaySales.value = summary.totalIncome;
 
       // Dapatkan data produk dan metode pembayaran
-      final resMenuPage = await orderRepository.getMenuPage(category: '', page: 1, pageSize: 10, search: searchValue.value);
+      final resMenuPage = await orderRepository.getMenuPage(category: '', page: 1, pageSize: 10, search: searchController.text);
       menuPage.value = resMenuPage['data'] ?? [];
 
-      final resMenuCards = await orderRepository.getMenuCards(category: '', page: 1, pageSize: 10, search: searchValue.value);
+      final resMenuCards = await orderRepository.getMenuCards(category: '', page: 1, pageSize: 10, search: searchController.text);
       if (resMenuCards.isNotEmpty) {
         menuCards.value = resMenuCards;
         menuCards.refresh();
+
+        // Make cateogry filter from menuCards
+
+        final categories = menuCards.map((e) => e.categoryName).toSet().toList();
+        final stockGroups = <Map<String, dynamic>>[];
       }
 
       // Dapatkan data produk dan metode pembayaran
@@ -53,8 +64,8 @@ class KasirDashboardController extends BaseDashboardController {
       // dailySales.value = await dashboardRepository.fetchDailySales(branchId: selectedBranchId.value, filterParams: filterParams);
 
       // Dapatkan data produk dan metode pembayaran
-      topProducts.value = await orderRepository.getTopProductSales(filterParams: filterParams);
-      paymentMethods.value = await orderRepository.getPaymentMethodData(filterParams: filterParams);
+      topProducts.value = await orderRepository.getTopProductSales();
+      paymentMethods.value = await orderRepository.getPaymentMethodData();
 
       // Dapatkan data transaksi hari ini
       // todayTransactions.value = await orderRepository.getTodayTransactions(branchId: selectedBranchId.value);
@@ -76,19 +87,17 @@ class KasirDashboardController extends BaseDashboardController {
 
   // Add an item to the cart
   void addItemToCart(Map<String, dynamic> item) {
-    // Check if the item already exists in the cart
     final existingIndex = selectedItems.indexWhere((element) => element['id'] == item['id']);
 
     if (existingIndex >= 0) {
-      // If the item exists, increment its quantity
       selectedItems[existingIndex]['quantity'] = (selectedItems[existingIndex]['quantity'] ?? 1) + 1;
-      selectedItems.refresh();
     } else {
-      // Otherwise, add it as a new item with quantity 1
       final newItem = Map<String, dynamic>.from(item);
       newItem['quantity'] = 1;
       selectedItems.add(newItem);
     }
+    calculateOrderSummary();
+    selectedItems.refresh();
   }
 
   // Remove an item from the cart
@@ -112,33 +121,14 @@ class KasirDashboardController extends BaseDashboardController {
     }
   }
 
-  // Calculate subtotal
-  double calculateSubtotal() {
-    return selectedItems.fold(0, (sum, item) {
-      double price = double.tryParse(item['price'].toString().replaceAll('Rp', '').replaceAll(',', '').trim()) ?? 0;
-      int quantity = item['quantity'] ?? 1;
-      return sum + (price * quantity);
-    });
-  }
-
-  // Method untuk menangani perubahan filter periode
-  @override
-  void onPeriodFilterChanged(String periodId) {
-    super.onPeriodFilterChanged(periodId);
-    periodFilterController.changePeriod(periodId);
-    loadDashboardData();
+  // Calculate order summary
+  void calculateOrderSummary() {
+    subtotal.value = selectedItems.fold(0.0, (sum, item) => sum + (item['price'] * item['quantity']));
+    serviceFee.value = subtotal.value * 0.1; // 10% service fee
+    total.value = subtotal.value + serviceFee.value;
   }
 
   // Calculate service fee (example: 10% of subtotal)
-  double calculateServiceFee() {
-    return calculateSubtotal() * 0.1;
-  }
-
-  // Calculate total
-  double calculateTotal() {
-    return calculateSubtotal() + calculateServiceFee();
-  }
-
   // Process payment
   Future<Map<String, dynamic>> processPayment(Map<String, dynamic> paymentDetails) async {
     try {

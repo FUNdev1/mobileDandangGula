@@ -175,7 +175,7 @@ class UserManagementController extends GetxController implements UserFormControl
     // Open the panel as a dialog
     Get.dialog(
       Dialog(
-        insetPadding: const EdgeInsets.only(left: 0, top: 0, right: 0, bottom: 0),
+        insetPadding: EdgeInsets.zero,
         backgroundColor: Colors.transparent,
         elevation: 0,
         child: Row(

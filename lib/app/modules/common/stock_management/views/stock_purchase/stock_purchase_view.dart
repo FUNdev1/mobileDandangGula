@@ -56,7 +56,7 @@ class StockPurchaseView extends StatelessWidget {
               label: 'Submit',
               width: 108,
               height: 32,
-              customBackgroundColor: AppColors.darkGreen,
+              customBackgroundColor: AppColors.darkGreen80,
               suffixSvgPath: AppIcons.caretRight,
               onPressed: () {},
               variant: ButtonVariant.secondary,

@@ -6,6 +6,7 @@ class AppColors {
   static const Color secondary = Color(0xFF1B9851);
   static const Color accent = Color(0xFFE2B472);
   static const Color deepWiseBlue = Color(0xFF11373E);
+  static const Color deepWiseGreen = Color(0xFF88DE7B);
 
 
   // Basic Colors
@@ -14,7 +15,7 @@ class AppColors {
   static const Color darkGrey = Color(0xFFACACAC);
   static const Color black = Color(0xFF000000);
   static const Color black1 = Color(0xFF1A1A1A);
-  static const Color darkGreen = Color(0xFF136C3A);
+  static const Color darkGreen80 = Color(0xFF136C3A);
 
   // Background Colors
   static const Color background = Color(0xFFF4F4F4);

@@ -60,7 +60,7 @@ class TotalIncomeCard extends StatelessWidget {
                       CurrencyFormatter.formatRupiah(dashboardSummary.totalIncome),
                       style: AppTextStyles.cardLabel.copyWith(
                         fontSize: 18,
-                        color: AppColors.darkGreen,
+                        color: AppColors.darkGreen80,
                       ),
                     ),
                     _buildGrowthIndicator(dashboardSummary.percentChange),
@@ -88,7 +88,7 @@ class TotalIncomeCard extends StatelessWidget {
                       CurrencyFormatter.formatRupiah(dashboardSummary.netProfit),
                       style: AppTextStyles.cardLabel.copyWith(
                         fontSize: 18,
-                        color: AppColors.darkGreen,
+                        color: AppColors.darkGreen80,
                       ),
                     ),
                   ],
@@ -238,7 +238,7 @@ class TotalIncomeCard extends StatelessWidget {
                 CurrencyFormatter.formatRupiah(branch.income),
                 style: AppTextStyles.cardLabel.copyWith(
                   fontSize: 18,
-                  color: AppColors.darkGreen,
+                  color: AppColors.darkGreen80,
                 ),
               ),
               _buildGrowthIndicator(branch.percentChange),

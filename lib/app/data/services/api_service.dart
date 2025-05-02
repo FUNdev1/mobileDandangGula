@@ -21,12 +21,12 @@ class ApiService extends GetxService {
       ),
     );
 
-    _dio.interceptors.add(
-      dio.LogInterceptor(
-        requestBody: false,
-        responseBody: false,
-      ),
-    );
+    // _dio.interceptors.add(
+    //   dio.LogInterceptor(
+    //     requestBody: false,
+    //     responseBody: false,
+    //   ),
+    // );
   }
 
   // Metode untuk set token setelah login

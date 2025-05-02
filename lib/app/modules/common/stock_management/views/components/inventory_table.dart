@@ -424,10 +424,10 @@ class InventoryTable extends StatelessWidget {
         height: 32,
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.darkGreen : Colors.white,
+          color: isSelected ? AppColors.darkGreen80 : Colors.white,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: isSelected ? AppColors.darkGreen : const Color(0xFFEAEEF2),
+            color: isSelected ? AppColors.darkGreen80 : const Color(0xFFEAEEF2),
           ),
         ),
         child: Center(

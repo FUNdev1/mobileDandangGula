@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dandang_gula/app/modules/common/dashboard/views/kasir_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -162,6 +163,7 @@ class AppLayout extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppDimensions.cardPadding),
         ),
         child: Row(
+          // mainAxisSize: MainAxisSize.min, // Ubah menjadi min untuk menyesuaikan konten
           children: [
             // Back button if needed
             if (showBackButton) ...[
@@ -500,16 +502,17 @@ class AppLayout extends StatelessWidget {
               const SizedBox(width: AppDimensions.spacing12),
             ],
             _buildUserAvatar(userName, roleName),
-            if(_authService.userRole == "kasir")...[
+            if (_authService.userRole == "kasir") ...[
               AppIconButton(
                 backgroundColor: Colors.white12,
                 tooltip: "Presensi ",
                 icon: AppIcons.caretRight,
                 onPressed: () {
                   // Handle pressnsi
+                  KasirDashboardView().showPresensiDialog();
                 },
               ),
-            ],            
+            ],
           ],
         ),
       );
@@ -562,6 +565,7 @@ class AppLayout extends StatelessWidget {
                   constraints: const BoxConstraints(minWidth: 100),
                   child: AppText(
                     userName,
+                    maxLines: 2,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
