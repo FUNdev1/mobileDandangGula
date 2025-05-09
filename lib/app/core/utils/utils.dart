@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../config/constant/app_fonts.dart';
-import '../config/constant/app_strings.dart';
-import '../config/theme/app_colors.dart';
+import 'constant/app_fonts.dart';
+import 'constant/app_strings.dart';
+import 'theme/app_colors.dart';
 
 /// Utility class to manage font styles
 class FontUtils {

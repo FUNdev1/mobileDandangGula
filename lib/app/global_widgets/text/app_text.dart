@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../config/theme/app_text_styles.dart';
+import '../../core/utils/theme/app_text_styles.dart';
 
 class AppText extends StatelessWidget {
   final String text;

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import '../../config/theme/app_text_styles.dart';
-import '../../data/models/stock_usage_model.dart';
+import '../../core/models/stock_model.dart';
+import '../../core/utils/theme/app_colors.dart';
+import '../../core/utils/theme/app_text_styles.dart';
 
 class StockUsageChart extends StatelessWidget {
   final List<StockUsage> data;
@@ -55,8 +56,8 @@ class StockUsageChart extends StatelessWidget {
                 alignment: WrapAlignment.center,
                 children: data.map((item) {
                   return _buildLegendItem(
-                    _hexToColor(item.color),
-                    item.category,
+                    AppColors.getColorFromId(item.groupId),
+                    item.groupName,
                     item.percentage,
                   );
                 }).toList(),
@@ -87,14 +88,6 @@ class StockUsageChart extends StatelessWidget {
       ],
     );
   }
-
-  Color _hexToColor(String hexColor) {
-    hexColor = hexColor.replaceAll('#', '');
-    if (hexColor.length == 6) {
-      hexColor = 'FF$hexColor';
-    }
-    return Color(int.parse(hexColor, radix: 16));
-  }
 }
 
 class _PieChartPainter extends CustomPainter {
@@ -119,7 +112,7 @@ class _PieChartPainter extends CustomPainter {
 
       final paint = Paint()
         ..style = PaintingStyle.fill
-        ..color = _hexToColor(item.color);
+        ..color = AppColors.getColorFromId(item.groupId);
 
       // Draw pie slice
       canvas.drawArc(
@@ -146,13 +139,5 @@ class _PieChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
-  }
-
-  Color _hexToColor(String hexColor) {
-    hexColor = hexColor.replaceAll('#', '');
-    if (hexColor.length == 6) {
-      hexColor = 'FF$hexColor';
-    }
-    return Color(int.parse(hexColor, radix: 16));
   }
 }

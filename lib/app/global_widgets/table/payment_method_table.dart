@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../data/models/payment_method_model.dart';
-import '../../core/utils.dart';
+import '../../core/models/report_model.dart';
+import '../../core/utils/utils.dart';
 
 class PaymentMethodTable extends StatelessWidget {
   final String title;
@@ -124,7 +124,7 @@ class PaymentMethodTable extends StatelessWidget {
             const SizedBox(width: 10),
             // Payment method name
             Text(
-              method.name,
+              method.method,
               style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 14,
@@ -154,7 +154,7 @@ class PaymentMethodTable extends StatelessWidget {
 
   Widget _getPaymentIcon(PaymentMethod method) {
     // Maps payment method type to the appropriate icon
-    switch (method.id) {
+    switch (method.method) {
       case "1": // Cash
         return SvgPicture.asset(
           AppIcons.dollar,
@@ -169,7 +169,7 @@ class PaymentMethodTable extends StatelessWidget {
         );
       default:
         return Icon(
-          method.icon,
+          method.method == "Cash" ? Icons.attach_money : Icons.payment,
           size: 30,
           color: Colors.black,
         );

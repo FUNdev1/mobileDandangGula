@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/utils/theme/app_text_styles.dart';
 import '../../../../global_widgets/layout/app_layout.dart';
 import '../../../../global_widgets/text/app_text.dart';
 import '../controllers/reports_controller.dart';

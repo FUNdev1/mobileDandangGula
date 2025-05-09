@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-import 'app/config/constant/app_constants.dart';
-import 'app/config/theme/app_theme.dart';
+import 'app/core/repositories/auth_repository.dart';
+import 'app/core/utils/constant/app_constants.dart';
+import 'app/core/utils/theme/app_theme.dart';
 import 'app/core/controllers/navigation_controller.dart';
-import 'app/data/services/api_service.dart';
-import 'app/data/services/auth_service.dart';
+import 'app/core/bindings/repositories_binding.dart';
+import 'app/core/services/api_service.dart';
 import 'app/routes/app_pages.dart';
+import 'app/core/bindings/service_binding.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,20 +19,18 @@ void main() async {
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
-  Get.put(ApiService(baseUrl: AppConstants.baseUrl));
-  final authService = await Get.putAsync(() => AuthService().init());
+  await ServiceBinding().dependencies();
+
+  await RepositoriesBinding().dependencies();
 
   Get.put(NavigationController(), permanent: true);
 
-  runApp(MyApp(authService: authService));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final AuthService authService;
-
   const MyApp({
     super.key,
-    required this.authService,
   });
   @override
   Widget build(BuildContext context) {
@@ -45,8 +45,11 @@ class MyApp extends StatelessWidget {
   }
 
   String _getInitialRoute() {
+    // Mendapatkan AuthRepository dari GetX dependency injection
+    final authRepository = Get.find<AuthRepository>();
+
     // Check if user is logged in and determine the appropriate route
-    if (authService.isLoggedIn) {
+    if (authRepository.isLoggedIn().value) {
       return Routes.DASHBOARD;
     } else {
       return Routes.LOGIN;

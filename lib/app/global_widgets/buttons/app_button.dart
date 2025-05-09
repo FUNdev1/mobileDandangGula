@@ -1,7 +1,7 @@
-import 'package:dandang_gula/app/config/theme/app_text_styles.dart';
+import 'package:dandang_gula/app/core/utils/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../config/theme/app_colors.dart';
+import '../../core/utils/theme/app_colors.dart';
 
 enum ButtonVariant { primary, secondary, outline, text }
 

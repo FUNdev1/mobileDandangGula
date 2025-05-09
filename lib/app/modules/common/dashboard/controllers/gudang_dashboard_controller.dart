@@ -1,8 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import '../../../../data/models/stock_alert_model.dart';
-import '../../../../data/models/stock_flow_data_model.dart';
-import '../../../../data/models/stock_usage_model.dart';
+import '../../../../core/models/stock_model.dart';
 import 'base_dashboard_controller.dart';
 
 class GudangDashboardController extends BaseDashboardController {
@@ -24,7 +22,7 @@ class GudangDashboardController extends BaseDashboardController {
       }
     }
   }
-  
+
   // Method untuk menangani perubahan filter periode
   @override
   void onPeriodFilterChanged(String periodId) {

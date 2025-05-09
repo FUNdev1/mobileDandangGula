@@ -1,4 +1,4 @@
-import 'package:dandang_gula/app/core/utils.dart';
+import 'package:dandang_gula/app/core/utils/utils.dart';
 import 'package:dandang_gula/app/global_widgets/text/app_text.dart';
 import 'package:dandang_gula/app/modules/common/stock_management/views/ingredient_group/ingredient_group_view.dart';
 import 'package:dandang_gula/app/modules/common/stock_management/views/stock_opname/stock_opname_view.dart';
@@ -7,8 +7,8 @@ import 'package:dandang_gula/app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import '../../../../../config/theme/app_colors.dart';
-import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/utils/theme/app_colors.dart';
+import '../../../../../core/utils/theme/app_text_styles.dart';
 import '../../../../../global_widgets/alert/app_snackbar.dart';
 import '../../../dashboard/widgets/filter/period_filter.dart';
 import '../../controllers/stock_management_controller.dart';

@@ -1,4 +1,4 @@
-import 'package:dandang_gula/app/core/utils.dart';
+import 'package:dandang_gula/app/core/utils/utils.dart';
 import 'package:dandang_gula/app/modules/common/dashboard/controllers/admin_dashboard_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -6,9 +6,9 @@ import '../../../../global_widgets/charts/total_income_chart.dart';
 import '../../../../global_widgets/layout/app_card.dart';
 import '../../../../global_widgets/layout/app_layout.dart';
 import '../../../../global_widgets/buttons/app_button.dart';
-import '../../../../config/theme/app_colors.dart';
-import '../../../../config/theme/app_dimensions.dart';
-import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/utils/theme/app_colors.dart';
+import '../../../../core/utils/theme/app_dimensions.dart';
+import '../../../../core/utils/theme/app_text_styles.dart';
 import '../../../../global_widgets/text/app_text.dart';
 import '../../../../global_widgets/layout/tab_container.dart';
 import '../../../../global_widgets/charts/revenue_chart.dart';

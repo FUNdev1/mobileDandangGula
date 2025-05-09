@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../config/theme/app_colors.dart';
-import '../../config/theme/app_text_styles.dart';
-import '../../data/models/chart_data_model.dart';
+import '../../core/models/report_model.dart';
+import '../../core/utils/theme/app_colors.dart';
+import '../../core/utils/theme/app_text_styles.dart';
 
 class RevenueChart extends StatelessWidget {
   final List<ChartData> data;

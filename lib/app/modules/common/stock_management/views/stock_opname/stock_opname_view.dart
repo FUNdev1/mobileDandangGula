@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
-import '../../../../../config/theme/app_colors.dart';
-import '../../../../../core/utils.dart';
+import '../../../../../core/utils/theme/app_colors.dart';
+import '../../../../../core/utils/utils.dart';
 import '../../../../../global_widgets/alert/app_snackbar.dart';
 import '../../../../../global_widgets/input/app_text_field.dart';
 import '../../controllers/stock_management_controller.dart';

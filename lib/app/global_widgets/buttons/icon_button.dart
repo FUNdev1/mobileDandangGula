@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../config/theme/app_colors.dart';
-import '../../config/theme/app_dimensions.dart';
+import '../../core/utils/theme/app_colors.dart';
+import '../../core/utils/theme/app_dimensions.dart';
 
 class AppIconButton extends StatelessWidget {
   final String icon;

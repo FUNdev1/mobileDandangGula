@@ -1,11 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../data/models/chart_data_model.dart';
-import '../../../../data/models/menu_model.dart';
-import '../../../../data/models/product_sales_model.dart';
-import '../../../../data/models/payment_method_model.dart';
-import '../../../../data/services/auth_service.dart';
+import '../../../../core/models/menu_model.dart';
+import '../../../../core/models/report_model.dart';
 import 'base_dashboard_controller.dart';
 
 class KasirDashboardController extends BaseDashboardController {
@@ -23,11 +20,12 @@ class KasirDashboardController extends BaseDashboardController {
   final customerName = ''.obs;
 
   var menuPage = <Map<String, dynamic>>[].obs;
-  var menuCards = <Menu>[].obs;
+  var menuList = <Menu>[].obs;
 
   var selectedStockGroup = <Map<String, dynamic>>{}.obs;
 
   final searchController = TextEditingController();
+  final selectedCategory = ''.obs;
 
   final subtotal = 0.0.obs;
   final serviceFee = 0.0.obs;
@@ -44,17 +42,27 @@ class KasirDashboardController extends BaseDashboardController {
       todaySales.value = summary.totalIncome;
 
       // Dapatkan data produk dan metode pembayaran
-      final resMenuPage = await orderRepository.getMenuPage(category: '', page: 1, pageSize: 10, search: searchController.text);
+      final resMenuPage = await menuRepository.getMenuPage(
+        page: 1,
+        pageSize: 10,
+        search: searchController.text,
+        categoryId: selectedCategory.value,
+      );
       menuPage.value = resMenuPage['data'] ?? [];
 
-      final resMenuCards = await orderRepository.getMenuCards(category: '', page: 1, pageSize: 10, search: searchController.text);
-      if (resMenuCards.isNotEmpty) {
-        menuCards.value = resMenuCards;
-        menuCards.refresh();
+      final resMenuCards = await menuRepository.getMenuCards(
+        categoryId: selectedCategory.value,
+        page: 1,
+        pageSize: 10,
+        search: searchController.text,
+      );
+      if (resMenuCards.isNotEmpty && resMenuCards["data"] is List && resMenuCards["data"].isNotEmpty) {
+        menuList.value = resMenuCards["data"].map((e) => Menu.fromJson(e)).toList();
+        menuList.refresh();
 
         // Make cateogry filter from menuCards
 
-        final categories = menuCards.map((e) => e.categoryName).toSet().toList();
+        final categories = menuList.map((e) => e.categoryName).toSet().toList();
         final stockGroups = <Map<String, dynamic>>[];
       }
 
@@ -64,8 +72,8 @@ class KasirDashboardController extends BaseDashboardController {
       // dailySales.value = await dashboardRepository.fetchDailySales(branchId: selectedBranchId.value, filterParams: filterParams);
 
       // Dapatkan data produk dan metode pembayaran
-      topProducts.value = await orderRepository.getTopProductSales();
-      paymentMethods.value = await orderRepository.getPaymentMethodData();
+      // topProducts.value = await orderRepository.getTopProductSales();
+      // paymentMethods.value = await orderRepository.getPaymentMethodData();
 
       // Dapatkan data transaksi hari ini
       // todayTransactions.value = await orderRepository.getTodayTransactions(branchId: selectedBranchId.value);

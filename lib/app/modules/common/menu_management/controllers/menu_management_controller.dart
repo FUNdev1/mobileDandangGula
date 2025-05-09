@@ -1,13 +1,14 @@
 import 'dart:io';
-import 'package:dandang_gula/app/data/repositories/menu_management_repository.dart';
-import 'package:dandang_gula/app/data/repositories/order_repository.dart';
-import 'package:dandang_gula/app/data/repositories/stock_management_repository.dart';
+import 'package:dandang_gula/app/core/models/menu_model.dart';
+import 'package:dandang_gula/app/core/repositories/auth_repository.dart';
+import 'package:dandang_gula/app/core/repositories/menu_repository.dart';
+import 'package:dandang_gula/app/core/repositories/order_repository.dart';
+import 'package:dandang_gula/app/core/repositories/stock_management_repository.dart';
 import 'package:get/get.dart';
-import '../../../../data/repositories/user_repository.dart';
-import '../../../../data/repositories/branch_repository.dart';
-import '../../../../data/models/user_model.dart';
-import '../../../../data/services/api_service.dart';
-import '../../../../data/services/auth_service.dart';
+import '../../../../core/repositories/user_repository.dart';
+import '../../../../core/repositories/branch_repository.dart';
+import '../../../../core/models/user_model.dart';
+import '../../../../core/services/api_service.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../global_widgets/alert/app_snackbar.dart';
@@ -17,13 +18,14 @@ import '../component/page/menu_management_detail/menu_management_detail_view.dar
 
 class MenuManagementController extends GetxController {
   // Repository
-  final menuManagementRepository = Get.find<MenuManagementRepositoryImpl>();
+  final menuManagementRepository = Get.find<MenuRepositoryImpl>();
 
   // Observable variables
   final isLoading = false.obs;
   final users = <User>[].obs;
   final currentPage = 1.obs;
   final totalPages = 1.obs;
+  final totalData = RxnInt();
   final itemsPerPage = 8.obs;
   final RxList<dynamic> categories = <dynamic>[].obs;
   final selectedCategory = RxnString();
@@ -41,8 +43,9 @@ class MenuManagementController extends GetxController {
   // Text controllers
   final selectedUser = Rxn<User?>();
   final searchController = TextEditingController();
-  final roles = [].obs;
-  final authService = Get.find<AuthService>();
+  final menuList = <Menu>[].obs;
+
+  final authService = Get.find<AuthRepository>();
 
   @override
   void onInit() {
@@ -74,29 +77,32 @@ class MenuManagementController extends GetxController {
     isLoading.value = true;
     try {
       // First load categories
-      final categoriesResponse = await menuManagementRepository.getMenuCategories();
+      final categoriesResponse = await menuManagementRepository.getAllCategories();
       if (categoriesResponse.isNotEmpty) {
+        // Sengaja tidak pakai object, untuk kebutuhan dropwdon map<string,dynamic>
         categories.value = categoriesResponse.map((e) => e.toJson()).toList();
         selectedCategory.value ??= '';
       }
 
       // Then load menu list
-      final menuResponse = await menuManagementRepository.getMenuList(
+      final menuResponse = await menuManagementRepository.getMenuPage(
         page: currentPage.value,
-        category: selectedCategory.value ?? "",
+        categoryId: selectedCategory.value ?? "",
         search: searchController.text,
         pageSize: itemsPerPage.value,
       );
+      if (menuResponse.isNotEmpty && menuResponse["data"] is List) {
+        List menu = menuResponse["data"];
+        menuList.value = menu.map((e) => Menu.fromJson(e)).toList();
+        totalPages.value = menuResponse["total_page"] ?? 0;
+        currentPage.value = menuResponse["page"] ?? 1;
+        totalData.value = menuResponse["total_data"] ?? 0;
 
-      if (menuResponse['success'] == true && menuResponse['data'] is List) {
-        roles.value = menuResponse['data'];
-        totalPages.value = (menuResponse['total_items'] / itemsPerPage.value).ceil();
-
-        if (firstTime && roles.isNotEmpty) {
-          selectedRoleFilter.value = roles[0]['id'];
+        menuList.refresh();
+        // Set selectedRoleFilter if it's the first time loading
+        if (firstTime && menuList.isNotEmpty) {
+          selectedRoleFilter.value = menuList[0].id;
         }
-      } else {
-        AppSnackBar.error(message: 'Failed to load menu: ${menuResponse['message']}');
       }
     } catch (e) {
       AppSnackBar.error(message: 'Failed to load data: $e');
@@ -118,21 +124,11 @@ class MenuManagementController extends GetxController {
   }
 
   void openAddMenu() {
-    Get.toNamed(Routes.ADD_MENU_MANAGEMENT, arguments: this)?.then((result) {
-      if (result == true) {
-        // Refresh menu list if a menu was added
-        loadRolesAndUsers();
-      }
-    });
+    Get.toNamed(Routes.ADD_MENU_MANAGEMENT)?.then((result) => loadRolesAndUsers());
   }
 
   void openManajemenKategori() {
-    Get.toNamed(Routes.MENU_MANAGEMENT_CATEGORY)?.then((_) {
-      // Refresh categories after dialog is closed
-      if (_ == true) {
-        loadRolesAndUsers();
-      }
-    });
+    Get.toNamed(Routes.MENU_MANAGEMENT_CATEGORY)?.then((_) => loadRolesAndUsers());
   }
 
   void openMenuDetail(String menuId) async {
@@ -266,14 +262,9 @@ class MenuManagementController extends GetxController {
     }
 
     // Sort the data
-    roles.sort((a, b) {
-      var aValue = a[column];
-      var bValue = b[column];
-
-      // Handle null values
-      if (aValue == null && bValue == null) return 0;
-      if (aValue == null) return sortAscending.value ? -1 : 1;
-      if (bValue == null) return sortAscending.value ? 1 : -1;
+    menuList.sort((a, b) {
+      var aValue = column == 'name' ? a.name : a.price;
+      var bValue = column == 'name' ? b.name : b.price;
 
       // Compare based on data type
       int result;

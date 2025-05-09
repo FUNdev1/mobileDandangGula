@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../data/models/category_sales_model.dart';
+import '../../core/models/report_model.dart';
+import '../../core/utils/theme/app_colors.dart';
 
 class CategorySalesCard extends StatelessWidget {
   final String title;
@@ -100,13 +101,13 @@ class CategorySalesCard extends StatelessWidget {
           width: 16,
           height: 16,
           decoration: BoxDecoration(
-            color: _parseColor(category.color),
+            color: AppColors.getColorFromId(category.categoryId),
             borderRadius: BorderRadius.circular(12),
           ),
         ),
         const SizedBox(width: 6),
         Text(
-          category.name,
+          category.categoryName,
           style: const TextStyle(
             fontFamily: 'IBM Plex Sans',
             fontSize: 14,
@@ -117,11 +118,6 @@ class CategorySalesCard extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  Color _parseColor(String hexColor) {
-    final hexCode = hexColor.replaceAll('#', '');
-    return Color(int.parse('FF$hexCode', radix: 16));
   }
 }
 
@@ -142,7 +138,7 @@ class DonutChartPainter extends CustomPainter {
     for (var segment in data) {
       final sweepAngle = (segment.percentage / 100) * 2 * 3.14159; // Convert to radians
       final paint = Paint()
-        ..color = _parseColor(segment.color)
+        ..color = _getColorFromId(segment.categoryId)
         ..style = PaintingStyle.fill;
 
       canvas.drawArc(
@@ -166,6 +162,20 @@ class DonutChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => true;
+
+  // Menghasilkan warna berdasarkan ID kategori
+  Color _getColorFromId(String id) {
+    // Menggunakan hash dari ID untuk menghasilkan warna yang konsisten
+    final int hash = id.hashCode;
+
+    // Menggunakan nilai hash untuk menghasilkan komponen warna RGB
+    // Memastikan warna tidak terlalu gelap dengan menambahkan offset
+    final int r = ((hash & 0xFF0000) >> 16) | 0x80; // Minimal 128 untuk red
+    final int g = ((hash & 0x00FF00) >> 8) | 0x80; // Minimal 128 untuk green
+    final int b = (hash & 0x0000FF) | 0x80; // Minimal 128 untuk blue
+
+    return Color.fromARGB(255, r, g, b);
+  }
 
   Color _parseColor(String hexColor) {
     final hexCode = hexColor.replaceAll('#', '');

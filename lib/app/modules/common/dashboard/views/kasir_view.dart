@@ -5,10 +5,10 @@ import 'package:dandang_gula/app/global_widgets/text/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import '../../../../config/theme/app_colors.dart';
-import '../../../../core/utils.dart';
+import '../../../../core/utils/theme/app_colors.dart';
+import '../../../../core/utils/utils.dart';
 import '../controllers/dashboard_controller.dart';
-import '../../../../config/theme/app_dimensions.dart';
+import '../../../../core/utils/theme/app_dimensions.dart';
 import '../controllers/kasir_dashboard_controller.dart';
 import 'components/kasir/pembayaran_page.dart';
 
@@ -94,7 +94,7 @@ class KasirDashboardView extends StatelessWidget {
                               mainAxisSpacing: 16,
                             ),
                             physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: controller.menuCards.length + 1,
+                            itemCount: controller.menuList.length + 1,
                             itemBuilder: (context, index) {
                               if (index == 0) {
                                 return _buildCustomMenuButton();
@@ -439,11 +439,11 @@ class KasirDashboardView extends StatelessWidget {
   }
 
   Widget _buildMenuCard(int index) {
-    if (index - 1 >= controller.menuCards.length) {
+    if (index - 1 >= controller.menuList.length) {
       return Container();
     }
 
-    var menuItem = controller.menuCards[index];
+    var menuItem = controller.menuList[index];
 
     return Container(
       constraints: const BoxConstraints(
@@ -480,7 +480,7 @@ class KasirDashboardView extends StatelessWidget {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Text(menuItem.categoryName),
+                  child: Text(menuItem.name),
                 ),
               ),
             ],
@@ -493,7 +493,7 @@ class KasirDashboardView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    menuItem.menuName,
+                    menuItem.name,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -616,14 +616,14 @@ class KasirDashboardView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${controller.authService.currentUser?.name}',
+                            '${controller.authService.getCurrentUser().value?.name}',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            controller.authService.userRole,
+                            controller.authService.getCurrentUser().value?.role?.role ?? "-",
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.normal,

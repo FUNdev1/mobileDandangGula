@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart'; // Add this import for number formatting
 
-import '../../../../config/theme/app_colors.dart';
-import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/utils.dart';
-import '../../../../data/models/branch_model.dart';
-import '../../../../data/models/revenue_expense_data.dart';
+import '../../../../core/models/report_model.dart';
+import '../../../../core/utils/theme/app_colors.dart';
+import '../../../../core/utils/theme/app_text_styles.dart';
+import '../../../../core/utils/utils.dart';
+import '../../../../core/models/branch_model.dart';
 import '../../../../global_widgets/text/app_text.dart';
 import '../controllers/dashboard_controller.dart';
 import '../controllers/pusat_dashboard_controller.dart';
@@ -44,7 +44,7 @@ class RevenueExpenseChartCard extends StatelessWidget {
 
               return RevenueVsExpenseChart(
                 data: controller.dashboardRepository.revenueExpenseData.value,
-                branchName: selectedBranch?.name ?? 'Semua Cabang',
+                branchName: 'Semua Cabang',
                 height: 243,
               );
             }),
@@ -383,7 +383,7 @@ class RevenueVsExpenseChart extends StatelessWidget {
                 width: barSpacing,
                 child: Center(
                   child: AppText(
-                    DateFormatter.formatDate(item.date, pattern: "MMM d"),
+                    DateFormatter.formatDate(DateTime.parse(item.date), pattern: "MMM d"),
                     style: const TextStyle(
                       fontFamily: 'Work Sans',
                       fontWeight: FontWeight.bold,

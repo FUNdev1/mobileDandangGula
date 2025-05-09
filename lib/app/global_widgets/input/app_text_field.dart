@@ -2,9 +2,9 @@ import 'package:dandang_gula/app/global_widgets/text/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import '../../config/theme/app_colors.dart';
-import '../../config/theme/app_dimensions.dart';
-import '../../core/utils.dart';
+import '../../core/utils/theme/app_colors.dart';
+import '../../core/utils/theme/app_dimensions.dart';
+import '../../core/utils/utils.dart';
 
 enum AppTextFieldEnum { login, field }
 

@@ -1,13 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import '../../../../data/models/chart_data_model.dart';
-import '../../../../data/models/category_sales_model.dart';
-import '../../../../data/models/payment_method_model.dart';
-import '../../../../data/models/product_sales_model.dart';
-import '../../../../data/models/revenue_expense_data.dart';
-import '../../../../data/models/stock_alert_model.dart';
-import '../../../../data/models/stock_flow_data_model.dart';
-import '../../../../data/models/stock_usage_model.dart';
+import '../../../../core/models/report_model.dart';
+import '../../../../core/models/stock_model.dart';
 import 'base_dashboard_controller.dart';
 
 class SupervisorDashboardController extends BaseDashboardController {
@@ -21,6 +15,9 @@ class SupervisorDashboardController extends BaseDashboardController {
   final stockUsageData = <StockUsage>[].obs;
   final revenueExpenseData = <RevenueExpenseData>[].obs;
   final staffPerformance = <Map<String, dynamic>>[].obs;
+  final RxInt totalStockItems = 0.obs;
+  final RxInt stockInItemsToday = 0.obs;
+  final RxInt stockInTotalToday = 0.obs;
 
   @override
   Future<void> loadDashboardData() async {
@@ -38,9 +35,9 @@ class SupervisorDashboardController extends BaseDashboardController {
       // dailySales.value = await dashboardRepository.fetchDailySales(branchId: selectedBranchId.value, filterParams: filterParams);
 
       // Dapatkan data kategori dan produk
-      categorySales.value = await orderRepository.getCategorySales(filterParams: filterParams);
-      topProducts.value = await orderRepository.getTopProductSales(filterParams: filterParams);
-      paymentMethods.value = await orderRepository.getPaymentMethodData(filterParams: filterParams);
+      // categorySales.value = await orderRepository.getCategorySales(filterParams: filterParams);
+      // topProducts.value = await orderRepository.getTopProductSales(filterParams: filterParams);
+      // paymentMethods.value = await orderRepository.getPaymentMethodData(filterParams: filterParams);
 
       // Dapatkan data stok
       stockAlerts.value = await stockRepository.getStockAlerts();
@@ -48,6 +45,11 @@ class SupervisorDashboardController extends BaseDashboardController {
       stockFlowData.value = await stockRepository.getStockFlowData();
       // Dapatkan data penggunaan stok
       stockUsageData.value = await stockRepository.getStockUsageByGroup();
+
+      // Dapatkan data inventori tambahan
+      // totalStockItems.value = await stockRepository.getTotalStockItems();
+      // stockInItemsToday.value = await stockRepository.getStockInItemsToday();
+      // stockInTotalToday.value = await stockRepository.getStockInTotalToday();
 
       // Dapatkan data revenue vs expense
       revenueExpenseData.value = dashboardRepository.revenueExpenseData;

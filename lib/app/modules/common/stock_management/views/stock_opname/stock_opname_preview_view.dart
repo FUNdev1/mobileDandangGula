@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
-import '../../../../../config/theme/app_colors.dart';
-import '../../../../../core/utils.dart';
+import '../../../../../core/utils/theme/app_colors.dart';
+import '../../../../../core/utils/utils.dart';
 import '../../../../../global_widgets/alert/app_snackbar.dart';
 import '../../controllers/stock_management_controller.dart';
 

@@ -1,11 +1,11 @@
 import 'dart:io';
-import 'package:dandang_gula/app/config/theme/app_colors.dart';
+import 'package:dandang_gula/app/core/utils/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../../../../core/utils.dart';
+import '../../../../../../core/utils/utils.dart';
 import '../../../../../../global_widgets/buttons/app_button.dart';
 import '../../../../../../global_widgets/input/app_checkbox.dart';
 import '../../../../../../global_widgets/input/app_dropdown_field.dart';
@@ -261,7 +261,7 @@ class AddMenuPage extends GetView<AddMenuController> {
                       hint: 'Pilih Kategori',
                       items: menuController.categories,
                       selectedValue: controller.selectedCategoryId.value ?? "",
-                      displayKey: 'group_name',
+                      displayKey: 'category_name',
                       onChanged: (value) {
                         controller.selectedCategoryId.value = value;
                         controller.categoryError.value = false;
@@ -356,20 +356,24 @@ class AddMenuPage extends GetView<AddMenuController> {
                   itemBuilder: (context, index) {
                     final ingredient = controller.filteredIngredients[index];
 
-                    return Obx(() => Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
-                          child: AppCheckbox(
-                            title: ingredient['name'] ?? 'Unnamed',
-                            value: controller.selectedIngredients.any((i) => i['id'] == ingredient['id']),
-                            onChanged: (selected) {
-                              if (selected == true) {
-                                controller.addIngredient(ingredient);
-                              } else {
-                                controller.removeIngredient(ingredient['id']);
+                    return Obx(() {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+                        child: AppCheckbox(
+                          title: ingredient.name ?? 'Unnamed',
+                          value: controller.selectedIngredients.any((i) => i.id == ingredient.id),
+                          onChanged: (selected) {
+                            if (selected == true) {
+                              controller.addIngredient(ingredient);
+                            } else {
+                              if ((ingredient.id ?? "").isNotEmpty) {
+                                controller.removeIngredient(ingredient.id!);
                               }
-                            },
-                          ),
-                        ));
+                            }
+                          },
+                        ),
+                      );
+                    });
                   },
                 );
               }),
@@ -453,8 +457,6 @@ class AddMenuPage extends GetView<AddMenuController> {
                     ),
                     itemBuilder: (context, index) {
                       final ingredient = controller.selectedIngredients[index];
-                      final amountController = TextEditingController(text: ingredient['amount']?.toString() ?? '');
-                      final priceController = TextEditingController(text: ingredient['price']?.toString() ?? '');
 
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -463,37 +465,41 @@ class AddMenuPage extends GetView<AddMenuController> {
                           children: [
                             Expanded(
                               child: Text(
-                                ingredient['name'] ?? 'Unnamed',
+                                ingredient.name ?? 'Unnamed',
                                 maxLines: 3,
                               ),
                             ),
                             Expanded(
                               child: Padding(
                                 padding: const EdgeInsets.only(right: 12),
-                                child: Obx(() => AppTextField(
-                                      controller: amountController,
-                                      keyboardType: TextInputType.number,
-                                      onFocusChanged: (value) {
-                                        controller.updateIngredientAmount(ingredient['id'], value);
-                                      },
-                                      errorText: controller.ingredientAmountErrors[ingredient['id']] ?? false ? 'Jumlah harus lebih dari 0' : null,
-                                      suffixIcon: "${ingredient['uom']}",
-                                    )),
+                                child: Obx(() {
+                                  return AppTextField(
+                                    controller: TextEditingController(text: ingredient.purchases?.toString() ?? ''),
+                                    keyboardType: TextInputType.number,
+                                    onFocusChanged: (value) {
+                                      controller.updateIngredientPurchases((ingredient.id ?? ""), value);
+                                    },
+                                    errorText: controller.ingredientAmountErrors[ingredient.id] ?? false ? 'Jumlah harus lebih dari 0' : null,
+                                    suffixIcon: "${ingredient.uom}",
+                                  );
+                                }),
                               ),
                             ),
                             Expanded(
                               child: Row(
                                 children: [
                                   Expanded(
-                                    child: Obx(() => AppTextField(
-                                          prefixIcon: "Rp",
-                                          controller: priceController,
-                                          keyboardType: TextInputType.number,
-                                          onFocusChanged: (value) {
-                                            controller.updateIngredientPrice(ingredient['id'], value);
-                                          },
-                                          errorText: controller.ingredientPriceErrors[ingredient['id']] ?? false ? 'Harga harus lebih dari 0' : null,
-                                        )),
+                                    child: Obx(() {
+                                      return AppTextField(
+                                        prefixIcon: "Rp",
+                                        controller: TextEditingController(text: ingredient.price?.toStringAsFixed(0) ?? ''),
+                                        keyboardType: TextInputType.number,
+                                        onFocusChanged: (value) {
+                                          controller.updateIngredientPrice(ingredient.id ?? "", value);
+                                        },
+                                        errorText: controller.ingredientPriceErrors[ingredient.id] ?? false ? 'Harga harus lebih dari 0' : null,
+                                      );
+                                    }),
                                   ),
                                 ],
                               ),
@@ -506,7 +512,7 @@ class AddMenuPage extends GetView<AddMenuController> {
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(8),
                                   onTap: () {
-                                    controller.removeIngredient(ingredient['id']);
+                                    controller.removeIngredient(ingredient.id ?? "");
                                   },
                                   child: Container(
                                     width: 32,
@@ -566,13 +572,15 @@ class AddMenuPage extends GetView<AddMenuController> {
                 children: [
                   Text('Total Biaya Bahan'),
                   const SizedBox(height: 8),
-                  Obx(() => Text(
-                        'Rp ${controller.totalIngredientCost.value}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )),
+                  Obx(() {
+                    return Text(
+                      CurrencyFormatter.formatRupiah(controller.totalIngredientCost.value.toDouble()),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  }),
                   const SizedBox(height: 4),
                   Text(
                     'Total biaya bahan yang dipakai',

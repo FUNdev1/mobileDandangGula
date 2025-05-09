@@ -8,7 +8,6 @@ class AppColors {
   static const Color deepWiseBlue = Color(0xFF11373E);
   static const Color deepWiseGreen = Color(0xFF88DE7B);
 
-
   // Basic Colors
   static const Color white = Color(0xFFFFFFFF);
   static const Color grey = Color(0xFFA8A8A8);
@@ -49,4 +48,17 @@ class AppColors {
 
   // Icon Color
   static Color redCaretDown = const Color(0xB7FF0048);
+  // Menghasilkan warna berdasarkan ID kategori
+  static Color getColorFromId(String id) {
+    // Menggunakan hash dari ID untuk menghasilkan warna yang konsisten
+    final int hash = id.hashCode;
+
+    // Menggunakan nilai hash untuk menghasilkan komponen warna RGB
+    // Memastikan warna tidak terlalu gelap dengan menambahkan offset
+    final int r = ((hash & 0xFF0000) >> 16) | 0x80; // Minimal 128 untuk red
+    final int g = ((hash & 0x00FF00) >> 8) | 0x80; // Minimal 128 untuk green
+    final int b = (hash & 0x0000FF) | 0x80; // Minimal 128 untuk blue
+
+    return Color.fromARGB(255, r, g, b);
+  }
 }

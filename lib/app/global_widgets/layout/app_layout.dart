@@ -1,15 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dandang_gula/app/core/repositories/auth_repository.dart';
+import 'package:dandang_gula/app/global_widgets/alert/app_snackbar.dart';
 import 'package:dandang_gula/app/modules/common/dashboard/views/kasir_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
-import '../../config/theme/app_colors.dart';
-import '../../config/theme/app_dimensions.dart';
-import '../../config/theme/app_text_styles.dart';
-import '../../core/utils.dart';
+import '../../core/utils/theme/app_colors.dart';
+import '../../core/utils/theme/app_dimensions.dart';
+import '../../core/utils/theme/app_text_styles.dart';
+import '../../core/utils/utils.dart';
 import '../../core/controllers/navigation_controller.dart';
-import '../../data/services/auth_service.dart';
 import '../../routes/app_routes.dart';
 import '../buttons/icon_button.dart';
 import '../text/app_text.dart';
@@ -30,8 +31,8 @@ class AppLayout extends StatelessWidget {
   final String title;
   final bool showBackButton;
   final VoidCallback? onBackPressed;
+  final authRepository = Get.find<AuthRepository>();
 
-  final AuthService _authService = Get.find<AuthService>();
   final NavigationController _navigationController = Get.find<NavigationController>();
 
   AppLayout({
@@ -215,7 +216,7 @@ class AppLayout extends StatelessWidget {
 
   List<Widget> _getNavigationItemsByRole() {
     final navItems = <Widget>[];
-    final currentRole = _authService.userRole;
+    final currentRole = authRepository.getCurrentUser().value?.role?.role.toLowerCase();
     final currentRoute = _navigationController.currentRoute.value;
 
     // Add Dashboard button for all roles
@@ -325,6 +326,12 @@ class AppLayout extends StatelessWidget {
       case "supervisor":
         navItems.addAll([
           _buildNavItem(
+            'Pesanan',
+            AppIcons.orderDetails,
+            currentRoute == Routes.ORDERS,
+            Routes.ORDERS,
+          ),
+          _buildNavItem(
             'Management Menu',
             AppIcons.restaurant,
             currentRoute == Routes.MENU_MANAGEMENT,
@@ -335,12 +342,6 @@ class AppLayout extends StatelessWidget {
             AppIcons.wheat,
             currentRoute == Routes.STOCK_MANAGEMENT,
             Routes.STOCK_MANAGEMENT,
-          ),
-          _buildNavItem(
-            'Pesanan',
-            AppIcons.orderDetails,
-            currentRoute == Routes.ORDERS,
-            Routes.ORDERS,
           ),
           _buildNavItem(
             'Laporan',
@@ -466,11 +467,11 @@ class AppLayout extends StatelessWidget {
   Widget _buildUserProfile() {
     // Your existing implementation...
     return Obx(() {
-      final user = _authService.currentUser;
+      final user = authRepository.getCurrentUser().value;
       final userName = user?.name ?? 'User';
-      final roleName = _authService.userRole;
-      final isShowSetting = _authService.userRole == "pusat" || _authService.userRole == "supervisor" || _authService.userRole == "kasir";
-      final isShowNotif = _authService.userRole != "kasir";
+      final roleName = user?.role;
+      final isShowSetting = roleName?.role == "pusat" || roleName?.role == "supervisor" || roleName?.role == "kasir";
+      final isShowNotif = roleName?.role != "kasir";
 
       return Container(
         height: 70,
@@ -501,8 +502,8 @@ class AppLayout extends StatelessWidget {
               ),
               const SizedBox(width: AppDimensions.spacing12),
             ],
-            _buildUserAvatar(userName, roleName),
-            if (_authService.userRole == "kasir") ...[
+            _buildUserAvatar(userName, roleName?.role ?? "-"),
+            if (roleName?.role == "kasir") ...[
               AppIconButton(
                 backgroundColor: Colors.white12,
                 tooltip: "Presensi ",
@@ -532,9 +533,9 @@ class AppLayout extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             clipBehavior: Clip.antiAlias,
-            child: _authService.currentUser?.photoUrl != null && _authService.currentUser!.photoUrl!.isNotEmpty
+            child: authRepository.getCurrentUser().value?.photoUrl != null && authRepository.getCurrentUser().value!.photoUrl!.isNotEmpty
                 ? CachedNetworkImage(
-                    imageUrl: _authService.currentUser!.photoUrl!,
+                    imageUrl: authRepository.getCurrentUser().value!.photoUrl!,
                     fit: BoxFit.cover,
                     placeholder: (context, url) {
                       return Container(
@@ -588,10 +589,18 @@ class AppLayout extends StatelessWidget {
           ),
         ];
       },
-      onSelected: (value) {
+      onSelected: (value) async {
         switch (value) {
           case 'logout':
-            _authService.logout();
+            final res = await authRepository.logout();
+            if (res["status"] == true) {
+              Get.offAllNamed(Routes.LOGIN);
+            } else {
+              AppSnackBar.error(
+                message: res["message"] ?? "Gagal logout, silahkan coba lagi nanti",
+                title: "Gagal Logout",
+              );
+            }
             break;
         }
       },
@@ -603,7 +612,7 @@ class AppLayout extends StatelessWidget {
       color: AppColors.primary,
       child: Center(
         child: Text(
-          _authService.currentUser?.name?.substring(0, 1).toUpperCase() ?? 'U',
+          authRepository.getCurrentUser().value?.name.substring(0, 1).toUpperCase() ?? 'U',
           style: const TextStyle(
             color: Colors.white,
             fontSize: 20,

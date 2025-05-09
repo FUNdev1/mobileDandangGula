@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../config/theme/app_colors.dart';
-import '../../data/models/chart_data_model.dart';
+import '../../core/models/report_model.dart';
+import '../../core/utils/theme/app_colors.dart';
 
 class SimpleLineChart extends StatelessWidget {
   final List<ChartData> data;

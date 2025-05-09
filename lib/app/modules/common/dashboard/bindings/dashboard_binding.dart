@@ -1,23 +1,19 @@
+import 'package:dandang_gula/app/core/repositories/auth_repository.dart';
+import 'package:dandang_gula/app/core/repositories/cashier_repository.dart';
+import 'package:dandang_gula/app/core/repositories/menu_repository.dart';
 import 'package:get/get.dart';
-import '../../../../data/repositories/branch_repository.dart';
-import '../../../../data/repositories/dashboard_repository.dart';
-import '../../../../data/repositories/stock_management_repository.dart';
-import '../../../../data/repositories/order_repository.dart';
-import '../../../../data/services/auth_service.dart';
+import '../../../../core/repositories/branch_repository.dart';
+import '../../../../core/repositories/dashboard_repository.dart';
+import '../../../../core/repositories/stock_management_repository.dart';
+import '../../../../core/repositories/order_repository.dart';
 import '../controllers/dashboard_controller.dart';
 import '../widgets/filter/period_filter_controller.dart';
 
 class DashboardBinding extends Bindings {
   @override
   void dependencies() {
-    // Repositories
-    Get.lazyPut<DashboardRepository>(() => DashboardRepositoryImpl());
-    Get.lazyPut<BranchRepository>(() => BranchRepositoryImpl());
-    Get.lazyPut<OrderRepository>(() => OrderRepositoryImpl());
-    Get.lazyPut<StockManagementRepository>(() => StockManagementRepositoryImpl());
-
     // Services
-    Get.lazyPut<AuthService>(() => AuthService());
+    Get.lazyPut<AuthRepository>(() => AuthRepositoryImpl());
 
     // Filter Controller
     Get.lazyPut<PeriodFilterController>(() => PeriodFilterController());

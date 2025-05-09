@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart'; // Add this import for number formatting
-import '../../../../config/theme/app_colors.dart';
-import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/utils.dart';
+import '../../../../core/utils/theme/app_colors.dart';
+import '../../../../core/utils/theme/app_text_styles.dart';
+import '../../../../core/utils/utils.dart';
 import '../../../../global_widgets/buttons/app_button.dart';
 import '../../../../global_widgets/text/app_text.dart';
 import '../controllers/setting_controller.dart';

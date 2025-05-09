@@ -1,9 +1,9 @@
-import 'package:dandang_gula/app/core/utils.dart';
+import 'package:dandang_gula/app/core/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import '../../../../config/theme/app_text_styles.dart';
-import '../../../../data/models/user_model.dart';
+import '../../../../core/utils/theme/app_text_styles.dart';
+import '../../../../core/models/user_model.dart';
 import '../../../../global_widgets/buttons/app_button.dart';
 import '../../../../global_widgets/buttons/app_pagination.dart';
 import '../../../../global_widgets/input/app_text_field.dart';
@@ -273,7 +273,8 @@ class _PengaturanAkunTabPagesState extends State<PengaturanAkunTabPages> {
           Expanded(
             flex: 1,
             child: AppText(
-              DateFormatter.formatDate(DateTime.tryParse(user.createdAt ?? '')),
+              "todo",
+              // DateFormatter.formatDate(DateTime.tryParse(user. ?? '')),
               style: AppTextStyles.bodyMedium,
             ),
           ),

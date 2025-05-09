@@ -1,13 +1,13 @@
-import 'package:dandang_gula/app/config/theme/app_colors.dart';
+import 'package:dandang_gula/app/core/utils/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import '../../../../config/theme/app_dimensions.dart';
-import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/utils.dart';
-import '../../../../data/repositories/user_repository.dart';
-import '../../../../data/models/user_model.dart';
-import '../../../../data/services/api_service.dart';
+import '../../../../core/utils/theme/app_dimensions.dart';
+import '../../../../core/utils/theme/app_text_styles.dart';
+import '../../../../core/utils/utils.dart';
+import '../../../../core/repositories/user_repository.dart';
+import '../../../../core/models/user_model.dart';
+import '../../../../core/services/api_service.dart';
 import '../../../../global_widgets/buttons/app_button.dart';
 import '../../../../global_widgets/buttons/app_pagination.dart';
 import '../../../../global_widgets/input/app_text_field.dart';
@@ -167,7 +167,7 @@ class UserManagementView extends GetView<UserManagementController> {
           return Row(
             children: [
               ...controller.roles.map((role) {
-                return _buildRoleTab(role['id'], role['role']);
+                return _buildRoleTab(role.id, role.role);
               }),
             ],
           );
@@ -181,8 +181,7 @@ class UserManagementView extends GetView<UserManagementController> {
 
     return GestureDetector(
       onTap: () {
-        controller.selectedRoleFilter.value = roleId;
-        controller.searchUsers();
+        controller.onRoleTabSelected(roleId);
       },
       child: Container(
         margin: const EdgeInsets.only(right: 8),
@@ -389,7 +388,7 @@ class UserManagementView extends GetView<UserManagementController> {
           Expanded(
             flex: 1,
             child: AppText(
-              user.name ?? '',
+              user.name,
               style: AppTextStyles.bodyMedium,
               overflow: TextOverflow.ellipsis,
             ),
@@ -399,7 +398,7 @@ class UserManagementView extends GetView<UserManagementController> {
           Expanded(
             flex: 1,
             child: AppText(
-              user.username ?? '',
+              user.username,
               style: AppTextStyles.bodyMedium,
               overflow: TextOverflow.ellipsis,
             ),
@@ -473,9 +472,6 @@ class UserManagementView extends GetView<UserManagementController> {
       ),
       onSelected: (value) {
         switch (value) {
-          case 'view':
-            controller.viewUserDetails(user);
-            break;
           case 'edit':
             controller.openUserForm(user: user);
             break;
@@ -486,42 +482,17 @@ class UserManagementView extends GetView<UserManagementController> {
       },
       itemBuilder: (context) => [
         PopupMenuItem(
-          value: 'view',
-          child: Row(
-            children: [
-              const Icon(Icons.visibility, size: 16),
-              const SizedBox(width: 8),
-              AppText(
-                'View',
-                style: AppTextStyles.bodyMedium,
-              ),
-            ],
-          ),
-        ),
-        PopupMenuItem(
           value: 'edit',
-          child: Row(
-            children: [
-              const Icon(Icons.edit, size: 16),
-              const SizedBox(width: 8),
-              AppText(
-                'Edit',
-                style: AppTextStyles.bodyMedium,
-              ),
-            ],
+          child: AppText(
+            'Edit Akun',
+            style: AppTextStyles.bodyMedium,
           ),
         ),
         PopupMenuItem(
           value: 'delete',
-          child: Row(
-            children: [
-              const Icon(Icons.delete, size: 16, color: Colors.red),
-              const SizedBox(width: 8),
-              AppText(
-                'Delete',
-                style: AppTextStyles.bodyMedium.copyWith(color: Colors.red),
-              ),
-            ],
+          child: AppText(
+            'Hapus Akun',
+            style: AppTextStyles.bodyMedium,
           ),
         ),
       ],

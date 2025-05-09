@@ -2,20 +2,12 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import '../../../../data/models/category_sales_model.dart';
-import '../../../../data/models/chart_data_model.dart';
-import '../../../../data/models/payment_method_model.dart';
-import '../../../../data/models/product_sales_model.dart';
-import '../../../../data/models/stock_alert_model.dart';
-import '../../../../data/models/stock_flow_data_model.dart';
-import '../../../../data/models/stock_usage_model.dart';
-import '../../../../data/models/user_model.dart';
-import '../../../../data/repositories/branch_repository.dart';
-import '../../../../data/repositories/dashboard_repository.dart';
-import '../../../../data/repositories/stock_management_repository.dart';
-import '../../../../data/repositories/order_repository.dart';
-import '../../../../data/repositories/user_repository.dart';
-import '../../../../data/services/auth_service.dart';
+import '../../../../core/models/user_model.dart';
+import '../../../../core/repositories/branch_repository.dart';
+import '../../../../core/repositories/dashboard_repository.dart';
+import '../../../../core/repositories/stock_management_repository.dart';
+import '../../../../core/repositories/order_repository.dart';
+import '../../../../core/repositories/user_repository.dart';
 import '../widgets/filter/period_filter_controller.dart';
 import 'admin_dashboard_controller.dart';
 import 'pusat_dashboard_controller.dart';
@@ -31,7 +23,7 @@ class DashboardController extends BaseDashboardController {
     }
 
     final controller = Get.find<DashboardController>();
-    final role = controller.userRole.value;
+    final role = controller.userRole.value.toLowerCase();
 
     // Return role-specific controller
     switch (role) {

@@ -1,10 +1,10 @@
-import 'package:dandang_gula/app/config/theme/app_colors.dart';
+import 'package:dandang_gula/app/core/utils/theme/app_colors.dart';
 import 'package:dandang_gula/app/global_widgets/buttons/app_button.dart';
 import 'package:dandang_gula/app/global_widgets/input/app_dropdown_field.dart';
 import 'package:dandang_gula/app/global_widgets/input/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../core/utils.dart';
+import '../../../../../core/utils/utils.dart';
 import '../../controllers/stock_management_controller.dart';
 import '../../data/models/inventory_item_model.dart';
 

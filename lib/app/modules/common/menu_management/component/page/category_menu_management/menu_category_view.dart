@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
-import '../../../../../../config/theme/app_colors.dart';
-import '../../../../../../core/utils.dart';
+import '../../../../../../core/utils/theme/app_colors.dart';
+import '../../../../../../core/utils/utils.dart';
 import '../../../../../../global_widgets/alert/app_snackbar.dart';
 import '../../../controllers/menu_management_controller.dart';
 
@@ -116,9 +116,9 @@ class MenuCategoryView extends StatelessWidget {
                                             Map<String, dynamic> response;
 
                                             if (isAddingNew.value) {
-                                              response = await controller.menuManagementRepository.createMenuCategory(nameController.text.trim());
+                                              response = await controller.menuManagementRepository.createCategory(nameController.text.trim());
                                             } else {
-                                              response = await controller.menuManagementRepository.updateMenuCategory(selectedCategoryId.value, nameController.text.trim());
+                                              response = await controller.menuManagementRepository.updateCategory(selectedCategoryId.value, nameController.text.trim());
                                             }
 
                                             if (response['success'] == true) {
@@ -217,7 +217,7 @@ class MenuCategoryView extends StatelessWidget {
                             ),
                             child: ListTile(
                               title: Text(
-                                category['category_name'] ?? '',
+                                category.name,
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
@@ -235,8 +235,8 @@ class MenuCategoryView extends StatelessWidget {
                                     ),
                                     onPressed: () {
                                       // Set edit mode for this item only
-                                      nameController.text = category['category_name'] ?? '';
-                                      selectedCategoryId.value = category['id'] ?? '';
+                                      nameController.text = category.name;
+                                      selectedCategoryId.value = category.id;
                                       isAddingNew.value = false;
                                     },
                                   ),
@@ -346,7 +346,7 @@ class MenuCategoryView extends StatelessWidget {
                         onPressed: () async {
                           Navigator.of(context).pop();
                           try {
-                            final response = await controller.menuManagementRepository.deleteMenuCategory(category['id']);
+                            final response = await controller.menuManagementRepository.deleteCategory(category['id']);
                             if (response['success'] == true) {
                               AppSnackBar.success(message: response['message'] ?? 'Kategori berhasil dihapus');
                               controller.loadRolesAndUsers();

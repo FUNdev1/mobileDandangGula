@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../config/theme/app_colors.dart';
-import '../../core/utils.dart';
-import '../../data/models/product_sales_model.dart';
+import '../../core/models/report_model.dart';
+import '../../core/utils/theme/app_colors.dart';
+import '../../core/utils/utils.dart';
 
 class ProductSalesTable extends StatelessWidget {
   final String title;
@@ -190,7 +190,7 @@ class ProductSalesTable extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  product.name,
+                  product.menuName,
                   style: const TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 12,
@@ -207,7 +207,7 @@ class ProductSalesTable extends StatelessWidget {
           Expanded(
             child: Center(
               child: Text(
-                CurrencyFormatter.formatThousands(product.orderCount.toDouble(), decimalDigits: 0),
+                CurrencyFormatter.formatThousands(product.amount.toDouble(), decimalDigits: 0),
                 style: const TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 12,
@@ -223,7 +223,7 @@ class ProductSalesTable extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(right: 10),
               child: Text(
-                'Rp${CurrencyFormatter.formatThousands(product.totalSales, decimalDigits: 0)}',
+                'Rp${CurrencyFormatter.formatThousands(product.price, decimalDigits: 0)}',
                 style: const TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 12,

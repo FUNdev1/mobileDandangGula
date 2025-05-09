@@ -1,7 +1,7 @@
-import 'package:dandang_gula/app/config/constant/app_constants.dart';
-import 'package:dandang_gula/app/config/theme/app_colors.dart';
-import 'package:dandang_gula/app/config/theme/app_dimensions.dart';
-import 'package:dandang_gula/app/core/utils.dart';
+import 'package:dandang_gula/app/core/utils/constant/app_constants.dart';
+import 'package:dandang_gula/app/core/utils/theme/app_colors.dart';
+import 'package:dandang_gula/app/core/utils/theme/app_dimensions.dart';
+import 'package:dandang_gula/app/core/utils/utils.dart';
 import 'package:dandang_gula/app/global_widgets/input/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

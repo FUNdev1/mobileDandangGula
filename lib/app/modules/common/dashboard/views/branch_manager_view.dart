@@ -1,12 +1,12 @@
-import 'package:dandang_gula/app/core/utils.dart';
+import 'package:dandang_gula/app/core/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../global_widgets/charts/total_income_chart.dart';
 import '../../../../global_widgets/layout/app_card.dart';
 import '../../../../global_widgets/buttons/app_button.dart';
-import '../../../../config/theme/app_colors.dart';
-import '../../../../config/theme/app_dimensions.dart';
-import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/utils/theme/app_colors.dart';
+import '../../../../core/utils/theme/app_dimensions.dart';
+import '../../../../core/utils/theme/app_text_styles.dart';
 import '../../../../global_widgets/text/app_text.dart';
 import '../../../../global_widgets/layout/tab_container.dart';
 import '../../../../global_widgets/charts/category_chart.dart';
@@ -165,200 +165,131 @@ class BranchManagerDashboardView extends StatelessWidget {
             actionButton: [
               Spacer(),
               AppButton(
-                label: "Catat Pembelian Stok",
-                width: 200,
-                variant: ButtonVariant.secondary,
-              )
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          AppCard(
-            title: "Total Bahan",
-            child: Row(
-              children: [
-                AppText("120"),
-              ],
-            ),
-          ),
-
-          // Inventory stats
-          // Row(
-          //   children: [
-          //     Expanded(
-          //       child: SummaryCard(
-          //         title: 'Total Bahan',
-          //         value: '${controller.totalBranches.value * 40}',
-          //         secondaryValue: 'Items',
-          //         icon: Icons.category,
-          //       ),
-          //     ),
-          //     const SizedBox(width: 16),
-          //     Expanded(
-          //         child: SummaryCard(
-          //       title: 'Stok Rendah',
-          //       value: '${controller.lowStockItems.value}',
-          //       secondaryValue: 'Items',
-          //       icon: Icons.warning,
-          //     )),
-          //   ],
-          // ),
-          const SizedBox(height: 16),
-
-          // Stok Masuk & Stok Terbuang
-          Row(
-            children: [
-              // Stok Masuk
-              Expanded(
-                child: AppCard(
-                  title: 'Stok Masuk',
-                  action: const AppText(
-                    'Hari ini',
-                    style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const AppText('Jumlah items'),
-                      AppText(
-                        '15',
-                        style: AppTextStyles.h3,
-                      ),
-                      const SizedBox(height: 8),
-                      const AppText('Total'),
-                      AppText(
-                        'Rp 1.000.000',
-                        style: AppTextStyles.h3,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-
-              // Stok Terbuang
-              Expanded(
-                child: AppCard(
-                  title: 'Stok Terbuang',
-                  action: const AppText(
-                    'Hari ini',
-                    style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Progress bars untuk alasan pembuangan stok
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const AppText('Expired'),
-                          const SizedBox(height: 4),
-                          LinearProgressIndicator(
-                            value: 0.7,
-                            backgroundColor: Colors.grey[200],
-                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
-                            minHeight: 8,
-                          ),
-                          const SizedBox(height: 8),
-                          const AppText('Kesalahan Produksi'),
-                          const SizedBox(height: 4),
-                          LinearProgressIndicator(
-                            value: 0.4,
-                            backgroundColor: Colors.grey[200],
-                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
-                            minHeight: 8,
-                          ),
-                          const SizedBox(height: 8),
-                          const AppText('Lain-lain'),
-                          const SizedBox(height: 4),
-                          LinearProgressIndicator(
-                            value: 0.2,
-                            backgroundColor: Colors.grey[200],
-                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
-                            minHeight: 8,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Statistik arus stok
-          AppCard(
-            title: 'Statistik arus stok',
-            action: const AppText('Hari ini - Pk 00:00 (GMT+07)'),
-            child: SizedBox(
-              height: 250,
-              child: StockFlowChart(
-                data: controller.stockFlowData,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Stock Alert
-          StockAlertTable(
-            title: 'Stock alert',
-            stockAlerts: controller.stockAlerts,
-            onViewAll: () {
-              // Action untuk melihat semua stock alert
-            },
-          ),
-          const SizedBox(height: 24),
-
-          // Penggunaan Stok by Group dengan pie chart
-          AppCard(
-            title: 'Penggunaan Stok bahan by Group',
-            action: const AppText(
-              'Hari ini',
-              style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
-            ),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 200,
-                  child: StockUsageChart(
-                    data: controller.stockUsageData,
-                    isDoughnut: true,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Action buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              AppButton(
-                label: 'Tambah Stok',
-                prefixSvgPath: AppIcons.add,
-                variant: ButtonVariant.primary,
-                onPressed: () {
-                  // Navigate to stock in page
-                  Get.toNamed(Routes.STOCK_MANAGEMENT_ADD);
-                },
-                fullWidth: false,
-                width: 150,
-              ),
-              const SizedBox(width: 16),
-              AppButton(
-                label: 'Download Laporan',
+                label: "Download Data",
                 prefixSvgPath: AppIcons.download,
                 variant: ButtonVariant.outline,
                 onPressed: () {},
-                fullWidth: false,
-                width: 180,
+                width: 160,
                 outlineBorderColor: AppColors.primary,
+              ),
+              const SizedBox(width: 12),
+              AppButton(
+                label: "Catat Pembelian Stok",
+                width: 200,
+                variant: ButtonVariant.secondary,
+                onPressed: () {
+                  // Navigasi ke halaman catat pembelian stok
+                  Get.toNamed(Routes.STOCK_MANAGEMENT_ADD);
+                },
               ),
             ],
           ),
           const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 2,
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 209,
+                          child: AppCard(
+                            title: "Total Bahan",
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AppText(controller.totalStockItems.toString(), style: AppTextStyles.h1.copyWith(fontWeight: FontWeight.w600)),
+                                AppText("Items", style: AppTextStyles.bodyMedium.copyWith(fontStyle: FontStyle.italic)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        SizedBox(
+                          width: 209,
+                          child: AppCard(
+                            title: "Stok Masuk",
+                            action: const AppText(
+                              'Hari ini',
+                              style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AppText('Jumlah items', style: AppTextStyles.bodyMedium),
+                                AppText(controller.stockInItemsToday.toString(), style: AppTextStyles.h3),
+                                const SizedBox(height: 8),
+                                AppText('Total', style: AppTextStyles.bodyMedium),
+                                AppText('Rp ' + controller.stockInTotalToday.toString(), style: AppTextStyles.h3),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    AppCard(
+                      title: 'Statistik arus stok',
+                      action: const AppText('Hari ini - Pk 00:00 (GMT+07)'),
+                      child: SizedBox(
+                        height: 180,
+                        child: StockFlowChart(
+                          data: controller.stockFlowData,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: StockAlertTable(
+                  title: 'Stock alert',
+                  stockAlerts: controller.stockAlerts,
+                  onViewAll: () {},
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 3,
+                child: AppCard(
+                  title: 'Metric Stock usage',
+                  child: SizedBox(
+                    height: 200,
+                    child: StockUsageChart(
+                      data: controller.stockUsageData,
+                      isDoughnut: false,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 2,
+                child: AppCard(
+                  title: 'Penggunaan Stok bahan by Group',
+                  action: const AppText(
+                    'Hari ini',
+                    style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
+                  ),
+                  child: SizedBox(
+                    height: 200,
+                    child: StockUsageChart(
+                      data: controller.stockUsageData,
+                      isDoughnut: true,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

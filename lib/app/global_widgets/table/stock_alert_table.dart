@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../config/theme/app_colors.dart';
-import '../../config/theme/app_text_styles.dart';
-import '../../data/models/stock_alert_model.dart';
+import '../../core/models/stock_model.dart';
+import '../../core/utils/theme/app_colors.dart';
+import '../../core/utils/theme/app_text_styles.dart';
 import '../layout/app_card.dart';
 import '../layout/app_layout.dart';
 import '../text/app_text.dart';
@@ -25,18 +25,9 @@ class StockAlertTable extends StatelessWidget {
       title: title,
       action: TextButton(
         onPressed: onViewAll,
-        child: Row(
-          children: [
-            AppText(
-              'Lihat lainya',
-              style: TextStyle(color: AppColors.primary),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 12,
-              color: AppColors.primary,
-            ),
-          ],
+        child: AppText(
+          'Lihat lainya',
+          style: TextStyle(color: AppColors.primary),
         ),
       ),
       child: Column(
@@ -107,11 +98,11 @@ class StockAlertTable extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  (alert.stock).toString(),
+                  alert.stock.toString(),
                   style: AppTextStyles.bodySmall,
                 ),
                 AppText(
-                  alert.unitName,
+                  alert.uom,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -123,19 +114,30 @@ class StockAlertTable extends StatelessWidget {
             child: Container(
               height: 10,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: Color(0xFFF8F8F8),
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 80 * alert.alertLevel,
-                    decoration: BoxDecoration(
-                      color: alert.alertLevel < 0.3 ? AppColors.error : AppColors.primary,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                  ),
-                ],
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  double maxBarWidth = constraints.maxWidth;
+                  double percent = alert.limit.toDouble();
+                  if (percent < 0) percent = 0;
+                  if (percent > 1) percent = 1;
+                  double barWidth = maxBarWidth * percent;
+                  bool isLowStock = percent < 0.3;
+                  return Stack(
+                    children: [
+                      Container(
+                        width: barWidth,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: isLowStock ? AppColors.error : AppColors.primary,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
           ),

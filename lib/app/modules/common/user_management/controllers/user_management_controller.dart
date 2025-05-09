@@ -1,11 +1,11 @@
 import 'dart:io';
-import 'package:dandang_gula/app/data/repositories/order_repository.dart';
+import 'package:dandang_gula/app/core/repositories/auth_repository.dart';
+import 'package:dandang_gula/app/core/repositories/order_repository.dart';
 import 'package:get/get.dart';
-import '../../../../data/repositories/user_repository.dart';
-import '../../../../data/repositories/branch_repository.dart';
-import '../../../../data/models/user_model.dart';
-import '../../../../data/services/api_service.dart';
-import '../../../../data/services/auth_service.dart';
+import '../../../../core/repositories/user_repository.dart';
+import '../../../../core/repositories/branch_repository.dart';
+import '../../../../core/models/user_model.dart';
+import '../../../../core/services/api_service.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../global_widgets/alert/app_snackbar.dart';
@@ -35,7 +35,7 @@ class UserManagementController extends GetxController implements UserFormControl
   @override
   final isEditing = false.obs;
   @override
-  final roles = [].obs;
+  final roles = <Role>[].obs;
   @override
   final isAccountActive = true.obs;
   @override
@@ -53,7 +53,7 @@ class UserManagementController extends GetxController implements UserFormControl
   @override
   final selectedImage = Rxn<File?>();
 
-  final authService = Get.find<AuthService>();
+  final authService = Get.find<AuthRepository>();
 
   @override
   void onInit() {
@@ -64,9 +64,9 @@ class UserManagementController extends GetxController implements UserFormControl
 
   void checkUserRole() {
     // Get current user role from AuthService
-    final currentUser = authService.currentUser;
+    final currentUser = authService.getCurrentUser().value;
     if (currentUser != null) {
-      isAdminPusat.value = currentUser.role == 'pusat';
+      isAdminPusat.value = currentUser.role?.role == 'pusat';
 
       // If user is AdminPusat, load branches
       if (isAdminPusat.value) {
@@ -99,32 +99,33 @@ class UserManagementController extends GetxController implements UserFormControl
     isLoading.value = true;
     try {
       // First load roles
-      final repository = UserRepository();
-      final rolesResponse = await repository.getRoles();
+      final repository = UserRepositoryImpl();
+      final rolesResponse = await repository.getAllRoles();
 
-      if (rolesResponse['success'] == true) {
-        roles.value = rolesResponse['data'];
+      if (rolesResponse.isNotEmpty) {
+        roles.value = rolesResponse;
         if (firstTime) {
-          selectedRoleFilter.value = rolesResponse['data'][0]['id'];
+          selectedRoleFilter.value = rolesResponse.first.id;
         }
 
         // Then load users
-        final usersResponse = await repository.getUsers(
+        final usersResponse = await repository.getUsersPage(
           page: currentPage.value,
-          limit: itemsPerPage.value,
-          searchQuery: searchController.text,
+          pageSize: itemsPerPage.value,
+          search: searchController.text,
           branchId: isAdminPusat.value ? selectedBranchId.value : null,
           roleId: selectedRoleFilter.value,
         );
         if (usersResponse['success'] == true) {
-          users.value = usersResponse['data'];
-          totalPages.value = usersResponse['totalPages'];
+          final userResponse = usersResponse['data'];
+          users.value = userResponse.map<User>((user) => User.fromJson(user)).toList();
+          totalPages.value = usersResponse['total_page'];
           currentPage.value = usersResponse['page'];
         } else {
           AppSnackBar.error(message: 'Failed to load users: ${usersResponse['message']}');
         }
       } else {
-        AppSnackBar.error(message: 'Failed to load roles: ${rolesResponse['message']}');
+        AppSnackBar.error(message: 'Failed to load roles: error');
       }
     } catch (e) {
       AppSnackBar.error(message: 'Failed to load data: $e');
@@ -162,10 +163,11 @@ class UserManagementController extends GetxController implements UserFormControl
       selectedUser.value = user;
 
       // Populate form fields with user data
-      nameController.text = user.name ?? '';
-      usernameController.text = user.username ?? '';
+      nameController.text = user.name;
+      usernameController.text = user.username;
+      passwordController.text = "";
       pinController.text = user.pin ?? '';
-      selectedRoleId.value = user.role;
+      selectedRoleId.value = user.role?.id ?? selectedRoleFilter.value;
       isAccountActive.value = user.status == 'Active';
     } else {
       isEditing.value = false;
@@ -230,7 +232,7 @@ class UserManagementController extends GetxController implements UserFormControl
     isSubmitting.value = true;
 
     try {
-      final repository = UserRepository();
+      final repository = UserRepositoryImpl();
 
       // Handle image upload if there's a new image
       String? photoUrl = selectedUser.value?.photoUrl;
@@ -255,7 +257,7 @@ class UserManagementController extends GetxController implements UserFormControl
 
       if (!isEditing.value) {
         // Create new user with role and status
-        final result = await repository.addUser(userData, photoPath: photoUrl);
+        final result = await repository.createUser(userData, photoPath: photoUrl);
         if (result['success'] == false) {
           AppSnackBar.error(message: 'Gagal membuat akun: ${result['message']}');
           return;
@@ -291,7 +293,7 @@ class UserManagementController extends GetxController implements UserFormControl
 
   void deleteUser(String id) async {
     try {
-      final repository = UserRepository();
+      final repository = UserRepositoryImpl();
       final response = await repository.deleteUser(id.toString());
       if (response['success'] == false) {
         AppSnackBar.error(message: 'Gagal menghapus akun: ${response['message']}');
@@ -302,136 +304,6 @@ class UserManagementController extends GetxController implements UserFormControl
     } catch (e) {
       AppSnackBar.error(message: 'Error: $e');
     }
-  }
-
-  Future<void> viewUserDetails(User user) async {
-    // final orderRepo = OrderRepositoryImpl();
-
-    // final resp = await orderRepo.postMenuCreate();
-    // if (resp['success'] == false) {
-    //   AppSnackBar.error(message: 'Gagal mendapatkan detail user: ${resp['message']}');
-    //   return;
-    // }
-
-    // Fetch user details from the repository
-    // final userDetails = await orderRepo.getUserDetails(user.id);
-    // Show user details in a dialog or navigate to details screen
-    // Get.dialog(
-    //   Dialog(
-    //     child: Container(
-    //       width: 400,
-    //       padding: const EdgeInsets.all(24),
-    //       child: Column(
-    //         mainAxisSize: MainAxisSize.min,
-    //         crossAxisAlignment: CrossAxisAlignment.start,
-    //         children: [
-    //           Row(
-    //             children: [
-    //               Container(
-    //                 width: 60,
-    //                 height: 60,
-    //                 decoration: const BoxDecoration(
-    //                   color: Color(0xFF0D4927),
-    //                   shape: BoxShape.circle,
-    //                 ),
-    //                 child: Center(
-    //                   child: user.photoUrl != null && user.photoUrl!.isNotEmpty
-    //                       ? ClipRRect(
-    //                           borderRadius: BorderRadius.circular(30),
-    //                           child: Image.network(
-    //                             user.photoUrl!,
-    //                             width: 60,
-    //                             height: 60,
-    //                             fit: BoxFit.cover,
-    //                             errorBuilder: (_, __, ___) => const Icon(
-    //                               Icons.person,
-    //                               color: Colors.white,
-    //                               size: 30,
-    //                             ),
-    //                           ),
-    //                         )
-    //                       : const Icon(
-    //                           Icons.person,
-    //                           color: Colors.white,
-    //                           size: 30,
-    //                         ),
-    //                 ),
-    //               ),
-    //               const SizedBox(width: 16),
-    //               Expanded(
-    //                 child: Column(
-    //                   crossAxisAlignment: CrossAxisAlignment.start,
-    //                   children: [
-    //                     Text(
-    //                       user.name ?? '',
-    //                       style: const TextStyle(
-    //                         fontSize: 18,
-    //                         fontWeight: FontWeight.bold,
-    //                       ),
-    //                     ),
-    //                     Text(
-    //                       _getRoleDisplay(user.role),
-    //                       style: const TextStyle(
-    //                         fontSize: 14,
-    //                         color: Colors.grey,
-    //                       ),
-    //                     ),
-    //                   ],
-    //                 ),
-    //               ),
-    //             ],
-    //           ),
-    //           const SizedBox(height: 24),
-    //           const Divider(),
-    //           const SizedBox(height: 16),
-    //           _detailRow('Email', user.username ?? ''),
-    //           _detailRow('Branch', user.branchName ?? ''),
-    //           _detailRow('ID', '#${user.id ?? ''}'),
-    //           _detailRow('Status', user.status ?? 'Active'),
-    //           const SizedBox(height: 24),
-    //           Center(
-    //             child: ElevatedButton(
-    //               onPressed: () => Get.back(),
-    //               style: ElevatedButton.styleFrom(
-    //                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-    //               ),
-    //               child: const Text('Close'),
-    //             ),
-    //           ),
-    //         ],
-    //       ),
-    //     ),
-    //   ),
-    // );
-  }
-
-  Widget _detailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Colors.grey,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   String _getRoleDisplay(String? role) {
@@ -448,6 +320,66 @@ class UserManagementController extends GetxController implements UserFormControl
         return 'Branch Manager';
       default:
         return role ?? 'Unknown';
+    }
+  }
+
+  void onRoleTabSelected(String roleId) async {
+    final previousRole = selectedRoleFilter.value;
+    selectedRoleFilter.value = roleId;
+    isLoading.value = true;
+    try {
+      final repository = UserRepositoryImpl();
+      final usersResponse = await repository.getUsersPage(
+        page: 1,
+        pageSize: itemsPerPage.value,
+        search: searchController.text,
+        branchId: isAdminPusat.value ? selectedBranchId.value : null,
+        roleId: roleId,
+      );
+      if (usersResponse['success'] == true) {
+        final userResponse = usersResponse['data'];
+        users.value = userResponse.map<User>((user) => User.fromJson(user)).toList();
+        totalPages.value = usersResponse['total_page'];
+        currentPage.value = usersResponse['page'];
+      } else {
+        AppSnackBar.error(message: 'Failed to load users: ${usersResponse['message']}');
+        selectedRoleFilter.value = previousRole;
+      }
+    } catch (e) {
+      AppSnackBar.error(message: 'Failed to load data: $e');
+      selectedRoleFilter.value = previousRole;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void onBranchTabSelected(String branchId) async {
+    final previousBranch = selectedBranchId.value;
+    selectedBranchId.value = branchId;
+    isLoading.value = true;
+    try {
+      final repository = UserRepositoryImpl();
+      final usersResponse = await repository.getUsersPage(
+        page: 1,
+        pageSize: itemsPerPage.value,
+        search: searchController.text,
+        branchId: branchId,
+        roleId: selectedRoleFilter.value,
+      );
+      if (usersResponse['success'] == true) {
+        final userResponse = usersResponse['data'];
+        users.value = userResponse.map<User>((user) => User.fromJson(user)).toList();
+        totalPages.value = usersResponse['total_page'];
+        currentPage.value = usersResponse['page'];
+      } else {
+        AppSnackBar.error(message: 'Failed to load users: ${usersResponse['message']}');
+        selectedBranchId.value = previousBranch;
+      }
+    } catch (e) {
+      AppSnackBar.error(message: 'Failed to load data: $e');
+      selectedBranchId.value = previousBranch;
+    } finally {
+      isLoading.value = false;
     }
   }
 }

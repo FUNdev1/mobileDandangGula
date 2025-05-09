@@ -7,8 +7,8 @@ import '../../../../../../global_widgets/buttons/app_button.dart';
 import '../../../../../../global_widgets/buttons/icon_button.dart';
 import '../../../../../../global_widgets/buttons/toogle_button.dart';
 import '../../../../../../global_widgets/text/app_text.dart';
-import '../../../../../../config/theme/app_colors.dart';
-import '../../../../../../core/utils.dart';
+import '../../../../../../core/utils/theme/app_colors.dart';
+import '../../../../../../core/utils/utils.dart';
 
 class PembayaranPage extends StatefulWidget {
   final List<Map<String, dynamic>> selectedItems;

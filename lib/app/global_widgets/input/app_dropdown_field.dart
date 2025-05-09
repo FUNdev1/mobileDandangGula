@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../core/utils.dart';
+import '../../core/utils/utils.dart';
 import '../text/app_text.dart';
 import 'app_text_field.dart';
 

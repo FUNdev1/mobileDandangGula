@@ -2,11 +2,11 @@ import 'package:dandang_gula/app/global_widgets/charts/sales_performance_chart.d
 import 'package:dandang_gula/app/global_widgets/layout/app_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../config/theme/app_colors.dart';
-import '../../../../config/theme/app_dimensions.dart';
-import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/utils.dart';
-import '../../../../data/models/branch_model.dart';
+import '../../../../core/utils/theme/app_colors.dart';
+import '../../../../core/utils/theme/app_dimensions.dart';
+import '../../../../core/utils/theme/app_text_styles.dart';
+import '../../../../core/utils/utils.dart';
+import '../../../../core/models/branch_model.dart';
 import '../../../../global_widgets/buttons/icon_button.dart';
 import '../../../../global_widgets/charts/total_income_chart.dart';
 import '../../../../global_widgets/text/app_text.dart';
@@ -96,7 +96,7 @@ class PusatDashboardView extends StatelessWidget {
         itemBuilder: (context, index) {
           final branch = branches[index];
           // Gunakan data dari controller pusat
-          final branchData = controller.allBranchSales.where((item) => item.label == branch.name).toList();
+          final branchData = controller.allBranchSales.where((item) => item == branch.name).toList();
           return BranchSalesPerformanceWidget(
             branch: branch,
             data: branchData,

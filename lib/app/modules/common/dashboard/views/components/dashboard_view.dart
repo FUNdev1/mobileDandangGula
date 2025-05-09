@@ -28,7 +28,7 @@ class DashboardView extends GetView<DashboardController> {
 
       // Untuk role lainnya, gunakan AppLayout dengan content yang sesuai
       Widget dashboardContent;
-      switch (dashboardController.userRole.value) {
+      switch (dashboardController.userRole.value.toLowerCase()) {
         case 'admin':
           dashboardContent = AdminDashboardView();
           break;
@@ -46,7 +46,7 @@ class DashboardView extends GetView<DashboardController> {
           break;
         default:
           dashboardContent = Center(
-            child: Text('Role tidak valid: ${dashboardController.userRole.value}'),
+            child: Text('Role tidak valid: ${dashboardController.userRole.value.toLowerCase()}'),
           );
       }
 

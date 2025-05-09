@@ -1,7 +1,6 @@
-// lib/app/core/middleware/auth_middleware.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../data/services/auth_service.dart';
+import '../repositories/auth_repository.dart';
 import '../../routes/app_routes.dart';
 
 class AuthMiddleware extends GetMiddleware {
@@ -11,22 +10,26 @@ class AuthMiddleware extends GetMiddleware {
 
   @override
   RouteSettings? redirect(String? route) {
-    final authService = Get.find<AuthService>();
+    final authRepository = Get.find<AuthRepository>();
 
-    // Jika rute adalah splash atau login, tidak perlu cek auth
+    // Jika rute adalah login, tidak perlu cek auth
     if (route == Routes.LOGIN) {
       return null;
     }
 
     // Cek apakah user sudah login
-    if (!authService.isLoggedIn) {
+    if (!authRepository.isLoggedIn().value) {
       return const RouteSettings(name: Routes.LOGIN);
     }
 
-    // Jika allowedRoles tidak null, cek apakah role user sesuai
-    if (allowedRoles != null && !allowedRoles!.contains(authService.userRole)) {
-      // Redirect ke dashboard jika tidak memiliki akses
-      return const RouteSettings(name: Routes.DASHBOARD);
+    // Jika allowedRoles tidak null, ambil data user saat ini dan cek rolenya
+    if (allowedRoles != null) {
+      final currentUser = authRepository.getCurrentUser().value;
+
+      if (currentUser == null || currentUser.role == null || !allowedRoles!.contains(currentUser.role!.role.toLowerCase())) {
+        // Redirect ke dashboard jika tidak memiliki akses
+        return const RouteSettings(name: Routes.DASHBOARD);
+      }
     }
 
     // Lanjutkan ke route yang diminta jika semua pengecekan lolos

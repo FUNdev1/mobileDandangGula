@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../config/theme/app_colors.dart';
-import '../../../../config/theme/app_dimensions.dart';
-import '../../../../core/utils.dart';
+import '../../../../core/utils/theme/app_colors.dart';
+import '../../../../core/utils/theme/app_dimensions.dart';
+import '../../../../core/utils/utils.dart';
 import '../../../../global_widgets/buttons/app_button.dart';
 import '../../../../global_widgets/layout/app_layout.dart';
 import '../../../../global_widgets/layout/tab_container.dart';

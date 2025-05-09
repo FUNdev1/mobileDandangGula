@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
-import '../../../../../config/theme/app_colors.dart';
-import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/utils.dart';
-import '../../../../../data/repositories/stock_management_repository.dart';
+import '../../../../../core/utils/theme/app_colors.dart';
+import '../../../../../core/utils/theme/app_text_styles.dart';
+import '../../../../../core/utils/utils.dart';
+import '../../../../../core/repositories/stock_management_repository.dart';
 import '../../../../../global_widgets/buttons/app_button.dart';
 import '../../../../../global_widgets/text/app_text.dart';
 import '../../data/models/inventory_item_model.dart';

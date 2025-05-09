@@ -1,9 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../data/models/user_model.dart';
-import '../../../../data/repositories/user_repository.dart';
-import '../../../../data/services/auth_service.dart';
+import '../../../../core/models/user_model.dart';
+import '../../../../core/repositories/user_repository.dart';
 import '../../../../global_widgets/alert/app_snackbar.dart';
 import '../widget/user_account_side_panel.dart';
 
@@ -27,7 +26,7 @@ class SettingController extends GetxController implements UserFormController {
   @override
   final isSubmitting = false.obs;
   @override
-  final roles = [].obs;
+  final roles = <Role>[].obs;
   @override
   final selectedRoleId = RxnString();
   @override
@@ -62,11 +61,11 @@ class SettingController extends GetxController implements UserFormController {
   void loadUsers() async {
     isLoading.value = true;
     try {
-      final repository = UserRepository();
-      final response = await repository.getUsers(
+      final repository = UserRepositoryImpl();
+      final response = await repository.getUsersPage(
         page: currentPage.value,
-        limit: itemsPerPage.value,
-        searchQuery: searchController.text,
+        pageSize: itemsPerPage.value,
+        search: searchController.text,
       );
       if (response.isNotEmpty) {
         users.value = response["user"];
@@ -85,14 +84,14 @@ class SettingController extends GetxController implements UserFormController {
   // Load roles from API
   void loadRoles() async {
     try {
-      final repository = UserRepository();
+      final repository = UserRepositoryImpl();
 
-      final response = await repository.getRoles();
+      final response = await repository.getAllRoles();
 
-      if (response['success'] == true) {
-        roles.value = response['data'];
+      if (response.isNotEmpty) {
+        roles.value = response;
       } else {
-        AppSnackBar.error(message: 'Failed to load roles: ${response['message']}');
+        AppSnackBar.error(message: 'Failed to load roles: ${"response kosong"}');
       }
     } catch (e) {
       AppSnackBar.error(message: 'Failed to load roles: $e');
@@ -179,7 +178,7 @@ class SettingController extends GetxController implements UserFormController {
     isSubmitting.value = true;
 
     try {
-      final repository = UserRepository();
+      final repository = UserRepositoryImpl();
 
       // Handle image upload if there's a new image
       String? photoUrl = selectedUser.value?.photoUrl;
@@ -202,7 +201,7 @@ class SettingController extends GetxController implements UserFormController {
 
       if (!isEditing.value) {
         // Create new user with role and status
-        final result = await repository.addUser(userData, photoPath: photoUrl);
+        final result = await repository.createUser(userData, photoPath: photoUrl);
         if (result['success'] == false) {
           AppSnackBar.error(message: 'Gagal membuat akun: ${result['message']}');
           return;
@@ -239,7 +238,7 @@ class SettingController extends GetxController implements UserFormController {
 
   void deleteUser(int id) async {
     try {
-      final repository = UserRepository();
+      final repository = UserRepositoryImpl();
       final response = await repository.deleteUser(id.toString());
       if (response['success'] == false) {
         AppSnackBar.error(message: 'Gagal menghapus akun: ${response['message']}');
@@ -308,7 +307,7 @@ class SettingController extends GetxController implements UserFormController {
                           ),
                         ),
                         Text(
-                          _getRoleDisplay(user.role),
+                          _getRoleDisplay(user.role?.role),
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.grey,
@@ -322,9 +321,9 @@ class SettingController extends GetxController implements UserFormController {
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 16),
-              _detailRow('Email', user.username ?? ''),
-              _detailRow('Branch', user.branchName ?? ''),
-              _detailRow('ID', '#${user.id ?? ''}'),
+              _detailRow('Email', user.username),
+              _detailRow('Branch', user.branch?.name ?? ''),
+              _detailRow('ID', '#${user.id}'),
               const SizedBox(height: 24),
               Center(
                 child: ElevatedButton(

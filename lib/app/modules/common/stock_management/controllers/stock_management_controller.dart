@@ -1,12 +1,10 @@
-import 'package:dandang_gula/app/config/theme/app_text_styles.dart';
-import 'package:dandang_gula/app/core/utils.dart';
+import 'package:dandang_gula/app/core/utils/theme/app_text_styles.dart';
+import 'package:dandang_gula/app/core/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import '../../../../data/models/stock_alert_model.dart';
-import '../../../../data/models/stock_flow_data_model.dart';
-import '../../../../data/models/stock_usage_model.dart';
-import '../../../../data/repositories/stock_management_repository.dart';
+import '../../../../core/models/stock_model.dart';
+import '../../../../core/repositories/stock_management_repository.dart';
 import '../../../../global_widgets/alert/app_snackbar.dart';
 import '../../../../global_widgets/buttons/action_popup.dart';
 import '../../../../routes/app_routes.dart';
@@ -60,9 +58,10 @@ class StockManagementController extends GetxController {
         group: selectedCategoryFilter.value,
       );
       if (respone.containsKey('data') && respone['data'] is List) {
-        inventoryItems.value = respone['data'].map((item) => InventoryItem.fromJson(item)).toList();
+        final items = respone['data'] as List<dynamic>;
+        inventoryItems.value = items.map((item) => InventoryItem.fromJson(item)).toList();
         currentPage.value = page;
-        totalPages.value = respone['meta']['total_pages'];
+        totalPages.value = 1; // todo
       }
 
       // Fetch low stock items

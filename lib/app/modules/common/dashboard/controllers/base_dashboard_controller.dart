@@ -1,11 +1,13 @@
 import 'dart:developer';
+import 'package:dandang_gula/app/core/repositories/auth_repository.dart';
+import 'package:dandang_gula/app/core/repositories/cashier_repository.dart';
+import 'package:dandang_gula/app/core/repositories/menu_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import '../../../../data/repositories/branch_repository.dart';
-import '../../../../data/repositories/dashboard_repository.dart';
-import '../../../../data/repositories/order_repository.dart';
-import '../../../../data/repositories/stock_management_repository.dart';
-import '../../../../data/services/auth_service.dart';
+import '../../../../core/repositories/branch_repository.dart';
+import '../../../../core/repositories/dashboard_repository.dart';
+import '../../../../core/repositories/order_repository.dart';
+import '../../../../core/repositories/stock_management_repository.dart';
 import '../widgets/filter/period_filter_controller.dart';
 
 abstract class BaseDashboardController extends GetxController {
@@ -14,7 +16,9 @@ abstract class BaseDashboardController extends GetxController {
   final DashboardRepository dashboardRepository = Get.find<DashboardRepository>();
   final OrderRepository orderRepository = Get.find<OrderRepository>();
   final StockManagementRepository stockRepository = Get.find<StockManagementRepository>();
-  final AuthService authService = Get.find<AuthService>();
+  final AuthRepository authService = Get.find<AuthRepository>();
+  final CashierRepository cashierRepository = Get.find<CashierRepository>();
+  final MenuRepository menuRepository = Get.find<MenuRepository>();
 
   // Observable variables
   final isLoading = true.obs;
@@ -23,7 +27,7 @@ abstract class BaseDashboardController extends GetxController {
   final todaySales = 0.0.obs;
   final todayProfit = 0.0.obs;
   final salesGrowth = 0.0.obs;
-  
+
   // Period filter controller
   final periodFilterController = Get.find<PeriodFilterController>();
 
@@ -36,20 +40,19 @@ abstract class BaseDashboardController extends GetxController {
   Future<void> initializeController() async {
     try {
       isLoading.value = true;
-      
+
       // Get user role
-      final user = authService.currentUser;
-      userRole.value = user?.roleName ?? '';
-      
+      final user = authService.getCurrentUser().value;
+      userRole.value = user?.role?.role ?? '';
+
       // Initialize period filter
       // periodFilterController.initialize();
-      
+
       // Load initial data
       await fetchInitialData();
-      
+
       // Load dashboard data
       await loadDashboardData();
-      
     } catch (e) {
       if (kDebugMode) {
         print('Error initializing dashboard: $e');
@@ -58,12 +61,12 @@ abstract class BaseDashboardController extends GetxController {
       isLoading.value = false;
     }
   }
-  
+
   Future<void> fetchInitialData() async {
     try {
       // Fetch branches
       await branchRepository.fetchAllBranches();
-      
+
       // Set default branch if available
       if (branchRepository.branches.isNotEmpty) {
         selectedBranchId.value = branchRepository.branches.first.id;
@@ -72,18 +75,18 @@ abstract class BaseDashboardController extends GetxController {
       log('Error in fetchInitialData: $e');
     }
   }
-  
+
   // Select a branch
   void selectBranch(String branchId) {
     selectedBranchId.value = branchId;
     loadDashboardData();
   }
-  
+
   // Period filter changed
   void onPeriodFilterChanged(String periodId) {
     loadDashboardData();
   }
-  
+
   // Abstract method to be implemented by subclasses
   Future<void> loadDashboardData();
 }

@@ -1,9 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import '../../../../data/models/chart_data_model.dart';
-import '../../../../data/models/category_sales_model.dart';
-import '../../../../data/models/payment_method_model.dart';
-import '../../../../data/models/product_sales_model.dart';
+import '../../../../core/models/report_model.dart';
 import 'base_dashboard_controller.dart';
 
 class PusatDashboardController extends BaseDashboardController {
@@ -37,9 +34,10 @@ class PusatDashboardController extends BaseDashboardController {
       // branchComparison.value = await branchRepository.fetchBranchComparison(filterParams: filterParams);
 
       // Dapatkan data kategori dan produk
-      categorySales.value = await orderRepository.getCategorySales(filterParams: filterParams);
-      topProducts.value = await orderRepository.getTopProductSales(filterParams: filterParams);
-      paymentMethods.value = await orderRepository.getPaymentMethodData(filterParams: filterParams);
+      // categorySales.value = await dashboardRepository.sale
+      // categorySales.value = await orderRepository.getCategorySales(filterParams: filterParams);
+      // topProducts.value = await orderRepository.getTopProductSales(filterParams: filterParams);
+      // paymentMethods.value = await orderRepository.getPaymentMethodData(filterParams: filterParams);
 
       // Dapatkan data revenue vs expense
       // revenueExpenseData.value = await branchRepository.fetchRevenueExpenseData(selectedBranchId.value.isEmpty ? null : selectedBranchId.value, filterParams: filterParams);

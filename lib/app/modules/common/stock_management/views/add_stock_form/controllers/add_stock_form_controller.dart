@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../../data/repositories/stock_management_repository.dart';
+import '../../../../../../core/repositories/stock_management_repository.dart';
 import '../../../../../../global_widgets/alert/app_snackbar.dart';
 import '../../../data/models/inventory_item_model.dart';
 import '../../ingredient_select/ingredient_select_view.dart';

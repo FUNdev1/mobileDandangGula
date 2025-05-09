@@ -5,7 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../../data/repositories/user_repository.dart';
+import '../../../../core/models/user_model.dart';
+import '../../../../core/repositories/user_repository.dart';
 import '../../../../global_widgets/buttons/app_button.dart';
 import '../../../../global_widgets/input/app_password_field.dart';
 import '../../../../global_widgets/input/app_switch_field.dart';
@@ -16,7 +17,7 @@ abstract class UserFormController {
   // Properties
   Rxn<File?> get selectedImage;
   RxnString get selectedRoleId;
-  RxList get roles;
+  RxList<Role> get roles;
   TextEditingController get nameController;
   TextEditingController get usernameController;
   TextEditingController get passwordController;
@@ -43,8 +44,6 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
   File? selectedImage;
   String? selectedRole;
   bool isActive = true;
-
-  final roles = [].obs;
 
   @override
   void initState() {
@@ -187,18 +186,26 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Obx(() => AppDropdownField(
-                              hint: "Pilih Role Akun",
-                              items: widget.controller.roles.value,
-                              selectedValue: widget.controller.selectedRoleId.value ?? "",
-                              valueKey: "id",
-                              displayKey: "role",
-                              onChanged: (String? newValue) {
-                                if (newValue != null) {
-                                  widget.controller.selectedRoleId.value = newValue;
-                                }
-                              },
-                            )),
+                        Obx(() {
+                          final rolesList = (widget.controller.roles.value as List).map((role) {
+                            return {
+                              "id": role.id,
+                              "role": role.role,
+                            };
+                          }).toList();
+                          return AppDropdownField(
+                            hint: "Pilih Role Akun",
+                            items: rolesList,
+                            selectedValue: widget.controller.selectedRoleId.value ?? "",
+                            valueKey: "id",
+                            displayKey: "role",
+                            onChanged: (String? newValue) {
+                              if (newValue != null) {
+                                widget.controller.selectedRoleId.value = newValue;
+                              }
+                            },
+                          );
+                        }),
                       ],
                     ),
                     const SizedBox(height: 24),

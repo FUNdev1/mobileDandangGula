@@ -1,8 +1,10 @@
+import 'package:dandang_gula/app/core/models/menu_model.dart';
 import 'package:dandang_gula/app/global_widgets/input/app_text_field.dart';
+import 'package:dandang_gula/app/modules/common/stock_management/views/ingredient_group/ingredient_group_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../config/theme/app_dimensions.dart';
-import '../../../../core/utils.dart';
+import '../../../../core/utils/theme/app_dimensions.dart';
+import '../../../../core/utils/utils.dart';
 import '../../../../global_widgets/buttons/app_button.dart';
 import '../../../../global_widgets/buttons/app_pagination.dart';
 import '../../../../global_widgets/input/app_dropdown_field.dart';
@@ -103,7 +105,12 @@ class MenuManagementView extends GetView<MenuManagementController> {
                 ),
               ),
               const SizedBox(width: 8),
-              Obx(() => AppText('(${controller.roles.length} menu)')),
+              Obx(() {
+                if (controller.totalData.value != null) {
+                  return AppText('(${controller.totalData.value} menu)');
+                }
+                return SizedBox();
+              }),
             ],
           ),
         ),
@@ -154,7 +161,7 @@ class MenuManagementView extends GetView<MenuManagementController> {
 
       return Column(
         children: [
-          if (controller.roles.isEmpty)
+          if (controller.menuList.isEmpty)
             AppText(
               "Tidak ada data menu",
             )
@@ -170,11 +177,11 @@ class MenuManagementView extends GetView<MenuManagementController> {
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   _buildTableHeader(),
-                  ...controller.roles.map((menu) => _buildMenuRow(menu)),
+                  ...controller.menuList.map((menu) => _buildMenuRow(menu)),
                 ],
               ),
             ),
-          if (controller.roles.isNotEmpty) _buildPagination(),
+          if (controller.menuList.isNotEmpty) _buildPagination(),
         ],
       );
     });
@@ -264,12 +271,12 @@ class MenuManagementView extends GetView<MenuManagementController> {
     );
   }
 
-  Widget _buildMenuRow(dynamic menu) {
+  Widget _buildMenuRow(Menu menu) {
     List<Widget> ingredientChips = [];
 
     // Create ingredient chips for display
-    if (menu['ingredients'] != null && menu['ingredients'] is List) {
-      for (var ingredient in menu['ingredients']) {
+    if (menu.ingredients != null && menu.ingredients is List && menu.ingredients!.isNotEmpty) {
+      for (var ingredient in menu.ingredients!) {
         if (ingredient is Map) {
           ingredientChips.add(
             Container(
@@ -280,7 +287,7 @@ class MenuManagementView extends GetView<MenuManagementController> {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                '${ingredient['name']} ${ingredient['amount']} ${ingredient['uom']}',
+                '${ingredient.name} ${ingredient.amount} ${ingredient.uom}',
                 style: const TextStyle(fontSize: 12),
               ),
             ),
@@ -298,6 +305,18 @@ class MenuManagementView extends GetView<MenuManagementController> {
           );
         }
       }
+    } else {
+      ingredientChips.add(
+        Container(
+          margin: const EdgeInsets.only(right: 4, bottom: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          color: Colors.grey.shade200,
+          child: Text(
+            'Tidak ada bahan',
+            style: const TextStyle(fontSize: 12),
+          ),
+        ),
+      );
     }
 
     return Container(
@@ -306,10 +325,10 @@ class MenuManagementView extends GetView<MenuManagementController> {
       ),
       child: Row(
         children: [
-          _buildTableCell(menu['created_at'] ?? '-', flex: 1, isDate: true),
-          _buildTableCell(menu['category_name'] ?? '-', flex: 1),
-          _buildTableCell(menu['menu_name'] ?? '-', flex: 2),
-          _buildTableCell('Rp ${menu['price'] != null ? menu['price'].toString() : '-'}', flex: 1, isPrice: true),
+          _buildTableCell("todo", flex: 1, isDate: true),
+          _buildTableCell(menu.categoryName ?? '-', flex: 1),
+          _buildTableCell(menu.name, flex: 2),
+          _buildTableCell(CurrencyFormatter.formatRupiah(menu.price), flex: 1, isPrice: true),
           Expanded(
             flex: 3,
             child: Padding(
@@ -326,7 +345,7 @@ class MenuManagementView extends GetView<MenuManagementController> {
                 label: "Lihat Detail",
                 variant: ButtonVariant.outline,
                 suffixSvgPath: AppIcons.caretRight,
-                onPressed: () => controller.openMenuDetail(menu['id']),
+                onPressed: () => controller.openMenuDetail(menu.id),
               ),
             ),
           ),
@@ -371,15 +390,6 @@ class MenuManagementView extends GetView<MenuManagementController> {
             onPageChanged: controller.goToPage,
           ),
         ],
-      ),
-    );
-  }
-
-  void _showMenuDetailDialog(dynamic menu) {
-    Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: MenuDetailDialog(menu: menu),
       ),
     );
   }

@@ -1,15 +1,15 @@
 import 'dart:developer';
 
+import 'package:dandang_gula/app/core/repositories/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../data/services/api_service.dart';
-import '../../../../data/services/auth_service.dart';
+import '../../../../core/services/api_service.dart';
 import '../../../../global_widgets/alert/app_snackbar.dart';
 import '../../../../routes/app_routes.dart';
-import '../../../../data/repositories/user_repository.dart';
+import '../../../../core/repositories/user_repository.dart';
 
 class LoginController extends GetxController {
-  final AuthService _authService = Get.find<AuthService>();
+  final AuthRepository _authService = Get.find<AuthRepository>();
 
   // Form controllers
   final idLokasiController = TextEditingController();
@@ -101,7 +101,7 @@ class LoginController extends GetxController {
 
       if (response.containsKey('success') && response['success'] == true) {
         // Login successful
-        await _authService.fetchUserProfile();
+        _authService.getCurrentUser();
 
         // Lanjutkan ke dashboard
         navigateToDashboard();
@@ -163,7 +163,7 @@ class LoginController extends GetxController {
       case 'kasir':
         usernameController.text = 'kasir';
         passwordController.text = 'kasir123';
-        isMasterAdmin.value = false; 
+        isMasterAdmin.value = false;
         break;
 
       case 'gudang':

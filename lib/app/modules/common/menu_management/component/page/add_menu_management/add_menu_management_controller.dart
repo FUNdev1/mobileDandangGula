@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:dandang_gula/app/core/models/menu_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:dandang_gula/app/data/repositories/menu_management_repository.dart';
-import 'package:dandang_gula/app/data/repositories/stock_management_repository.dart';
+import 'package:dandang_gula/app/core/repositories/menu_repository.dart';
+import 'package:dandang_gula/app/core/repositories/stock_management_repository.dart';
 import 'package:dandang_gula/app/global_widgets/alert/app_snackbar.dart';
 
 import '../../../../stock_management/data/models/inventory_item_model.dart';
@@ -31,9 +32,9 @@ class AddMenuController extends GetxController {
 
   // Ingredient-related variables
   final isLoadingIngredients = false.obs;
-  final allIngredients = <Map<String, dynamic>>[].obs;
-  final filteredIngredients = <Map<String, dynamic>>[].obs;
-  final selectedIngredients = <Map<String, dynamic>>[].obs;
+  final allIngredients = <InventoryItem>[].obs;
+  final filteredIngredients = <InventoryItem>[].obs;
+  final selectedIngredients = <InventoryItem>[].obs;
 
   // Calculations
   final totalIngredientCost = 0.obs;
@@ -72,18 +73,14 @@ class AddMenuController extends GetxController {
     isLoadingIngredients.value = true;
     try {
       final repository = Get.find<StockManagementRepository>();
-      final response = await repository.getAllInventoryItems(type: 'menu');
+      final response = await repository.getAllInventoryItems();
 
-      if (response["data"].isNotEmpty) {
-        allIngredients.value = response["data"].map((item) {
-          return {
-            'id': item.id,
-            'name': item.name,
-            'uom': item.uom,
-            'type': item.type,
-            'stock': item.stock,
-          };
+      if (response["data"] is List && response["data"].isNotEmpty) {
+        final List<dynamic> listData = response["data"] as List<dynamic>;
+        allIngredients.value = listData.map((item) {
+          return InventoryItem.fromJson(item as Map<String, dynamic>);
         }).toList();
+        allIngredients.refresh();
         filteredIngredients.value = allIngredients;
       } else {
         allIngredients.value = [];
@@ -103,25 +100,21 @@ class AddMenuController extends GetxController {
       filteredIngredients.value = allIngredients;
     } else {
       filteredIngredients.value = allIngredients.where((ingredient) {
-        final name = ingredient['name']?.toString().toLowerCase() ?? '';
+        final name = ingredient.name.toString().toLowerCase();
         return name.contains(searchTerm.toLowerCase());
       }).toList();
     }
   }
 
-  void addIngredient(Map<String, dynamic> ingredient) {
-    if (!selectedIngredients.any((i) => i['id'] == ingredient['id'])) {
-      selectedIngredients.add({
-        'id': ingredient['id'],
-        'name': ingredient['name'],
-        'amount': '0',
-        'uom': ingredient['uom'],
-        'price': '0',
-        'type': ingredient['type'] ?? 'Ingredient',
-      });
+  void addIngredient(InventoryItem ingredient) {
+    if (!selectedIngredients.any((i) => i.id == ingredient.id)) {
+      selectedIngredients.add(ingredient);
       // Reset validation states when adding new ingredient
-      ingredientAmountErrors[ingredient['id']] = false;
-      ingredientPriceErrors[ingredient['id']] = false;
+      if (ingredient.id != null) {
+        ingredientAmountErrors[ingredient.id!] = false;
+        ingredientPriceErrors[ingredient.id!] = false;
+      }
+
       ingredientsError.value = false;
       selectedIngredients.refresh();
       calculateTotals();
@@ -129,7 +122,7 @@ class AddMenuController extends GetxController {
   }
 
   void removeIngredient(String id) {
-    selectedIngredients.removeWhere((ingredient) => ingredient['id'] == id);
+    selectedIngredients.removeWhere((ingredient) => ingredient.id == id);
     // Reset validation states when removing ingredient
     ingredientAmountErrors.remove(id);
     ingredientPriceErrors.remove(id);
@@ -138,23 +131,21 @@ class AddMenuController extends GetxController {
     calculateTotals();
   }
 
-  void updateIngredientAmount(String id, String amount) {
-    final index = selectedIngredients.indexWhere((ingredient) => ingredient['id'] == id);
+  void updateIngredientPurchases(String id, String amount) {
+    final index = selectedIngredients.indexWhere((ingredient) => ingredient.id == id);
     if (index != -1) {
-      final ingredient = Map<String, dynamic>.from(selectedIngredients[index]);
-      ingredient['amount'] = amount;
-      selectedIngredients[index] = ingredient;
+      final updatedIngredient = selectedIngredients[index].copyWith(purchases: int.tryParse(amount) ?? 0);
+      selectedIngredients[index] = updatedIngredient;
       selectedIngredients.refresh();
       calculateTotals();
     }
   }
 
   void updateIngredientPrice(String id, String price) {
-    final index = selectedIngredients.indexWhere((ingredient) => ingredient['id'] == id);
+    final index = selectedIngredients.indexWhere((ingredient) => ingredient.id == id);
     if (index != -1) {
-      final ingredient = Map<String, dynamic>.from(selectedIngredients[index]);
-      ingredient['price'] = price;
-      selectedIngredients[index] = ingredient;
+      final updatedIngredient = selectedIngredients[index].copyWith(uomPrice: double.tryParse(price) ?? 0.0);
+      selectedIngredients[index] = updatedIngredient;
       selectedIngredients.refresh();
       calculateTotals();
     }
@@ -164,8 +155,8 @@ class AddMenuController extends GetxController {
     // Calculate total ingredient cost
     int total = 0;
     for (final ingredient in selectedIngredients) {
-      final amount = int.tryParse(ingredient['amount'] ?? '0') ?? 0;
-      final price = int.tryParse(ingredient['price'] ?? '0') ?? 0;
+      final amount = ingredient.purchases ?? 0;
+      final price = int.tryParse(ingredient.price?.toStringAsFixed(0) ?? '0') ?? 0;
       total += amount * price;
     }
     totalIngredientCost.value = total;
@@ -183,7 +174,7 @@ class AddMenuController extends GetxController {
     grossMargin.value = sellingPrice - hpp.value;
 
     // Calculate price with tax (10%)
-    priceWithTax.value = sellingPrice + (sellingPrice * 0.1).round();
+    // priceWithTax.value = sellingPrice + (sellingPrice * 0.1).round();
   }
 
   void validateCategory(String? value) {
@@ -220,15 +211,15 @@ class AddMenuController extends GetxController {
 
     // Validate ingredient amounts and prices
     for (final ingredient in selectedIngredients) {
-      final amount = int.tryParse(ingredient['amount']?.toString() ?? '0') ?? 0;
+      final amount = int.tryParse((ingredient.purchases ?? 0).toStringAsFixed(0)) ?? 0;
       if (amount == 0) {
-        ingredientAmountErrors[ingredient['id']] = true;
+        ingredientAmountErrors[ingredient.id ?? ""] = true;
         isValid = false;
       }
 
-      final price = int.tryParse(ingredient['price']?.toString() ?? '0') ?? 0;
+      final price = int.tryParse(ingredient.uomPrice?.toStringAsFixed(0) ?? '0') ?? 0;
       if (price == 0) {
-        ingredientPriceErrors[ingredient['id']] = true;
+        ingredientPriceErrors[ingredient.id ?? ""] = true;
         isValid = false;
       }
     }
@@ -249,14 +240,23 @@ class AddMenuController extends GetxController {
     isSaving.value = true;
 
     try {
-      final repository = MenuManagementRepositoryImpl();
+      final repository = MenuRepositoryImpl();
 
       // Prepare ingredients data
-      final ingredients = selectedIngredients.map((ingredient) => {'raw_id': ingredient['id'], 'amount': ingredient['amount'], 'uom': ingredient['uom'], 'price': ingredient['price']}).toList();
+      final ingredients = selectedIngredients.map(
+        (ingredient) {
+          return {
+            'raw_id': ingredient.id,
+            'amount': ingredient.purchases,
+            'uom': ingredient.uom,
+            'price': (ingredient.price ?? 0).toStringAsFixed(0),
+          };
+        },
+      ).toList();
 
       // Prepare request data
       final formData = {
-        'photo': selectedImage.value?.path ?? "",
+        // 'photo': selectedImage.value?.path ?? "",
         'menu_name': menuNameController.text,
         'description': descriptionController.text,
         'category_id': selectedCategoryId.value,
@@ -269,10 +269,10 @@ class AddMenuController extends GetxController {
       };
       // debugPrint('Complete form data: $formData');
 
-      final response = await repository.createMenu(formData);
+      final response = await repository.createMenu(formData, photoPath: selectedImage.value?.path);
 
       if (response['success'] == true) {
-        AppSnackBar.success(message: 'Menu berhasil disimpan');
+        AppSnackBar.success(message: response["message"] ?? "Menu berhasil disimpan");
         Get.back(result: true); // Close dialog and refresh list
       } else {
         AppSnackBar.error(message: 'Gagal menyimpan menu: ${response['message']}');

@@ -1,11 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import '../../../../data/models/category_sales_model.dart';
-import '../../../../data/models/payment_method_model.dart';
-import '../../../../data/models/product_sales_model.dart';
-import '../../../../data/models/stock_alert_model.dart';
-import '../../../../data/models/stock_flow_data_model.dart';
-import '../../../../data/models/stock_usage_model.dart';
+import '../../../../core/models/report_model.dart';
+import '../../../../core/models/stock_model.dart';
 import 'base_dashboard_controller.dart';
 
 class AdminDashboardController extends BaseDashboardController {
@@ -29,12 +25,12 @@ class AdminDashboardController extends BaseDashboardController {
       salesGrowth.value = summary.percentChange;
 
       // Dapatkan data khusus admin
-      categorySales.value = await orderRepository.getCategorySales(filterParams: filterParams);
-      topProducts.value = await orderRepository.getTopProductSales(filterParams: filterParams);
-      paymentMethods.value = await orderRepository.getPaymentMethodData(filterParams: filterParams);
+      // categorySales.value = await orderRepository.getCategorySales(filterParams: filterParams);
+      // topProducts.value = await orderRepository.getTopProductSales(filterParams: filterParams);
+      // paymentMethods.value = await orderRepository.getPaymentMethodData(filterParams: filterParams);
 
       // Dapatkan data revenue vs expense
-      await dashboardRepository.fetchRevenueExpenseData(selectedBranchId.value, filterParams: filterParams);
+      // await dashboardRepository.fetchRevenueExpenseData(selectedBranchId.value, filterParams: filterParams);
 
       // Dapatkan data stock flow
       stockFlowData.value = await stockRepository.getStockFlowData();

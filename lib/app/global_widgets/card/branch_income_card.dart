@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../config/theme/app_colors.dart';
-import '../../config/theme/app_dimensions.dart';
-import '../../config/theme/app_text_styles.dart';
-import '../../data/models/branch_model.dart';
+import '../../core/utils/theme/app_colors.dart';
+import '../../core/utils/theme/app_dimensions.dart';
+import '../../core/utils/theme/app_text_styles.dart';
+import '../../core/models/branch_model.dart';
 import '../layout/app_card.dart';
 import '../text/app_text.dart';
 

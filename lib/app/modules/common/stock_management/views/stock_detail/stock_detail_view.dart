@@ -1,12 +1,12 @@
-import 'package:dandang_gula/app/config/theme/app_colors.dart';
-import 'package:dandang_gula/app/core/utils.dart';
+import 'package:dandang_gula/app/core/utils/theme/app_colors.dart';
+import 'package:dandang_gula/app/core/utils/utils.dart';
 import 'package:dandang_gula/app/global_widgets/input/app_dropdown_field.dart';
 import 'package:dandang_gula/app/global_widgets/input/app_text_field.dart';
 import 'package:dandang_gula/app/global_widgets/text/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import '../../../../../data/repositories/stock_management_repository.dart';
+import '../../../../../core/repositories/stock_management_repository.dart';
 import '../../../../../global_widgets/alert/app_snackbar.dart';
 import '../../../../../routes/app_routes.dart';
 

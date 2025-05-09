@@ -1,5 +1,4 @@
-import 'package:dandang_gula/app/data/models/menu_model.dart';
-import 'package:dandang_gula/app/data/models/menu_category_model.dart';
+import 'package:dandang_gula/app/core/models/menu_model.dart';
 
 class MenuMockData {
   static List<Map<String, dynamic>> getMenuList() {
@@ -293,17 +292,17 @@ class MenuMockData {
       MenuCategory(
         id: '1',
         branchId: '1',
-        categoryName: 'Soup & Dish',
+        name: 'Soup & Dish',
       ),
       MenuCategory(
         id: '2',
         branchId: '1',
-        categoryName: 'Asian Food',
+        name: 'Asian Food',
       ),
       MenuCategory(
         id: '3',
         branchId: '1',
-        categoryName: 'Iga Series',
+        name: 'Iga Series',
       ),
     ];
   }
@@ -318,4 +317,4 @@ class MenuMockData {
       'price_desc': 'Harga (Tertinggi)',
     };
   }
-} 
+}

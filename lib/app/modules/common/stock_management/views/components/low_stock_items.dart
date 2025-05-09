@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../data/models/stock_alert_model.dart';
+import '../../../../../core/models/stock_model.dart';
+import '../../../../../core/utils/theme/app_text_styles.dart';
 import '../../../../../global_widgets/text/app_text.dart';
 
 class LowStockItems extends StatefulWidget {
@@ -48,7 +48,7 @@ class _LowStockItemsState extends State<LowStockItems> {
               final item = widget.items[index];
               return GestureDetector(
                 onTap: () {
-                  selectedValue.value = item.stock / item.stockLimit;
+                  selectedValue.value = item.stock / item.limit;
                 },
                 child: _buildStockAlertCard(item),
               );
@@ -117,7 +117,7 @@ class _LowStockItemsState extends State<LowStockItems> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        item.unitName,
+                        item.name,
                         style: AppTextStyles.bodySmall.copyWith(
                           fontFamily: 'IBM Plex Mono',
                           fontStyle: FontStyle.italic,
@@ -139,7 +139,7 @@ class _LowStockItemsState extends State<LowStockItems> {
             builder: (context, constraints) {
               final maxWidth = constraints.maxWidth;
               // Calculate the red portion width based on the current stock level
-              final redWidth = (maxWidth * _normalizeAlertLevel(item.stock / item.stockLimit)).clamp(0.0, maxWidth);
+              final redWidth = (maxWidth * _normalizeAlertLevel(item.stock / item.limit)).clamp(0.0, maxWidth);
 
               return Container(
                 height: 14,
