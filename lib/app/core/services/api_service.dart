@@ -100,6 +100,8 @@ class ApiServiceImpl implements ApiService {
     if (response.data == null || (response.data is String && response.data.isEmpty)) {
       return {};
     }
+    // print(token);
+
     return response.data;
   }
 

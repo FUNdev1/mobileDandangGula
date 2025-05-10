@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dandang_gula/app/global_widgets/buttons/app_button.dart';
 import 'package:dandang_gula/app/global_widgets/buttons/icon_button.dart';
 import 'package:dandang_gula/app/global_widgets/input/app_text_field.dart';
@@ -19,6 +20,10 @@ class KasirDashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    // Calculate the approximate available height after accounting for app bar
+    final availableHeight = screenHeight - 150; // Adjust this value as needed
+
     return Padding(
       padding: AppDimensions.contentPadding,
       child: Column(
@@ -26,94 +31,91 @@ class KasirDashboardView extends StatelessWidget {
           // Categories
           SizedBox(
             width: double.infinity,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Obx(() {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ...controller.menuPage.map((e) {
-                      return _buildCategoryChip(e["group_name"], controller.selectedStockGroup.value == e["id"], e["items"].toString());
-                    }),
-                  ],
+            height: 50,
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(
+                  child: SizedBox(height: 2, width: double.infinity, child: LinearProgressIndicator()),
                 );
-              }),
-            ),
+              }
+
+              return ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: controller.menuPage.isEmpty ? 1 : controller.menuPage.length,
+                itemBuilder: (context, index) {
+                  if (controller.menuPage.isEmpty) {
+                    return const SizedBox(width: 100, height: 40);
+                  }
+
+                  final e = controller.menuPage[index];
+                  return _buildCategoryChip(e["category_name"] ?? "-", controller.selectedStockGroup.value == e["id"], e["items"]?.toString() ?? "0");
+                },
+              );
+            }),
           ),
           const SizedBox(height: 12),
-          Expanded(
+          SizedBox(
+            height: availableHeight - 62, // 50 (category height) + 12 (spacing)
             child: Row(
               children: [
                 // Left side - Menu Section
                 Expanded(
                   flex: 2,
-                  child: Container(
-                    margin: EdgeInsets.only(right: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Search and Sort
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            SizedBox(
-                              width: Get.width * 0.3,
-                              child: AppTextField(
-                                hint: 'Cari Menu',
-                                controller: controller.searchController,
-                                suffixIcon: AppIcons.search,
-                                onFocusChanged: (value) => controller.loadDashboardData(),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                children: const [
-                                  Text('Sort by'),
-                                  SizedBox(width: 8),
-                                  Text('A - Z'),
-                                  Icon(Icons.arrow_drop_down),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        // Menu Grid
-                        Expanded(
-                          child: GridView.builder(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 5,
-                              childAspectRatio: 0.85,
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
-                            ),
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: controller.menuList.length + 1,
-                            itemBuilder: (context, index) {
-                              if (index == 0) {
-                                return _buildCustomMenuButton();
-                              }
-                              return _buildMenuCard(index - 1);
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                  child: Obx(() {
+                    if (controller.isLoading.value) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
 
-                // Right side - Order Section
+                    if (controller.menuList.isEmpty && !controller.isLoading.value) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          _buildCustomMenuButton(),
+                          const SizedBox(height: 16),
+                          const Text('Tidak ada menu tersedia'),
+                        ],
+                      );
+                    }
+
+                    return GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4, // Adjust based on available width
+                        childAspectRatio: 0.85,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: controller.menuList.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return _buildCustomMenuButton();
+                        }
+                        final adjustedIndex = index - 1;
+                        if (adjustedIndex < controller.menuList.length) {
+                          return _buildMenuCard(adjustedIndex);
+                        } else {
+                          return Container();
+                        }
+                      },
+                    );
+                  }),
+                ),
+                // Right side - Placeholder for now
+// Right side - Order Section
                 Expanded(
                   child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Order type section
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -121,6 +123,7 @@ class KasirDashboardView extends StatelessWidget {
                           ),
                           child: Column(
                             children: [
+                              // Type selection (header)
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 child: Row(
@@ -143,10 +146,12 @@ class KasirDashboardView extends StatelessWidget {
                                   ],
                                 ),
                               ),
+                              // Divider
                               Container(
                                 height: 1,
-                                decoration: BoxDecoration(color: Colors.grey[200]),
+                                color: Colors.grey[200],
                               ),
+                              // Selected order type
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 child: Row(
@@ -173,6 +178,8 @@ class KasirDashboardView extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
+
+                        // Customer name section
                         GestureDetector(
                           onTap: () {},
                           child: Container(
@@ -207,135 +214,149 @@ class KasirDashboardView extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          constraints: BoxConstraints(
-                            minHeight: 200,
-                            maxHeight: 293,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Rincian pesanan',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.deepWiseBlue,
+
+                        // Order details section - This is likely causing issues
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
                                 ),
-                              ),
-                              const SizedBox(height: 16),
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      if (controller.selectedItems.isNotEmpty)
-                                        ...controller.selectedItems.map((element) {
-                                          return _buildOrderItem(
-                                            element['name'],
-                                            element['price'],
-                                          );
-                                        })
-                                      else
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: Column(
-                                            children: [
-                                              AppText(
-                                                'Belum ada pesanan',
-                                                style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              AppText(
-                                                "Pesanan yang kamu pilih akan tampil disini",
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                    ],
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Rincian pesanan',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.deepWiseBlue,
                                   ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 16),
+
+                                // List of selected items - FIXED VERSION
+                                Flexible(
+                                  child: Obx(() {
+                                    if (controller.selectedItems.isEmpty) {
+                                      return Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            AppText(
+                                              'Belum ada pesanan',
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            AppText(
+                                              "Pesanan yang kamu pilih akan tampil disini",
+                                            )
+                                          ],
+                                        ),
+                                      );
+                                    }
+
+                                    return ListView.builder(
+                                      itemCount: controller.selectedItems.length,
+                                      itemBuilder: (context, index) {
+                                        final item = controller.selectedItems[index];
+                                        return _buildOrderItem(
+                                          item['name'] ?? '',
+                                          item['price'] ?? '',
+                                        );
+                                      },
+                                    );
+                                  }),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
+
                         const SizedBox(height: 10),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: Column(
-                            children: [
-                              _buildOrderSummaryRow('Subtotal', CurrencyFormatter.formatRupiah(controller.subtotal.value)),
-                              _buildOrderSummaryRow('Biaya Layanan', CurrencyFormatter.formatRupiah(controller.serviceFee.value)),
-                              // Total section
-                              _buildOrderSummaryRow('Total', CurrencyFormatter.formatRupiah(controller.total.value), isTotal: true),
-                              const SizedBox(height: 16),
-                              Row(
+
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            // Order summary - totals
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
                                 children: [
-                                  Expanded(
-                                    child: SizedBox(
-                                      height: 56,
-                                      child: AppButton(
-                                        label: "Bayar Nanti",
-                                        onPressed: () {},
-                                        variant: ButtonVariant.outline,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  // Update the "Bayar Sekarang" button to open the payment page
-                                  Expanded(
-                                    child: SizedBox(
-                                      height: 56,
-                                      child: AppButton(
-                                        label: "Bayar Sekarang\nTotal 3 Produk",
-                                        suffixSvgPath: AppIcons.caretRight,
-                                        customBackgroundColor: Color(0xFF1B9851),
-                                        onPressed: () {
-                                          // Get the selected items from the order
-                                          // List<Map<String, dynamic>> selectedItems = [
-                                          //   {'name': 'Nasi Ayam Lada Hitam', 'price': 'Rp25,000', 'quantity': 1},
-                                          //   {'name': 'Cumi Telur Asin', 'price': 'Rp25,000', 'quantity': 1},
-                                          //   {'name': 'Nasi Goreng Spesial', 'price': 'Rp25,000', 'quantity': 1},
-                                          // ];
+                                  _buildOrderSummaryRow('Subtotal', CurrencyFormatter.formatRupiah(controller.subtotal.value)),
+                                  _buildOrderSummaryRow('Biaya Layanan', CurrencyFormatter.formatRupiah(controller.serviceFee.value)),
+                                  _buildOrderSummaryRow('Total', CurrencyFormatter.formatRupiah(controller.total.value), isTotal: true),
+                                  const SizedBox(height: 16),
 
-                                          // Open the payment page
-
-                                          Get.to(() {
-                                            return PembayaranPage(selectedItems: controller.selectedItems.value);
-                                          })?.then((result) {
-                                            if (result != null && result['success'] == true) {
-                                              // Handle successful payment
-                                              // For example, clear the cart, show a success message, etc.
-                                              Get.snackbar(
-                                                'Pembayaran Berhasil',
-                                                'Transaksi telah selesai',
-                                                backgroundColor: Colors.green,
-                                                colorText: Colors.white,
-                                              );
-                                            }
-                                          });
-                                        },
+                                  // Payment buttons
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: SizedBox(
+                                          height: 56,
+                                          child: AppButton(
+                                            label: "Bayar Nanti",
+                                            onPressed: () {},
+                                            variant: ButtonVariant.outline,
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                      const SizedBox(width: 12),
+                                      Flexible(
+                                        child: SizedBox(
+                                          height: 56,
+                                          child: AppButton(
+                                            label: "Bayar Sekarang\nTotal 3 Produk",
+                                            suffixSvgPath: AppIcons.caretRight,
+                                            customBackgroundColor: Color(0xFF1B9851),
+                                            onPressed: () {
+                                              Get.to(() {
+                                                return PembayaranPage(selectedItems: controller.selectedItems.value);
+                                              })?.then((result) {
+                                                if (result != null && result['success'] == true) {
+                                                  Get.snackbar(
+                                                    'Pembayaran Berhasil',
+                                                    'Transaksi telah selesai',
+                                                    backgroundColor: Colors.green,
+                                                    colorText: Colors.white,
+                                                  );
+                                                }
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ],
@@ -365,6 +386,7 @@ class KasirDashboardView extends StatelessWidget {
             border: Border.all(color: isSelected ? Color(0xFF136C3A) : Color(0xFFD4D4D4)),
           ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 label,
@@ -387,27 +409,15 @@ class KasirDashboardView extends StatelessWidget {
         ),
       ),
     );
-    // return Container(
-    //   margin: const EdgeInsets.only(right: 8),
-    //   child: FilterChip(
-    //     selected: isSelected,
-    //     label: Text('$label ($count items)'),
-    //     onSelected: (bool value) {},
-    //     backgroundColor: Colors.grey[200],
-    //     selectedColor: Colors.green,
-    //     labelStyle: TextStyle(
-    //       color: isSelected ? Colors.white : Colors.black,
-    //     ),
-    //     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-    //   ),
-    // );
   }
 
   Widget _buildCustomMenuButton() {
     return Container(
       constraints: const BoxConstraints(
         maxHeight: 165,
-        minWidth: 201,
+        minHeight: 120,
+        minWidth: 163,
+        maxWidth: 201,
       ),
       decoration: BoxDecoration(
         color: Color(0xFF1B9851),
@@ -439,8 +449,9 @@ class KasirDashboardView extends StatelessWidget {
   }
 
   Widget _buildMenuCard(int index) {
-    if (index - 1 >= controller.menuList.length) {
-      return Container();
+    // Double-check index bounds for safety
+    if (index < 0 || index >= controller.menuList.length) {
+      return Container(); // Return empty container if index is out of bounds
     }
 
     var menuItem = controller.menuList[index];
@@ -450,6 +461,7 @@ class KasirDashboardView extends StatelessWidget {
         maxHeight: 165,
         maxWidth: 201,
         minWidth: 163,
+        minHeight: 120,
       ),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -461,12 +473,15 @@ class KasirDashboardView extends StatelessWidget {
         children: [
           Stack(
             children: [
-              Container(
+              SizedBox(
+                width: double.infinity,
                 height: 75,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                  image: DecorationImage(
-                    image: NetworkImage('https://picsum.photos/200?random=$index'),
+                child: CachedNetworkImage(
+                  imageUrl: menuItem.photoUrl ?? "",
+                  errorWidget: (context, url, error) => Image.asset(
+                    AppIcons.appIcon,
+                    height: 75,
+                    width: 75,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -478,14 +493,20 @@ class KasirDashboardView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  child: Text(menuItem.name),
+                  child: Text(
+                    menuItem.categoryName ?? "",
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF3F3F3F),
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
-          Expanded(
+          Flexible(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -499,7 +520,7 @@ class KasirDashboardView extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    CurrencyFormatter.formatRupiah(menuItem.price), // Format harga men
+                    CurrencyFormatter.formatRupiah(menuItem.price ?? 0),
                     style: const TextStyle(fontSize: 12),
                   ),
                 ],
@@ -524,7 +545,7 @@ class KasirDashboardView extends StatelessWidget {
             onPressed: () {},
           ),
           const SizedBox(width: 16),
-          Expanded(
+          Flexible(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -582,7 +603,24 @@ class KasirDashboardView extends StatelessWidget {
     );
   }
 
-  void _setCurrentCategory(category) {}
+  void _setCurrentCategory(String category) {
+    try {
+      // Cari ID kategori berdasarkan nama
+      for (var item in controller.menuPage) {
+        if (item['category_name'] == category) {
+          // Make sure to use the correct key
+          final id = item['id'];
+          if (id != null) {
+            controller.selectedStockGroup.value = id;
+            controller.loadDashboardData();
+          }
+          break;
+        }
+      }
+    } catch (e) {
+      print('Error setting category: $e');
+    }
+  }
 
   showPresensiDialog() {
     Get.dialog(
@@ -611,7 +649,7 @@ class KasirDashboardView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    Expanded(
+                    Flexible(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -642,7 +680,7 @@ class KasirDashboardView extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
+                          Flexible(
                             child: Center(
                               child: Text(
                                 '${DateTime.now().hour}:${DateTime.now().second}:${DateTime.now().microsecond}',
@@ -653,7 +691,7 @@ class KasirDashboardView extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Expanded(
+                          Flexible(
                             child: Container(
                               padding: EdgeInsets.all(10),
                               decoration: BoxDecoration(
@@ -957,7 +995,7 @@ class KasirDashboardView extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Konten Tab
-                    Expanded(
+                    Flexible(
                       child: TabBarView(
                         physics: NeverScrollableScrollPhysics(),
                         children: [
@@ -1006,7 +1044,7 @@ class KasirDashboardView extends StatelessWidget {
           SizedBox(height: 16),
 
           // Transaksi List
-          Expanded(
+          Flexible(
             child: ListView(
               children: [
                 _buildTransactionItem(
@@ -1103,7 +1141,7 @@ class KasirDashboardView extends StatelessWidget {
           SizedBox(height: 16),
 
           // Transaksi List - Kas Manual
-          Expanded(
+          Flexible(
             child: ListView(
               children: [
                 _buildTransactionItem(
@@ -1232,7 +1270,7 @@ class KasirDashboardView extends StatelessWidget {
                 builder: (context, setState) {
                   return Row(
                     children: [
-                      Expanded(
+                      Flexible(
                         child: GestureDetector(
                           onTap: () => setState(() => isExpense = false),
                           child: Container(
@@ -1252,7 +1290,7 @@ class KasirDashboardView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Expanded(
+                      Flexible(
                         child: GestureDetector(
                           onTap: () => setState(() => isExpense = true),
                           child: Container(
@@ -1298,7 +1336,7 @@ class KasirDashboardView extends StatelessWidget {
               // Tombol Simpan
               Row(
                 children: [
-                  Expanded(
+                  Flexible(
                     child: GestureDetector(
                       onTap: () => Get.back(),
                       child: Container(
@@ -1316,7 +1354,7 @@ class KasirDashboardView extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 16),
-                  Expanded(
+                  Flexible(
                     child: GestureDetector(
                       onTap: () {
                         // Implementasi simpan transaksi

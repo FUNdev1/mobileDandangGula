@@ -15,14 +15,6 @@ import '../../routes/app_routes.dart';
 import '../buttons/icon_button.dart';
 import '../text/app_text.dart';
 
-// enum UserRole {
-//   admin,
-//   kasir,
-//   gudang,
-//   pusat,
-//   supervisor,
-// }
-
 class AppLayout extends StatelessWidget {
   final Widget content;
   final Widget? floatingActionButton;
@@ -45,23 +37,6 @@ class AppLayout extends StatelessWidget {
     this.showBackButton = false,
     this.onBackPressed,
   });
-
-  // UserRole _getUserRoleEnum() {
-  //   switch (_authService.userRole) {
-  //     case 'admin':
-  //       return UserRole.admin;
-  //     case 'kasir':
-  //       return UserRole.kasir;
-  //     case 'gudang':
-  //       return UserRole.gudang;
-  //     case 'pusat':
-  //       return UserRole.pusat;
-  //     case 'supervisor':
-  //       return UserRole.supervisor;
-  //     default:
-  //       return UserRole.kasir;
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -503,7 +478,7 @@ class AppLayout extends StatelessWidget {
               const SizedBox(width: AppDimensions.spacing12),
             ],
             _buildUserAvatar(userName, roleName?.role ?? "-"),
-            if (roleName?.role == "kasir") ...[
+            if (roleName?.role.toLowerCase() == "kasir") ...[
               AppIconButton(
                 backgroundColor: Colors.white12,
                 tooltip: "Presensi ",

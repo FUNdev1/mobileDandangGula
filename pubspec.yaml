@@ -38,7 +38,7 @@ dependencies:
   shared_preferences: ^2.3.3 # For storing simple data
   flutter_svg: ^2.0.7 # For SVG support
   intl: ^0.18.1 # For date/time formatting
-  cached_network_image: ^3.2.3 # For image caching
+  cached_network_image: ^3.4.1 # For image caching
   flutter_secure_storage: ^8.0.0 # For storing sensitive data (like tokens)
   image_picker: ^1.1.2
   flutter_launcher_icons: ^0.13.1

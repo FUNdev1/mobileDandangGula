@@ -26,6 +26,7 @@ void main() async {
   Get.put(NavigationController(), permanent: true);
 
   runApp(MyApp());
+  debugDumpRenderTree();
 }
 
 class MyApp extends StatelessWidget {

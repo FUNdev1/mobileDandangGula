@@ -187,15 +187,15 @@ class _UserAccountSidePanelState extends State<UserAccountSidePanel> {
                         ),
                         const SizedBox(height: 8),
                         Obx(() {
-                          final rolesList = (widget.controller.roles.value as List).map((role) {
-                            return {
-                              "id": role.id,
-                              "role": role.role,
-                            };
-                          }).toList();
+                          final rolesList = (widget.controller.roles.value as List)
+                              .map((role) => {
+                                    "id": role.id,
+                                    "role": role.role,
+                                  })
+                              .toList();
                           return AppDropdownField(
                             hint: "Pilih Role Akun",
-                            items: rolesList,
+                            items: (widget.controller.roles.value as List).cast<dynamic>(),
                             selectedValue: widget.controller.selectedRoleId.value ?? "",
                             valueKey: "id",
                             displayKey: "role",

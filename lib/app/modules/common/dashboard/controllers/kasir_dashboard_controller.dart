@@ -23,6 +23,7 @@ class KasirDashboardController extends BaseDashboardController {
   var menuList = <Menu>[].obs;
 
   var selectedStockGroup = <Map<String, dynamic>>{}.obs;
+  var isMenuLoaded = false.obs;
 
   final searchController = TextEditingController();
   final selectedCategory = ''.obs;
@@ -31,6 +32,21 @@ class KasirDashboardController extends BaseDashboardController {
   final serviceFee = 0.0.obs;
   final total = 0.0.obs;
   final orderType = 'Dine in'.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Inisialisasi nilai default untuk menghindari error layout
+    menuList.value = [];
+    menuPage.value = [];
+    selectedItems.value = [];
+
+    // Jalankan inisialisasi controller dengan delay kecil
+    // untuk memastikan widget sudah ter-mount dengan benar
+    Future.delayed(Duration(milliseconds: 100), () {
+      initializeController();
+    });
+  }
 
   @override
   Future<void> loadDashboardData() async {
@@ -48,7 +64,7 @@ class KasirDashboardController extends BaseDashboardController {
         search: searchController.text,
         categoryId: selectedCategory.value,
       );
-      menuPage.value = resMenuPage['data'] ?? [];
+      menuPage.value = (resMenuPage['data'] is List) ? (resMenuPage['data'] as List).map((item) => Map<String, dynamic>.from(item)).toList() : [];
 
       final resMenuCards = await menuRepository.getMenuCards(
         categoryId: selectedCategory.value,
@@ -56,15 +72,21 @@ class KasirDashboardController extends BaseDashboardController {
         pageSize: 10,
         search: searchController.text,
       );
-      if (resMenuCards.isNotEmpty && resMenuCards["data"] is List && resMenuCards["data"].isNotEmpty) {
-        menuList.value = resMenuCards["data"].map((e) => Menu.fromJson(e)).toList();
+
+      if (resMenuCards.isNotEmpty && resMenuCards["data"] is List) {
+        if (resMenuCards["data"] is List && (resMenuCards["data"] as List).isNotEmpty) {
+          // Explicitly cast each element to Map<String, dynamic> before converting to Menu
+          menuList.value = (resMenuCards["data"] as List).map((e) => Menu.fromJson(e as Map<String, dynamic>)).toList();
+        } else {
+          menuList.value = [];
+        }
         menuList.refresh();
 
-        // Make cateogry filter from menuCards
-
+        // Make category filter from menuCards
         final categories = menuList.map((e) => e.categoryName).toSet().toList();
         final stockGroups = <Map<String, dynamic>>[];
       }
+      isMenuLoaded.value = true;
 
       // Dapatkan data produk dan metode pembayaran
 
